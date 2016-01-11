@@ -12,8 +12,8 @@ TARGET = QMarkdownTextedit
 TEMPLATE = app
 
 
-SOURCES += main.cpp\
-        mainwindow.cpp \
+SOURCES += main.cpp \
+    mainwindow.cpp \
     lib/peg-markdown-highlight/pmh_parser.c \
     highlighter.cpp \
     qmarkdowntextedit.cpp
