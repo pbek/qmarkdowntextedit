@@ -3,7 +3,15 @@
 [![Build Status Windows](https://ci.appveyor.com/api/projects/status/github/pbek/qmarkdowntextedit)](https://ci.appveyor.com/project/pbek/qmarkdowntextedit)
 
 
-A QTextEdit implementation with markdown support and some other goodies.
+A Qt QTextEdit widget with markdown support and some other goodies.
+
+## Features
+- markdown highlighting
+- clickable links with `Ctrl + Click`
+- block indent with `Tab` and `Shift + Tab`
+
+## References
+- [QOwnNotes - cross-platform open source plain-text notepad](http://www.qownnotes.org)
 
 ## Disclaimer
 This SOFTWARE PRODUCT is provided by THE PROVIDER "as is" and "with all faults." THE PROVIDER makes no representations or warranties of any kind concerning the safety, suitability, lack of viruses, inaccuracies, typographical errors, or other harmful components of this SOFTWARE PRODUCT. 
