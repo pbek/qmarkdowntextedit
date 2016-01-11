@@ -1,10 +1,18 @@
-/* PEG Markdown Highlight
- * Copyright 2011 Ali Rantakari -- http://hasseg.org
- * Licensed under the GPL2+ and MIT licenses (see LICENSE for more info).
- * 
+/*
+ * Copyright (C) 2016 Patrizio Bekerle -- http://www.bekerle.com
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; version 2 of the License.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ * for more details.
+ *
  * highlighter.cpp
- * 
- * Qt 4.7 example for highlighting a rich text widget.
+ *
+ * QTextEdit highlighter
  */
 
 #include <QtGui>
@@ -25,9 +33,7 @@ void WorkerThread::run()
 }
 
 
-
-
-HGMarkdownHighlighter::HGMarkdownHighlighter(QTextDocument *parent,
+QMarkdownHighlighter::QMarkdownHighlighter(QTextDocument *parent,
                                              int aWaitInterval) : QObject(parent)
 {
     highlightingStyles = NULL;
@@ -45,14 +51,14 @@ HGMarkdownHighlighter::HGMarkdownHighlighter(QTextDocument *parent,
     this->parse();
 }
 
-void HGMarkdownHighlighter::setStyles(QVector<HighlightingStyle> &styles)
+void QMarkdownHighlighter::setStyles(QVector<HighlightingStyle> &styles)
 {
     this->highlightingStyles = &styles;
 }
 
 
 #define STY(type, format) styles->append((HighlightingStyle){type, format})
-void HGMarkdownHighlighter::setDefaultStyles(int defaultFontSize)
+void QMarkdownHighlighter::setDefaultStyles(int defaultFontSize)
 {
     QVector<HighlightingStyle> *styles = new QVector<HighlightingStyle>();
 
@@ -120,7 +126,7 @@ void HGMarkdownHighlighter::setDefaultStyles(int defaultFontSize)
     this->setStyles(*styles);
 }
 
-void HGMarkdownHighlighter::clearFormatting()
+void QMarkdownHighlighter::clearFormatting()
 {
     QTextBlock block = document->firstBlock();
     while (block.isValid()) {
@@ -129,7 +135,7 @@ void HGMarkdownHighlighter::clearFormatting()
     }
 }
 
-void HGMarkdownHighlighter::highlight()
+void QMarkdownHighlighter::highlight()
 {
     if (cached_elements == NULL) {
         qDebug() << "cached_elements is NULL";
@@ -194,7 +200,7 @@ void HGMarkdownHighlighter::highlight()
     document->markContentsDirty(0, document->characterCount());
 }
 
-void HGMarkdownHighlighter::parse()
+void QMarkdownHighlighter::parse()
 {
     if (workerThread != NULL && workerThread->isRunning()) {
         parsePending = true;
@@ -214,7 +220,7 @@ void HGMarkdownHighlighter::parse()
     workerThread->start();
 }
 
-void HGMarkdownHighlighter::threadFinished()
+void QMarkdownHighlighter::threadFinished()
 {
     if (parsePending) {
         this->parse();
@@ -229,7 +235,7 @@ void HGMarkdownHighlighter::threadFinished()
     this->highlight();
 }
 
-void HGMarkdownHighlighter::handleContentsChange(int position, int charsRemoved,
+void QMarkdownHighlighter::handleContentsChange(int position, int charsRemoved,
                                                  int charsAdded)
 {
     if (charsRemoved == 0 && charsAdded == 0)
@@ -239,7 +245,7 @@ void HGMarkdownHighlighter::handleContentsChange(int position, int charsRemoved,
     timer->start();
 }
 
-void HGMarkdownHighlighter::timerTimeout()
+void QMarkdownHighlighter::timerTimeout()
 {
     this->parse();
 }

@@ -31,7 +31,7 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent)
     viewport()->installEventFilter( this );
 
     // setup the markdown highlighting
-    _highlighter = new HGMarkdownHighlighter( document(), 1000 );
+    _highlighter = new QMarkdownHighlighter( document(), 1000 );
 
     // TODO: migrate to somewhere else
     // load text edit font
@@ -233,7 +233,7 @@ void QMarkdownTextEdit::openUrl( QUrl url )
  * @brief Returns the highlighter instance
  * @return
  */
-HGMarkdownHighlighter *QMarkdownTextEdit::highlighter()
+QMarkdownHighlighter *QMarkdownTextEdit::highlighter()
 {
     return _highlighter;
 }

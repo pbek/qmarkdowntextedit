@@ -1,11 +1,20 @@
-/* PEG Markdown Highlight
- * Copyright 2011 Ali Rantakari -- http://hasseg.org
- * Licensed under the GPL2+ and MIT licenses (see LICENSE for more info).
- * 
- * highlighter.h
- * 
- * Qt 4.7 example for highlighting a rich text widget.
+/*
+ * Copyright (C) 2016 Patrizio Bekerle -- http://www.bekerle.com
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; version 2 of the License.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ * for more details.
+ *
+ * highlighter.cpp
+ *
+ * QTextEdit highlighter
  */
+
 
 #ifndef HIGHLIGHTER_H
 #define HIGHLIGHTER_H
@@ -14,7 +23,7 @@
 #include <QThread>
 
 extern "C" {
-#include "pmh_parser.h"
+#include "lib/peg-markdown-highlight/pmh_parser.h"
 }
 
 QT_BEGIN_NAMESPACE
@@ -37,12 +46,12 @@ struct HighlightingStyle
 };
 
 
-class HGMarkdownHighlighter : public QObject
+class QMarkdownHighlighter : public QObject
 {
     Q_OBJECT
 
 public:
-    HGMarkdownHighlighter(QTextDocument *parent = 0, int aWaitInterval = 2000);
+    QMarkdownHighlighter(QTextDocument *parent = 0, int aWaitInterval = 2000);
     void setStyles(QVector<HighlightingStyle> &styles);
     int waitInterval;
     void parse();

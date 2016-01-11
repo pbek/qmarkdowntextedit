@@ -17,7 +17,7 @@
 
 #include <QTextEdit>
 #include <QEvent>
-#include <lib/peg-markdown-highlight/highlighter.h>
+#include <highlighter.h>
 
 class QMarkdownTextEdit : public QTextEdit
 {
@@ -25,13 +25,13 @@ class QMarkdownTextEdit : public QTextEdit
 
 public:
     QMarkdownTextEdit(QWidget *parent = 0);
-    HGMarkdownHighlighter *highlighter();
+    QMarkdownHighlighter *highlighter();
     void setIgnoredClickUrlSchemata(QStringList ignoredUrlSchemata);
     static void openUrl(QUrl url);
     QUrl getMarkdownUrlAtPosition(QString text, int position);
 
 protected:
-    HGMarkdownHighlighter *_highlighter;
+    QMarkdownHighlighter *_highlighter;
     QStringList _ignoredClickUrlSchemata;
     bool eventFilter(QObject *obj, QEvent *event);
     bool increaseSelectedTextIndention(bool reverse);

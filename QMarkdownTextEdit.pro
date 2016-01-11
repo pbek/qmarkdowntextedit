@@ -14,14 +14,14 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    lib/peg-markdown-highlight/highlighter.cpp \
-    qmarkdowntextedit.cpp \
-    lib/peg-markdown-highlight/pmh_parser.c
+    lib/peg-markdown-highlight/pmh_parser.c \
+    highlighter.cpp \
+    qmarkdowntextedit.cpp
 
 HEADERS  += mainwindow.h \
-    lib/peg-markdown-highlight/highlighter.h \
     lib/peg-markdown-highlight/pmh_definitions.h \
     lib/peg-markdown-highlight/pmh_parser.h \
+    highlighter.h \
     qmarkdowntextedit.h
 
 FORMS    += mainwindow.ui
