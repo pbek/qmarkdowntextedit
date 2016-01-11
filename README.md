@@ -1,4 +1,5 @@
 # QMarkdownTextEdit
+[![Build Status](https://travis-ci.org/pbek/qmarkdowntextedit.svg?branch=develop)](https://travis-ci.org/pbek/qmarkdowntextedit)
 
 A QTextEdit implementation with markdown support and some other goodies.
 
