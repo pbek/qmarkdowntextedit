@@ -17,7 +17,7 @@
 
 #include <QTextEdit>
 #include <QEvent>
-#include <highlighter.h>
+#include "highlighter.h"
 
 class QMarkdownTextEdit : public QTextEdit
 {
