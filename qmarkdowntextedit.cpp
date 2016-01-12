@@ -43,12 +43,27 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent)
     // add shortcuts for duplicating text
 //    new QShortcut( QKeySequence( "Ctrl+D" ), this, SLOT( duplicateText() ) );
 //    new QShortcut( QKeySequence( "Ctrl+Alt+Down" ), this, SLOT( duplicateText() ) );
+
+    // add a layout to the widget
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->addStretch();
+    this->setLayout( layout );
+
+    // add the hidden search widget
+    _searchWidget = new QTextEditSearchWidget( this );
+    this->layout()->addWidget( _searchWidget );
 }
 
 bool QMarkdownTextEdit::eventFilter(QObject* obj, QEvent *event)
 {
     if ( event->type() == QEvent::KeyPress )
     {
+        // disallow keys if text edit hasn't focus
+        if ( !this->hasFocus() )
+        {
+            return true;
+        }
+
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
 
         if ( ( keyEvent->key() == Qt::Key_Tab ) || ( keyEvent->key() == Qt::Key_Backtab ) )
@@ -56,13 +71,13 @@ bool QMarkdownTextEdit::eventFilter(QObject* obj, QEvent *event)
             // indent selected text (if there is a text selected)
             return increaseSelectedTextIndention( keyEvent->key() == Qt::Key_Backtab );
         }
-        else if ( ( keyEvent->key() == Qt::Key_F ) && QGuiApplication::keyboardModifiers() == Qt::ExtraButton24 )
+        else if ( ( keyEvent->key() == Qt::Key_F ) && keyEvent->modifiers().testFlag( Qt::ControlModifier ) )
         {
-            qDebug()<<"Ctrl + F";
+            _searchWidget->activate();
             return false;
         }
-        // duplicate text with `Ctrl + 
-        else if ( ( keyEvent->key() == Qt::Key_Down ) && QGuiApplication::keyboardModifiers() == ( 0x4000000 | 0x8000000 ) )
+        // duplicate text with `Ctrl + Alt + Down`
+        else if ( ( keyEvent->key() == Qt::Key_Down ) && keyEvent->modifiers().testFlag( Qt::ControlModifier ) && keyEvent->modifiers().testFlag( Qt::AltModifier ) )
         {
             duplicateText();
             return false;
@@ -94,7 +109,7 @@ bool QMarkdownTextEdit::eventFilter(QObject* obj, QEvent *event)
     {
         QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
 
-        // track Ctrl+LeftMouseClick in the noteTextEdit
+        // track `Ctrl + Click` in the noteTextEdit
         if ( ( obj == this->viewport() ) && ( mouseEvent->button() == Qt::LeftButton ) && ( QGuiApplication::keyboardModifiers() == Qt::ExtraButton24 ) )
         {
             // open the link (if any) at the current position in the noteTextEdit

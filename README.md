@@ -11,7 +11,8 @@ QMarkdownTextEdit uses [PEG Markdown Highlight](https://github.com/ali-rantakari
 - clickable links with `Ctrl + Click`
 - block indent with `Tab` and `Shift + Tab`
 - duplicate text with `Ctrl + Alt + Down`
-
+- searching of text with `Ctrl + F`
+    - jump between search results with `Up` and `Down`
 
 ## References
 - [QOwnNotes - cross-platform open source plain-text notepad](http://www.qownnotes.org)

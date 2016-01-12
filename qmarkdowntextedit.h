@@ -18,6 +18,7 @@
 #include <QTextEdit>
 #include <QEvent>
 #include "highlighter.h"
+#include "qtexteditsearchwidget.h"
 
 class QMarkdownTextEdit : public QTextEdit
 {
@@ -36,6 +37,7 @@ public slots:
 protected:
     QMarkdownHighlighter *_highlighter;
     QStringList _ignoredClickUrlSchemata;
+    QTextEditSearchWidget *_searchWidget;
     bool eventFilter(QObject *obj, QEvent *event);
     bool increaseSelectedTextIndention(bool reverse);
     void openLinkAtCursorPosition();
