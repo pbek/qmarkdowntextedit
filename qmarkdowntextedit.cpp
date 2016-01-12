@@ -39,6 +39,10 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent)
     const int tabStop = 4;
     QFontMetrics metrics( font );
     setTabStopWidth( tabStop * metrics.width( ' ' ) );
+
+    // add shortcuts for duplicating text
+//    new QShortcut( QKeySequence( "Ctrl+D" ), this, SLOT( duplicateText() ) );
+//    new QShortcut( QKeySequence( "Ctrl+Alt+Down" ), this, SLOT( duplicateText() ) );
 }
 
 bool QMarkdownTextEdit::eventFilter(QObject* obj, QEvent *event)
@@ -55,6 +59,12 @@ bool QMarkdownTextEdit::eventFilter(QObject* obj, QEvent *event)
         else if ( ( keyEvent->key() == Qt::Key_F ) && QGuiApplication::keyboardModifiers() == Qt::ExtraButton24 )
         {
             qDebug()<<"Ctrl + F";
+            return false;
+        }
+        // duplicate text with `Ctrl + 
+        else if ( ( keyEvent->key() == Qt::Key_Down ) && QGuiApplication::keyboardModifiers() == ( 0x4000000 | 0x8000000 ) )
+        {
+            duplicateText();
             return false;
         }
         // set cursor to pointing hand if control key was pressed
@@ -298,8 +308,47 @@ QUrl QMarkdownTextEdit::getMarkdownUrlAtPosition( QString text, int position )
     return url;
 }
 
-//void QMarkdownTextEdit::createSearchWidget()
-//{
-//    QWidget widget;
+/**
+ * @brief Duplicates the text in the text edit
+ */
+void QMarkdownTextEdit::duplicateText()
+{
+    QTextCursor c = this->textCursor();
+    QString selectedText = c.selectedText();
 
-//}
+    // duplicate line if no text was selected
+    if ( selectedText == "" )
+    {
+        int position = c.position();
+
+        // select the whole line
+        c.movePosition( QTextCursor::StartOfLine );
+        c.movePosition( QTextCursor::EndOfLine, QTextCursor::KeepAnchor );
+
+        int positionDiff = c.position() - position;
+        selectedText = "\n" + c.selectedText();
+
+        // insert text with new line at end of the selected line
+        c.setPosition( c.selectionEnd() );
+        c.insertText( selectedText );
+
+        // set the position to same position it was in the duplicated line
+        c.setPosition( c.position() - positionDiff );
+    }
+    // duplicate selected text
+    else
+    {
+        c.setPosition( c.selectionEnd() );
+        int selectionStart = c.position();
+
+        // insert selected text
+        c.insertText( selectedText );
+        int selectionEnd = c.position();
+
+        // select the inserted text
+        c.setPosition( selectionStart );
+        c.setPosition( selectionEnd, QTextCursor::KeepAnchor );
+    }
+
+    this->setTextCursor( c );
+}

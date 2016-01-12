@@ -30,6 +30,9 @@ public:
     virtual void openUrl(QUrl url);
     QUrl getMarkdownUrlAtPosition(QString text, int position);
 
+public slots:
+    void duplicateText();
+
 protected:
     QMarkdownHighlighter *_highlighter;
     QStringList _ignoredClickUrlSchemata;

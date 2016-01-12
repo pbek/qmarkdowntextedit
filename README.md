@@ -10,6 +10,8 @@ QMarkdownTextEdit uses [PEG Markdown Highlight](https://github.com/ali-rantakari
 - markdown highlighting
 - clickable links with `Ctrl + Click`
 - block indent with `Tab` and `Shift + Tab`
+- duplicate text with `Ctrl + Alt + Down`
+
 
 ## References
 - [QOwnNotes - cross-platform open source plain-text notepad](http://www.qownnotes.org)
