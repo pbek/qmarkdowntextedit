@@ -27,7 +27,7 @@ public:
     QMarkdownTextEdit(QWidget *parent = 0);
     QMarkdownHighlighter *highlighter();
     void setIgnoredClickUrlSchemata(QStringList ignoredUrlSchemata);
-    static void openUrl(QUrl url);
+    virtual void openUrl(QUrl url);
     QUrl getMarkdownUrlAtPosition(QString text, int position);
 
 protected:

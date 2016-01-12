@@ -33,21 +33,7 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent)
     // setup the markdown highlighting
     _highlighter = new QMarkdownHighlighter( document(), 1000 );
 
-    // TODO: migrate to somewhere else
-    // load text edit font
-    QSettings settings;
     QFont font = this->font();
-    QString fontString = settings.value("MainWindow/noteTextEdit.font").toString();
-
-    if ( fontString != "" )
-    {
-        // set the note text edit font
-        font.fromString( fontString );
-        setFont( font );
-
-        // set the default size for the highlighter
-        _highlighter->setDefaultStyles( font.pointSize() );
-    }
 
     // set the tab stop to the width of 4 spaces in the editor
     const int tabStop = 4;
@@ -216,17 +202,9 @@ void QMarkdownTextEdit::openLinkAtCursorPosition()
  */
 void QMarkdownTextEdit::openUrl( QUrl url )
 {
-    qDebug() << __func__ << " - 'url': " << url;
+    qDebug() << "QMarkdownTextEdit " << __func__ << " - 'url': " << url;
 
-    // TODO: migrate to somewhere else
-    QString urlString = url.toString();
-    QSettings settings;
-    QString notesPath = settings.value( "notesPath" ).toString();
-
-    // parse for relative file urls and make them absolute
-    urlString.replace( QRegularExpression( "^file:\\/\\/([^\\/].+)$" ), "file://"+ notesPath +"/\\1" );
-
-    QDesktopServices::openUrl( QUrl( urlString ) );
+    QDesktopServices::openUrl( url );
 }
 
 /**
