@@ -2,8 +2,9 @@
 [![Build Status Linux/OS X](https://travis-ci.org/pbek/qmarkdowntextedit.svg?branch=develop)](https://travis-ci.org/pbek/qmarkdowntextedit)
 [![Build Status Windows](https://ci.appveyor.com/api/projects/status/github/pbek/qmarkdowntextedit)](https://ci.appveyor.com/project/pbek/qmarkdowntextedit)
 
-
 A Qt QTextEdit widget with markdown support and some other goodies.
+
+QMarkdownTextEdit uses [PEG Markdown Highlight](https://github.com/ali-rantakari/peg-markdown-highlight) for markdown highlighting.
 
 ## Features
 - markdown highlighting
