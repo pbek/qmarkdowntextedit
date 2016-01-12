@@ -27,6 +27,7 @@ class QMarkdownTextEdit : public QTextEdit
 public:
     QMarkdownTextEdit(QWidget *parent = 0);
     QMarkdownHighlighter *highlighter();
+    QTextEditSearchWidget *searchWidget();
     void setIgnoredClickUrlSchemata(QStringList ignoredUrlSchemata);
     virtual void openUrl(QUrl url);
     QUrl getMarkdownUrlAtPosition(QString text, int position);

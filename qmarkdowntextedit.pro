@@ -27,3 +27,6 @@ HEADERS  += mainwindow.h \
     qtexteditsearchwidget.h
 
 FORMS    += mainwindow.ui
+
+RESOURCES += \
+    media.qrc

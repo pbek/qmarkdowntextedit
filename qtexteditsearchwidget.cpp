@@ -17,6 +17,7 @@
 #include <QHBoxLayout>
 #include <QKeyEvent>
 #include <QDebug>
+#include <QPushButton>
 
 QTextEditSearchWidget::QTextEditSearchWidget(QTextEdit *parent) : QWidget(parent)
 {
@@ -25,11 +26,39 @@ QTextEditSearchWidget::QTextEditSearchWidget(QTextEdit *parent) : QWidget(parent
     this->setAutoFillBackground( true );
     QHBoxLayout *layout = new QHBoxLayout;
 
+    // add the close button
+    _closeButton = new QPushButton();
+    _closeButton->setIcon( QIcon( ":/media/window-close.svg" ) );
+    _closeButton->setToolTip( "close search" );
+    _closeButton->setFlat( true );
+    QObject::connect( _closeButton, SIGNAL( clicked() ), this, SLOT( deactivate() ));
+    layout->addWidget( _closeButton );
+
+    // add the find label
     _label = new QLabel( "Find:" );
     layout->addWidget( _label );
 
+    // add the search line edit
     _searchLineEdit = new QLineEdit;
+    _searchLineEdit->setPlaceholderText( "find in text" );
     layout->addWidget( _searchLineEdit );
+    QObject::connect( _searchLineEdit, SIGNAL( textChanged( const QString & ) ), this, SLOT( searchLineEditTextChanged( const QString & ) ) );
+
+    // add the search forward button
+    _searchDownButton = new QPushButton();
+    _searchDownButton->setIcon( QIcon( ":/media/go-bottom.svg" ) );
+    _searchDownButton->setToolTip( "search forward" );
+    _searchDownButton->setFlat( true );
+    QObject::connect( _searchDownButton, SIGNAL( clicked() ), this, SLOT( doSearchDown() ) );
+    layout->addWidget( _searchDownButton );
+
+    // add the search backward button
+    _searchUpButton = new QPushButton();
+    _searchUpButton->setIcon( QIcon( ":/media/go-top.svg" ) );
+    _searchUpButton->setToolTip( "search backward" );
+    _searchUpButton->setFlat( true );
+    QObject::connect( _searchUpButton, SIGNAL( clicked() ), this, SLOT( doSearchUp() ) );
+    layout->addWidget( _searchUpButton );
 
     this->setLayout( layout );
 
@@ -38,13 +67,15 @@ QTextEditSearchWidget::QTextEditSearchWidget(QTextEdit *parent) : QWidget(parent
 
 void QTextEditSearchWidget::activate()
 {
-    this->show();
+    show();
     _searchLineEdit->setFocus();
+    _searchLineEdit->selectAll();
+    doSearchDown();
 }
 
 void QTextEditSearchWidget::deactivate()
 {
-    this->hide();
+    hide();
     _textEdit->setFocus();
 }
 
@@ -57,16 +88,16 @@ bool QTextEditSearchWidget::eventFilter(QObject* obj, QEvent *event)
         if ( keyEvent->key() == Qt::Key_Escape )
         {
             deactivate();
-            return false;
+            return true;
         }
         else if ( ( keyEvent->modifiers().testFlag( Qt::ShiftModifier ) && ( keyEvent->key() == Qt::Key_Return ) ) || ( keyEvent->key() == Qt::Key_Up ) )
         {
-            doSearch( false );
+            doSearchUp();
             return true;
         }
         else if ( ( keyEvent->key() == Qt::Key_Return ) || ( keyEvent->key() == Qt::Key_Down ) )
         {
-            doSearch();
+            doSearchDown();
             return true;
         }
 
@@ -74,6 +105,22 @@ bool QTextEditSearchWidget::eventFilter(QObject* obj, QEvent *event)
     }
 
     return QWidget::eventFilter( obj, event );
+}
+
+void QTextEditSearchWidget::searchLineEditTextChanged( const QString &arg1 )
+{
+    Q_UNUSED( arg1 );
+    doSearchDown();
+}
+
+void QTextEditSearchWidget::doSearchUp()
+{
+    doSearch( false );
+}
+
+void QTextEditSearchWidget::doSearchDown()
+{
+    doSearch( true );
 }
 
 /**

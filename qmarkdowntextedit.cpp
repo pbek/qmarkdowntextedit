@@ -66,7 +66,12 @@ bool QMarkdownTextEdit::eventFilter(QObject* obj, QEvent *event)
 
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
 
-        if ( ( keyEvent->key() == Qt::Key_Tab ) || ( keyEvent->key() == Qt::Key_Backtab ) )
+        if ( ( keyEvent->key() == Qt::Key_Escape ) && _searchWidget->isVisible() )
+        {
+            _searchWidget->deactivate();
+            return true;
+        }
+        else if ( ( keyEvent->key() == Qt::Key_Tab ) || ( keyEvent->key() == Qt::Key_Backtab ) )
         {
             // indent selected text (if there is a text selected)
             return increaseSelectedTextIndention( keyEvent->key() == Qt::Key_Backtab );
@@ -74,13 +79,13 @@ bool QMarkdownTextEdit::eventFilter(QObject* obj, QEvent *event)
         else if ( ( keyEvent->key() == Qt::Key_F ) && keyEvent->modifiers().testFlag( Qt::ControlModifier ) )
         {
             _searchWidget->activate();
-            return false;
+            return true;
         }
         // duplicate text with `Ctrl + Alt + Down`
         else if ( ( keyEvent->key() == Qt::Key_Down ) && keyEvent->modifiers().testFlag( Qt::ControlModifier ) && keyEvent->modifiers().testFlag( Qt::AltModifier ) )
         {
             duplicateText();
-            return false;
+            return true;
         }
         // set cursor to pointing hand if control key was pressed
         else if ( keyEvent->key() == Qt::Key_Control )
@@ -114,7 +119,7 @@ bool QMarkdownTextEdit::eventFilter(QObject* obj, QEvent *event)
         {
             // open the link (if any) at the current position in the noteTextEdit
             openLinkAtCursorPosition();
-            return false;
+            return true;
         }
     }
 
@@ -239,6 +244,15 @@ void QMarkdownTextEdit::openUrl( QUrl url )
 QMarkdownHighlighter *QMarkdownTextEdit::highlighter()
 {
     return _highlighter;
+}
+
+/**
+ * @brief Returns the searchWidget instance
+ * @return
+ */
+QTextEditSearchWidget *QMarkdownTextEdit::searchWidget()
+{
+    return _searchWidget;
 }
 
 /**
