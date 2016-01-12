@@ -13,6 +13,7 @@ QMarkdownTextEdit uses [PEG Markdown Highlight](https://github.com/ali-rantakari
 - duplicate text with `Ctrl + Alt + Down`
 - searching of text with `Ctrl + F`
     - jump between search results with `Up` and `Down`
+    - close search field with `Escape`
 
 ## References
 - [QOwnNotes - cross-platform open source plain-text notepad](http://www.qownnotes.org)
