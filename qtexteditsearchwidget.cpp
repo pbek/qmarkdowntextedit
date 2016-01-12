@@ -41,6 +41,7 @@ QTextEditSearchWidget::QTextEditSearchWidget(QTextEdit *parent) : QWidget(parent
     // add the search line edit
     _searchLineEdit = new QLineEdit;
     _searchLineEdit->setPlaceholderText( "find in text" );
+    _searchLineEdit->setClearButtonEnabled( true );
     layout->addWidget( _searchLineEdit );
     QObject::connect( _searchLineEdit, SIGNAL( textChanged( const QString & ) ), this, SLOT( searchLineEditTextChanged( const QString & ) ) );
 

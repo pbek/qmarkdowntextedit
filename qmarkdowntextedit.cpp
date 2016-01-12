@@ -114,7 +114,7 @@ bool QMarkdownTextEdit::eventFilter(QObject* obj, QEvent *event)
     {
         QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
 
-        // track `Ctrl + Click` in the noteTextEdit
+        // track `Ctrl + Click` in the text edit
         if ( ( obj == this->viewport() ) && ( mouseEvent->button() == Qt::LeftButton ) && ( QGuiApplication::keyboardModifiers() == Qt::ExtraButton24 ) )
         {
             // open the link (if any) at the current position in the noteTextEdit
