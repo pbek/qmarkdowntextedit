@@ -15,6 +15,9 @@ QMarkdownTextEdit uses [PEG Markdown Highlight](https://github.com/ali-rantakari
     - jump between search results with `Up` and `Down`
     - close search field with `Escape`
 
+## Screenshot
+![Screenhot](screenshot.png)
+
 ## References
 - [QOwnNotes - cross-platform open source plain-text notepad](http://www.qownnotes.org)
 
