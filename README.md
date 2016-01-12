@@ -18,6 +18,10 @@ QMarkdownTextEdit uses [PEG Markdown Highlight](https://github.com/ali-rantakari
 ## Screenshot
 ![Screenhot](screenshot.png)
 
+## How to use this widget
+- add all `SOURCES`, `HEADERS` and `RESOURCES` from <qmarkdowntextedit.pro> to your project
+- add a normal `QTextEdit` to your UI and promote it to `QMarkdownTextEdit` (base class `QTextEdit`)
+
 ## References
 - [QOwnNotes - cross-platform open source plain-text notepad](http://www.qownnotes.org)
 

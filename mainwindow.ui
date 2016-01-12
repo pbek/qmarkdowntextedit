@@ -75,7 +75,7 @@ p, li { white-space: pre-wrap; }
  <customwidgets>
   <customwidget>
    <class>QMarkdownTextEdit</class>
-   <extends>QWidget</extends>
+   <extends>QTextEdit</extends>
    <header>qmarkdowntextedit.h</header>
   </customwidget>
  </customwidgets>
