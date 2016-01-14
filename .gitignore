@@ -5,3 +5,4 @@
 *.pro.user
 .directory
 build-*
+.idea
