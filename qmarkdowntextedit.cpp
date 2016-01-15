@@ -20,7 +20,6 @@
 #include <QRegularExpression>
 #include <QDir>
 #include <QDesktopServices>
-#include <QSettings>
 #include <QLayout>
 
 

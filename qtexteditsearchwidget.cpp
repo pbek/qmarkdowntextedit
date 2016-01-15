@@ -149,7 +149,20 @@ void QTextEditSearchWidget::doSearch( bool searchDown )
         found = _textEdit->find( text, options );
     }
 
+    QRect rect = _textEdit->cursorRect();
+    QMargins margins = _textEdit->layout()->contentsMargins();
+    int searchWidgetHotArea = _textEdit->height() - this->height();
+    int marginBottom = (rect.y() > searchWidgetHotArea ) ? ( this->height() + 10 ) : 0;
+
+    // move the search box a bit up if we would block the search result
+    if ( margins.bottom() != marginBottom )
+    {
+        margins.setBottom( marginBottom );
+        _textEdit->layout()->setContentsMargins( margins );
+    }
+
     // add a background color according if we found the text or not
     QString colorCode = found ? "#D5FAE2" : "#FAE9EB";
     _searchLineEdit->setStyleSheet( "* { background: " + colorCode + "; }" );
 }
+

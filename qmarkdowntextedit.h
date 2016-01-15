@@ -12,8 +12,7 @@
  *
  */
 
-#ifndef QMARKDOWNTEXTEDIT_H
-#define QMARKDOWNTEXTEDIT_H
+#pragma once
 
 #include <QTextEdit>
 #include <QEvent>
@@ -47,5 +46,3 @@ protected:
 signals:
     void urlClicked(QUrl url);
 };
-
-#endif // QMARKDOWNTEXTEDIT_H

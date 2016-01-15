@@ -12,8 +12,7 @@
  *
  */
 
-#ifndef QTEXTEDITSEARCHWIDGET_H
-#define QTEXTEDITSEARCHWIDGET_H
+#pragma once
 
 #include <QLabel>
 #include <QLineEdit>
@@ -47,5 +46,3 @@ public slots:
 protected slots:
     void searchLineEditTextChanged(const QString &arg1);
 };
-
-#endif // QTEXTEDITSEARCHWIDGET_H
