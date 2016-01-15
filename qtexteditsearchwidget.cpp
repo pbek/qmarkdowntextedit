@@ -66,6 +66,7 @@ QTextEditSearchWidget::QTextEditSearchWidget(QTextEdit *parent) : QWidget(parent
     this->setLayout( layout );
 
     installEventFilter( this );
+    _searchLineEdit->installEventFilter( this );
 }
 
 void QTextEditSearchWidget::activate()
