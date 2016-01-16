@@ -45,6 +45,8 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent)
 
     // add a layout to the widget
     QVBoxLayout *layout = new QVBoxLayout;
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setMargin(0);
     layout->addStretch();
     this->setLayout( layout );
 
