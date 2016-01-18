@@ -2,7 +2,7 @@
 [![Build Status Linux/OS X](https://travis-ci.org/pbek/qmarkdowntextedit.svg?branch=develop)](https://travis-ci.org/pbek/qmarkdowntextedit)
 [![Build Status Windows](https://ci.appveyor.com/api/projects/status/github/pbek/qmarkdowntextedit)](https://ci.appveyor.com/project/pbek/qmarkdowntextedit)
 
-QMarkdownTextEdit is a Qt [QTextEdit](http://doc.qt.io/qt-5/qtextedit.html) widget with [markdown](https://en.wikipedia.org/wiki/Markdown) highlighting and some other goodies.
+QMarkdownTextEdit is a C++ Qt [QTextEdit](http://doc.qt.io/qt-5/qtextedit.html) widget with [markdown](https://en.wikipedia.org/wiki/Markdown) highlighting and some other goodies.
 
 QMarkdownTextEdit uses [PEG Markdown Highlight](https://github.com/ali-rantakari/peg-markdown-highlight) for markdown highlighting.
 
