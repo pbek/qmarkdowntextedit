@@ -11,22 +11,11 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = QMarkdownTextedit
 TEMPLATE = app
 
-
 SOURCES += main.cpp \
     mainwindow.cpp \
-    lib/peg-markdown-highlight/pmh_parser.c \
-    highlighter.cpp \
-    qmarkdowntextedit.cpp \
-    qtexteditsearchwidget.cpp
 
-HEADERS  += mainwindow.h \
-    lib/peg-markdown-highlight/pmh_definitions.h \
-    lib/peg-markdown-highlight/pmh_parser.h \
-    highlighter.h \
-    qmarkdowntextedit.h \
-    qtexteditsearchwidget.h
+HEADERS  += mainwindow.h
 
 FORMS    += mainwindow.ui
 
-RESOURCES += \
-    media.qrc
+include(qmarkdowntextedit.pri)

@@ -19,7 +19,8 @@ QMarkdownTextEdit uses [PEG Markdown Highlight](https://github.com/ali-rantakari
 ![Screenhot](screenshot.png)
 
 ## How to use this widget
-- add all `SOURCES`, `HEADERS` and `RESOURCES` beside `main.cpp` and `mainwindow.cpp` from [qmarkdowntextedit.pro](https://github.com/pbek/qmarkdowntextedit/blob/develop/qmarkdowntextedit.pro) to your project
+- include [qmarkdowntextedit.pri](https://github.com/pbek/qmarkdowntextedit/blob/develop/qmarkdowntextedit.pri) 
+  to your project like this `include (qmarkdowntextedit/qmarkdowntextedit.pri)`
 - add a normal `QTextEdit` to your UI and promote it to `QMarkdownTextEdit` (base class `QTextEdit`)
 
 ## References
