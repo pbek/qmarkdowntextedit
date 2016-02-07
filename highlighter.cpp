@@ -104,6 +104,7 @@ void QMarkdownHighlighter::setDefaultStyles(int defaultFontSize)
     /* <pre> */
     QTextCharFormat code; code.setForeground(QBrush(Qt::darkGreen));
     code.setBackground(QBrush(QColor(217,231,217)));
+    code.setFontFamily("Monospace");
     STY(pmh_CODE, code);
     STY(pmh_VERBATIM, code);
 
