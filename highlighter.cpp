@@ -19,14 +19,13 @@
 #include "highlighter.h"
 
 
-WorkerThread::~WorkerThread()
-{
+WorkerThread::~WorkerThread() {
     if (result != NULL)
         pmh_free_elements(result);
     free(content);
 }
-void WorkerThread::run()
-{
+
+void WorkerThread::run() {
     if (content == NULL)
         return;
     pmh_markdown_to_elements(content, pmh_EXT_NONE, &result);
@@ -34,8 +33,8 @@ void WorkerThread::run()
 
 
 QMarkdownHighlighter::QMarkdownHighlighter(QTextDocument *parent,
-                                             int aWaitInterval) : QObject(parent)
-{
+                                           int aWaitInterval) : QObject(
+        parent) {
     highlightingStyles = NULL;
     workerThread = NULL;
     cached_elements = NULL;
@@ -45,25 +44,25 @@ QMarkdownHighlighter::QMarkdownHighlighter(QTextDocument *parent,
     timer->setInterval(aWaitInterval);
     connect(timer, SIGNAL(timeout()), this, SLOT(timerTimeout()));
     document = parent;
-    connect(document, SIGNAL(contentsChange(int,int,int)),
-            this, SLOT(handleContentsChange(int,int,int)));
+    connect(document, SIGNAL(contentsChange(int, int, int)),
+            this, SLOT(handleContentsChange(int, int, int)));
 
     this->parse();
 }
 
-void QMarkdownHighlighter::setStyles(QVector<HighlightingStyle> &styles)
-{
+void QMarkdownHighlighter::setStyles(QVector<HighlightingStyle> &styles) {
     this->highlightingStyles = &styles;
 }
 
 
 #define STY(type, format) styles->append((HighlightingStyle){type, format})
-void QMarkdownHighlighter::setDefaultStyles(int defaultFontSize)
-{
+
+void QMarkdownHighlighter::setDefaultStyles(int defaultFontSize) {
     QVector<HighlightingStyle> *styles = new QVector<HighlightingStyle>();
 
-    QTextCharFormat headers; headers.setForeground(QBrush(QColor(0,49,110)));
-    headers.setBackground(QBrush(QColor(230,230,240)));
+    QTextCharFormat headers;
+    headers.setForeground(QBrush(QColor(0, 49, 110)));
+    headers.setBackground(QBrush(QColor(230, 230, 240)));
     headers.setFontWeight(QFont::Bold);
     headers.setFontPointSize(defaultFontSize * 1.2);
     STY(pmh_H1, headers);
@@ -77,58 +76,67 @@ void QMarkdownHighlighter::setDefaultStyles(int defaultFontSize)
     STY(pmh_H5, headers);
     STY(pmh_H6, headers);
 
-    QTextCharFormat hrule; hrule.setForeground(QBrush(Qt::darkGray));
+    QTextCharFormat hrule;
+    hrule.setForeground(QBrush(Qt::darkGray));
     hrule.setBackground(QBrush(Qt::lightGray));
     STY(pmh_HRULE, hrule);
 
     /* <ul> */
-    QTextCharFormat list; list.setForeground(QBrush(QColor(163,0,123)));
+    QTextCharFormat list;
+    list.setForeground(QBrush(QColor(163, 0, 123)));
     STY(pmh_LIST_BULLET, list);
     STY(pmh_LIST_ENUMERATOR, list);
 
     /* <a href> */
-    QTextCharFormat link; link.setForeground(QBrush(QColor(255,128,0)));
-    link.setBackground(QBrush(QColor(255,233,211)));
+    QTextCharFormat link;
+    link.setForeground(QBrush(QColor(255, 128, 0)));
+    link.setBackground(QBrush(QColor(255, 233, 211)));
     STY(pmh_LINK, link);
     STY(pmh_AUTO_LINK_URL, link);
     STY(pmh_AUTO_LINK_EMAIL, link);
 
     /* <img> */
-    QTextCharFormat image; image.setForeground(QBrush(QColor(0,191,0)));
-    image.setBackground(QBrush(QColor(228,255,228)));
+    QTextCharFormat image;
+    image.setForeground(QBrush(QColor(0, 191, 0)));
+    image.setBackground(QBrush(QColor(228, 255, 228)));
     STY(pmh_IMAGE, image);
 
-    QTextCharFormat ref; ref.setForeground(QBrush(QColor(213,178,178)));
+    QTextCharFormat ref;
+    ref.setForeground(QBrush(QColor(213, 178, 178)));
     STY(pmh_REFERENCE, ref);
 
     /* <pre> */
-    QTextCharFormat code; code.setForeground(QBrush(Qt::darkGreen));
-    code.setBackground(QBrush(QColor(217,231,217)));
+    QTextCharFormat code;
+    code.setForeground(QBrush(Qt::darkGreen));
+    code.setBackground(QBrush(QColor(217, 231, 217)));
     code.setFontFamily("Courier");
     STY(pmh_CODE, code);
     STY(pmh_VERBATIM, code);
 
     /* <em> */
-    QTextCharFormat emph; emph.setForeground(QBrush(QColor(0,87,174)));
+    QTextCharFormat emph;
+    emph.setForeground(QBrush(QColor(0, 87, 174)));
     emph.setFontItalic(true);
     STY(pmh_EMPH, emph);
 
     /* <strong> */
-    QTextCharFormat strong; strong.setForeground(QBrush(QColor(0,66,138)));
+    QTextCharFormat strong;
+    strong.setForeground(QBrush(QColor(0, 66, 138)));
     strong.setFontWeight(QFont::Bold);
     STY(pmh_STRONG, strong);
 
-    QTextCharFormat comment; comment.setForeground(QBrush(Qt::gray));
+    QTextCharFormat comment;
+    comment.setForeground(QBrush(Qt::gray));
     STY(pmh_COMMENT, comment);
 
-    QTextCharFormat blockquote; blockquote.setForeground(QBrush(Qt::darkRed));
+    QTextCharFormat blockquote;
+    blockquote.setForeground(QBrush(Qt::darkRed));
     STY(pmh_BLOCKQUOTE, blockquote);
 
     this->setStyles(*styles);
 }
 
-void QMarkdownHighlighter::clearFormatting()
-{
+void QMarkdownHighlighter::clearFormatting() {
     QTextBlock block = document->firstBlock();
     while (block.isValid()) {
         block.layout()->clearAdditionalFormats();
@@ -136,8 +144,7 @@ void QMarkdownHighlighter::clearFormatting()
     }
 }
 
-void QMarkdownHighlighter::highlight()
-{
+void QMarkdownHighlighter::highlight() {
     if (cached_elements == NULL) {
         qDebug() << "cached_elements is NULL";
         return;
@@ -148,12 +155,10 @@ void QMarkdownHighlighter::highlight()
 
     this->clearFormatting();
 
-    for (int i = 0; i < highlightingStyles->size(); i++)
-    {
+    for (int i = 0; i < highlightingStyles->size(); i++) {
         HighlightingStyle style = highlightingStyles->at(i);
         pmh_element *elem_cursor = cached_elements[style.type];
-        while (elem_cursor != NULL)
-        {
+        while (elem_cursor != NULL) {
             if (elem_cursor->end <= elem_cursor->pos) {
                 elem_cursor = elem_cursor->next;
                 continue;
@@ -165,10 +170,11 @@ void QMarkdownHighlighter::highlight()
             // behavior." -- we are breaking this rule here. There might be
             // a better (more correct) way to do this.
 
-            int startBlockNum = document->findBlock(elem_cursor->pos).blockNumber();
-            int endBlockNum = document->findBlock(elem_cursor->end).blockNumber();
-            for (int j = startBlockNum; j <= endBlockNum; j++)
-            {
+            int startBlockNum = document->findBlock(
+                    elem_cursor->pos).blockNumber();
+            int endBlockNum = document->findBlock(
+                    elem_cursor->end).blockNumber();
+            for (int j = startBlockNum; j <= endBlockNum; j++) {
                 QTextBlock block = document->findBlockByNumber(j);
 
                 QTextLayout *layout = block.layout();
@@ -180,8 +186,8 @@ void QMarkdownHighlighter::highlight()
                 if (j == startBlockNum) {
                     r.start = elem_cursor->pos - blockpos;
                     r.length = (startBlockNum == endBlockNum)
-                                ? elem_cursor->end - elem_cursor->pos
-                                : block.length() - r.start;
+                               ? elem_cursor->end - elem_cursor->pos
+                               : block.length() - r.start;
                 } else if (j == endBlockNum) {
                     r.start = 0;
                     r.length = elem_cursor->end - blockpos;
@@ -201,8 +207,7 @@ void QMarkdownHighlighter::highlight()
     document->markContentsDirty(0, document->characterCount());
 }
 
-void QMarkdownHighlighter::parse()
-{
+void QMarkdownHighlighter::parse() {
     if (workerThread != NULL && workerThread->isRunning()) {
         parsePending = true;
         return;
@@ -210,7 +215,7 @@ void QMarkdownHighlighter::parse()
 
     QString content = document->toPlainText();
     QByteArray ba = content.toLatin1();
-    char *content_cstring = strdup((char *)ba.data());
+    char *content_cstring = strdup((char *) ba.data());
 
     if (workerThread != NULL)
         delete workerThread;
@@ -221,8 +226,7 @@ void QMarkdownHighlighter::parse()
     workerThread->start();
 }
 
-void QMarkdownHighlighter::threadFinished()
-{
+void QMarkdownHighlighter::threadFinished() {
     if (parsePending) {
         this->parse();
         return;
@@ -237,16 +241,13 @@ void QMarkdownHighlighter::threadFinished()
 }
 
 void QMarkdownHighlighter::handleContentsChange(int position, int charsRemoved,
-                                                 int charsAdded)
-{
+                                                int charsAdded) {
     if (charsRemoved == 0 && charsAdded == 0)
         return;
-    //qDebug() << "contents changed. chars removed/added:" << charsRemoved << charsAdded;
     timer->stop();
     timer->start();
 }
 
-void QMarkdownHighlighter::timerTimeout()
-{
+void QMarkdownHighlighter::timerTimeout() {
     this->parse();
 }

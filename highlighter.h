@@ -28,40 +28,47 @@ extern "C" {
 
 QT_BEGIN_NAMESPACE
 class QTextDocument;
+
 QT_END_NAMESPACE
 
-class WorkerThread : public QThread
-{
+class WorkerThread : public QThread {
 public:
     ~WorkerThread();
+
     void run();
+
     char *content;
     pmh_element **result;
 };
 
-struct HighlightingStyle
-{
+struct HighlightingStyle {
     pmh_element_type type;
     QTextCharFormat format;
 };
 
 
-class QMarkdownHighlighter : public QObject
-{
-    Q_OBJECT
+class QMarkdownHighlighter : public QObject {
+Q_OBJECT
 
 public:
     QMarkdownHighlighter(QTextDocument *parent = 0, int aWaitInterval = 2000);
+
     void setStyles(QVector<HighlightingStyle> &styles);
+
     int waitInterval;
+
     void parse();
-    void setDefaultStyles( int defaultFontSize = 12 );
+
+    void setDefaultStyles(int defaultFontSize = 12);
 
 protected:
 
 private slots:
+
     void handleContentsChange(int position, int charsRemoved, int charsAdded);
+
     void threadFinished();
+
     void timerTimeout();
 
 private:
@@ -73,6 +80,7 @@ private:
     QVector<HighlightingStyle> *highlightingStyles;
 
     void clearFormatting();
+
     void highlight();
 };
 
