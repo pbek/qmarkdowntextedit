@@ -33,6 +33,10 @@ public:
 
 public slots:
     void duplicateText();
+    void setText(const QString & text);
+    void setHtml(const QString &text);
+    void setPlainText(const QString & text);
+    void adjustRightMargin();
 
 protected:
     QMarkdownHighlighter *_highlighter;

@@ -43,6 +43,7 @@ public slots:
     void deactivate();
     void doSearchDown();
     void doSearchUp();
+
 protected slots:
     void searchLineEditTextChanged(const QString &arg1);
 };

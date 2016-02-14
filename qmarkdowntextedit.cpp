@@ -21,6 +21,7 @@
 #include <QDir>
 #include <QDesktopServices>
 #include <QLayout>
+#include <QTimer>
 
 
 QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent)
@@ -52,6 +53,24 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent)
     // add the hidden search widget
     _searchWidget = new QTextEditSearchWidget(this);
     this->layout()->addWidget(_searchWidget);
+
+    QObject::connect(this, SIGNAL(textChanged()),
+                     this, SLOT(adjustRightMargin()));
+
+    // workaround for disabled signals up initialization
+    QTimer::singleShot(300, this, SLOT(adjustRightMargin()));
+}
+
+/**
+ * Leave a little space on the right side if the document is too long, so
+ * that the search buttons don't get visually blocked by the scroll bar
+ */
+void QMarkdownTextEdit::adjustRightMargin() {
+    QMargins margins = layout()->contentsMargins();
+    int rightMargin = document()->size().height() >
+                      viewport()->size().height() ? 24 : 0;
+    margins.setRight(rightMargin);
+    layout()->setContentsMargins(margins);
 }
 
 bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
@@ -352,4 +371,19 @@ void QMarkdownTextEdit::duplicateText() {
     }
 
     this->setTextCursor(c);
+}
+
+void QMarkdownTextEdit::setText(const QString & text) {
+    QTextEdit::setText(text);
+    adjustRightMargin();
+}
+
+void QMarkdownTextEdit::setHtml(const QString &text) {
+    QTextEdit::setHtml(text);
+    adjustRightMargin();
+}
+
+void QMarkdownTextEdit::setPlainText(const QString & text) {
+    QTextEdit::setPlainText(text);
+    adjustRightMargin();
 }
