@@ -10,6 +10,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = QMarkdownTextedit
 TEMPLATE = app
+TRANSLATIONS = trans/qmarkdowntextedit_de.ts
 
 SOURCES += main.cpp \
     mainwindow.cpp \

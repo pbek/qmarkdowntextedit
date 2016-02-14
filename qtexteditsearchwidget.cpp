@@ -33,7 +33,7 @@ QTextEditSearchWidget::QTextEditSearchWidget(QTextEdit *parent) : QWidget(
     _closeButton->setIcon(QIcon::fromTheme(
                     "window-close",
                     QIcon(":/media/window-close.svg")));
-    _closeButton->setToolTip("close search");
+    _closeButton->setToolTip(tr("close search"));
     _closeButton->setFlat(true);
     QObject::connect(_closeButton, SIGNAL(clicked()), this, SLOT(deactivate()));
     layout->addWidget(_closeButton);
@@ -44,7 +44,7 @@ QTextEditSearchWidget::QTextEditSearchWidget(QTextEdit *parent) : QWidget(
 
     // add the search line edit
     _searchLineEdit = new QLineEdit;
-    _searchLineEdit->setPlaceholderText("find in text");
+    _searchLineEdit->setPlaceholderText(tr("find in text"));
     _searchLineEdit->setClearButtonEnabled(true);
     layout->addWidget(_searchLineEdit);
     QObject::connect(
@@ -59,7 +59,7 @@ QTextEditSearchWidget::QTextEditSearchWidget(QTextEdit *parent) : QWidget(
     _searchDownButton->setIcon(QIcon::fromTheme(
             "go-bottom",
             QIcon(":/media/go-bottom.svg")));
-    _searchDownButton->setToolTip("search forward");
+    _searchDownButton->setToolTip(tr("search forward"));
     _searchDownButton->setFlat(true);
     QObject::connect(_searchDownButton, SIGNAL(clicked()), this,
                      SLOT(doSearchDown()));
@@ -71,7 +71,7 @@ QTextEditSearchWidget::QTextEditSearchWidget(QTextEdit *parent) : QWidget(
     _searchUpButton->setIcon(QIcon::fromTheme(
             "go-top",
             QIcon(":/media/go-top.svg")));
-    _searchUpButton->setToolTip("search backward");
+    _searchUpButton->setToolTip(tr("search backward"));
     _searchUpButton->setFlat(true);
     QObject::connect(_searchUpButton, SIGNAL(clicked()), this,
                      SLOT(doSearchUp()));
