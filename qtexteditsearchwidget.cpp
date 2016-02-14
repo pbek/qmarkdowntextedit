@@ -102,14 +102,12 @@ bool QTextEditSearchWidget::eventFilter(QObject *obj, QEvent *event) {
         if (keyEvent->key() == Qt::Key_Escape) {
             deactivate();
             return true;
-        }
-        else if ((keyEvent->modifiers().testFlag(Qt::ShiftModifier) &&
+        } else if ((keyEvent->modifiers().testFlag(Qt::ShiftModifier) &&
                   (keyEvent->key() == Qt::Key_Return)) ||
                  (keyEvent->key() == Qt::Key_Up)) {
             doSearchUp();
             return true;
-        }
-        else if ((keyEvent->key() == Qt::Key_Return) ||
+        } else if ((keyEvent->key() == Qt::Key_Return) ||
                  (keyEvent->key() == Qt::Key_Down)) {
             doSearchDown();
             return true;
