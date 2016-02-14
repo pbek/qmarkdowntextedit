@@ -9,6 +9,11 @@
         <translation>Suche schließen</translation>
     </message>
     <message>
+        <location filename="../qtexteditsearchwidget.cpp" line="42"/>
+        <source>Find:</source>
+        <translation>Finden:</translation>
+    </message>
+    <message>
         <location filename="../qtexteditsearchwidget.cpp" line="47"/>
         <source>find in text</source>
         <translation>im Text finden</translation>

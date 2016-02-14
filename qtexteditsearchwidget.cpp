@@ -39,7 +39,7 @@ QTextEditSearchWidget::QTextEditSearchWidget(QTextEdit *parent) : QWidget(
     layout->addWidget(_closeButton);
 
     // add the find label
-    _label = new QLabel("Find:");
+    _label = new QLabel(tr("Find:"));
     layout->addWidget(_label);
 
     // add the search line edit
