@@ -1,21 +1,28 @@
 
 PEG Markdown Highlight
 ========================
+_Copyright 2011-2016 Ali Rantakari_ -- <http://hasseg.org>
 
+This is a syntax highlighter for the [Markdown] language, designed to be integrated into GUI text editor programs. It uses a recursive-descent parser for interpreting the input (instead of e.g. regular expressions), and this parser is based on the PEG grammar from John MacFarlane's [peg-markdown] project.
 
-Description
--------------------------------------------------------------------------------
+[Markdown]: http://daringfireball.net/projects/markdown
+[peg-markdown]: https://github.com/jgm/peg-markdown
 
-This project contains:
+PEG Markdown Highlight…
 
-- A Markdown parser for syntax highlighting, written in C. The parser itself
-  should compile as is on OS X, Linux and Windows (at least).
-- Helper classes for syntax highlighting `NSTextView`s in Cocoa applications.
-- A simple example on how to highlight a `GtkTextView` in a GTK+ application.
-- A simple example on how to highlight a `QTextEdit` in a Qt application.
-- A parser for stylesheets that define syntax highlighting styles
+- is written in __ANSI/ISO C89 with GNU extensions__
+- has __no external dependencies__
+- is __re-entrant__
+- is probably __slower__ than many simpler (but less correct) highlighting mechanisms but __faster__ than most Markdown compilers
+- works (at least) on __OS X, Linux and Windows__
+- is used in __shipping software__ ([Mou], [MacDown], [LightPaper], [Erato], [CuteMarkEd])
+- is dual-licensed under the __MIT and GPL2+__ licenses.
 
-_Copyright 2011 Ali Rantakari_ -- <http://hasseg.org>
+[Mou]: http://mouapp.com/
+[MacDown]: http://macdown.uranusjr.com/
+[LightPaper]: http://clockworkengine.com/lightpaper-mac
+[Erato]: http://9muses.se/erato
+[CuteMarkEd]: http://cloose.github.io/CuteMarkEd
 
 This program uses the PEG grammar from John MacFarlane's `peg-markdown` project,
 and the `greg` parser generator by Why The Lucky Stiff and Amos Wenger (`greg`
@@ -27,6 +34,77 @@ making this one possible.
 
 _See the `LICENSE` file for licensing information._
 
+
+Why This is Useful
+-------------------------------------------------------------------------------
+
+Existing syntax highlighting solutions in (programming) editors are too simple to be able to handle the context sensitivity of the Markdown language, and the fact that it is not well defined. They usually work well for simple cases but fail for many nontrivial inputs that existing Markdown compilers handle correctly. __This project is an attempt to bring Markdown syntax highlighting to the same level of “correctness” as the existing compilers.__
+
+
+Quick Code Examples
+-------------------------------------------------------------------------------
+
+Here are some quick, simple examples of what it might look like to use this highlighter in your project.
+
+__Using the Cocoa highlighter classes to highlight an NSTextView with default settings:__
+
+```objective-c
+#import "HGMarkdownHighlighter.h"
+
+@interface MyClass : NSObject {
+    HGMarkdownHighlighter *highlighter;
+}
+
+- (void) awakeFromNib {
+    highlighter = [[HGMarkdownHighlighter alloc]
+                   initWithTextView:myTextView];
+    [highlighter activate];
+}
+```
+
+__Manually highlighting a TextWidget in some hypothetical GUI framework:__
+
+```c
+#include "pmh_parser.h"
+
+void highlight(TextWidget *textWidget)
+{
+    pmh_element **results;
+    pmh_markdown_to_elements(textWidget->containedText, pmh_EXT_NONE, &results);
+    
+    for (int i = 0; i < pmh_NUM_LANG_TYPES; i++) {
+        TextStyle style;
+        switch (i) {
+            case pmh_EMPH: style = ItalicStyle; break;
+            case pmh_STRONG: style = BoldStyle; break;
+            case pmh_H1: style = LargeFontStyle; break;
+            default: style = FunkyStyle; break;
+        }
+        pmh_element *element_cursor = results[i];
+        while (element_cursor != NULL) {
+            textWidget->setStyleForSpan(element_cursor->pos,
+                                        element_cursor->end,
+                                        style);
+            element_cursor = element_cursor->next;
+        }
+    }
+
+    pmh_free_elements(results);
+}
+```
+
+
+Repo Contents
+-------------------------------------------------------------------------------
+
+This project contains:
+
+- A Markdown parser for syntax highlighting, written in C. The parser itself
+  should compile as is on OS X, Linux and Windows (at least).
+- Helper classes for syntax highlighting `NSTextView`s in Cocoa applications.
+- A simple example on how to highlight a `GtkTextView` in a GTK+ application.
+- A simple example on how to highlight a `QTextEdit` in a Qt application.
+- A parser for stylesheets that define syntax highlighting styles
 
 
 API Documentation

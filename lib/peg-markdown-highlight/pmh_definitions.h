@@ -1,5 +1,5 @@
 /* PEG Markdown Highlight
- * Copyright 2011 Ali Rantakari -- http://hasseg.org
+ * Copyright 2011-2016 Ali Rantakari -- http://hasseg.org
  * Licensed under the GPL2+ and MIT licenses (see LICENSE for more info).
  * 
  * pmh_definitions.h
@@ -98,8 +98,11 @@ typedef enum
 struct pmh_Element
 {
     pmh_element_type type;    /**< \brief Type of element */
-    unsigned long pos;        /**< \brief Start character offset in input */
-    unsigned long end;        /**< \brief End character offset in input */
+    unsigned long pos;        /**< \brief Unicode code point offset marking the
+                                          beginning of this element in the
+                                          input. */
+    unsigned long end;        /**< \brief Unicode code point offset marking the
+                                          end of this element in the input. */
     struct pmh_Element *next; /**< \brief Next element in list */
     char *label;              /**< \brief Label (for links and references) */
     char *address;            /**< \brief Address (for links and references) */
