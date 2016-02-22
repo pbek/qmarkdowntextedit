@@ -27,10 +27,6 @@ install:
       ;
     else
          brew update > /dev/null
-      && cd `brew --prefix`
-      && echo "We are using QT 5.4.2, because we had troubles with the current 4ea4fd83963d1c1eb1e6fc024be9719f8010748f QT 5.5 brew. The deployed frameworks were loading libraries from /usr/local/Cellar/qt5 instead of the app bundle."
-      && git checkout 00e46351980ad915424aad9316abffc19936809c Library/Formula/qt5.rb
-      && cd -
       && brew install qt5
       && chmod -R 755 /usr/local/opt/qt5/*
       ;
@@ -49,8 +45,17 @@ script:
       && CPPFLAGS=-I$QTDIR/include
       ;
     fi
-  - qmake qmarkdowntextedit.pro CONFIG+=$CONFIG
-  - make
+  - cd ./tests
+  - qmake DEFINES+=INTEGRATION_TESTS && make -s -j 2
+  - if [ "${TRAVIS_OS_NAME}" = "linux" ]; then
+           ./../bin/tests/tests -platform minimal -txt
+        && sudo pip install cpp-coveralls
+        && coveralls -b `pwd`/unit_tests/ -r `readlink -m ./../` -e tests/ -E .+/moc_.* -E .+/qrc_.* -E .+/qxt.* -E .+/ui_.*  > coveralls.log
+        ;
+    else
+         ./../bin/tests/tests.app/Contents/MacOS/tests -platform minimal -txt
+      ;
+    fi
 
 notifications:
   recipients:
