@@ -24,12 +24,13 @@ class QMarkdownTextEdit : public QTextEdit
     Q_OBJECT
 
 public:
-    QMarkdownTextEdit(QWidget *parent = 0);
+    explicit QMarkdownTextEdit(QWidget *parent = 0);
     QMarkdownHighlighter *highlighter();
     QTextEditSearchWidget *searchWidget();
     void setIgnoredClickUrlSchemata(QStringList ignoredUrlSchemata);
     virtual void openUrl(QUrl url);
     QUrl getMarkdownUrlAtPosition(QString text, int position);
+    void initSearchFrame(QWidget *searchFrame);
 
 public slots:
     void duplicateText();
@@ -37,11 +38,13 @@ public slots:
     void setHtml(const QString &text);
     void setPlainText(const QString & text);
     void adjustRightMargin();
+    void hide();
 
 protected:
     QMarkdownHighlighter *_highlighter;
     QStringList _ignoredClickUrlSchemata;
     QTextEditSearchWidget *_searchWidget;
+    QWidget *_searchFrame;
     bool eventFilter(QObject *obj, QEvent *event);
     bool increaseSelectedTextIndention(bool reverse);
     void openLinkAtCursorPosition();

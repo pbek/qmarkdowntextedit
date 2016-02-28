@@ -387,3 +387,33 @@ void QMarkdownTextEdit::setPlainText(const QString & text) {
     QTextEdit::setPlainText(text);
     adjustRightMargin();
 }
+
+/**
+ * Uses an other widget as parent for the search widget
+ */
+void QMarkdownTextEdit::initSearchFrame(QWidget *searchFrame) {
+    _searchFrame = searchFrame;
+
+    // remove the search widget from our layout
+    layout()->removeWidget(_searchWidget);
+
+    QLayout *layout = _searchFrame->layout();
+
+    // create a grid layout for the frame and add the search widget to it
+    if (layout == NULL) {
+        layout = new QVBoxLayout();
+        layout->setSpacing(0);
+        layout->setContentsMargins(0, 0, 0, 0);
+    }
+
+    layout->addWidget(_searchWidget);
+    _searchFrame->setLayout(layout);
+}
+
+/**
+ * Hides the text edit and the search widget
+ */
+void QMarkdownTextEdit::hide() {
+    _searchWidget->hide();
+    QWidget::hide();
+}
