@@ -47,8 +47,10 @@ protected:
     QWidget *_searchFrame;
     bool eventFilter(QObject *obj, QEvent *event);
     bool increaseSelectedTextIndention(bool reverse);
+    bool handleTabEntered(bool reverse);
     void openLinkAtCursorPosition();
     QMap<QString, QString> parseMarkdownUrlsFromText(QString text);
+    bool handleReturnEntered();
 
 signals:
     void urlClicked(QUrl url);

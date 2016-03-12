@@ -87,8 +87,8 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             return true;
         } else if ((keyEvent->key() == Qt::Key_Tab) ||
                  (keyEvent->key() == Qt::Key_Backtab)) {
-            // indent selected text (if there is a text selected)
-            return increaseSelectedTextIndention(
+            // handle entered tab and reverse tab keys
+            return handleTabEntered(
                     keyEvent->key() == Qt::Key_Backtab);
         } else if ((keyEvent->key() == Qt::Key_F) &&
                  keyEvent->modifiers().testFlag(Qt::ControlModifier)) {
@@ -105,6 +105,8 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             QWidget *viewPort = this->viewport();
             viewPort->setCursor(Qt::PointingHandCursor);
             return false;
+        } else if (keyEvent->key() == Qt::Key_Return) {
+            return handleReturnEntered();
         }
 
         return false;
@@ -416,4 +418,69 @@ void QMarkdownTextEdit::initSearchFrame(QWidget *searchFrame) {
 void QMarkdownTextEdit::hide() {
     _searchWidget->hide();
     QWidget::hide();
+}
+
+/**
+ * Handles an entered return key
+ */
+bool QMarkdownTextEdit::handleReturnEntered() {
+    QTextCursor c = this->textCursor();
+    int position = c.position();
+
+    c.movePosition(QTextCursor::StartOfLine, QTextCursor::KeepAnchor);
+    QString currentLineText = c.selectedText();
+
+    // if the current line starts with a list character (possibly after
+    // whitespaces) add the whitespaces at the next line too
+    QRegularExpression re("^([^+\\-\\*]*)([+\\-\\*])([ ]?)");
+    QRegularExpressionMatchIterator i = re.globalMatch(currentLineText);
+    if (i.hasNext()) {
+        QRegularExpressionMatch match = i.next();
+        QString whitespaces = match.captured(1);
+        QString listCharacter = match.captured(2);
+        QString whitespaceCharacter = match.captured(3);
+
+        c.setPosition(position);
+        c.insertText("\n" + whitespaces + listCharacter + whitespaceCharacter);
+        return true;
+    }
+
+    return false;
+}
+
+/**
+ * Handles entered tab or reverse tab keys
+ */
+bool QMarkdownTextEdit::handleTabEntered(bool reverse) {
+    QTextCursor c = this->textCursor();
+
+    // only check for lists if we haven't a text selected
+    if (c.selectedText().isEmpty()) {
+        c.movePosition(QTextCursor::StartOfLine, QTextCursor::KeepAnchor);
+        QString currentLineText = c.selectedText();
+
+        // check if we want to indent or un-indent a list
+        QRegularExpression re("^([^+\\-\\*]*)([+\\-\\*])([ ]?)");
+        QRegularExpressionMatchIterator i = re.globalMatch(currentLineText);
+
+        if (i.hasNext()) {
+            QRegularExpressionMatch match = i.next();
+            QString whitespaces = match.captured(1);
+            QString listCharacter = match.captured(2);
+            QString whitespaceCharacter = match.captured(3);
+
+            // add or remove one tabulator key
+            if (reverse) {
+                whitespaces.chop(1);
+            } else {
+                whitespaces += "\t";
+            }
+
+            c.insertText(whitespaces + listCharacter + whitespaceCharacter);
+            return true;
+        }
+    }
+
+    // check if we want to intent the whole text
+    return increaseSelectedTextIndention(reverse);
 }
