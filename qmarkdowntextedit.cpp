@@ -432,7 +432,7 @@ bool QMarkdownTextEdit::handleReturnEntered() {
 
     // if the current line starts with a list character (possibly after
     // whitespaces) add the whitespaces at the next line too
-    QRegularExpression re("^([^+\\-\\*]*)([+\\-\\*])([ ]?)");
+    QRegularExpression re("^(\\s*)([+\\-\\*])([ ]?)");
     QRegularExpressionMatchIterator i = re.globalMatch(currentLineText);
     if (i.hasNext()) {
         QRegularExpressionMatch match = i.next();
@@ -460,7 +460,7 @@ bool QMarkdownTextEdit::handleTabEntered(bool reverse) {
         QString currentLineText = c.selectedText();
 
         // check if we want to indent or un-indent a list
-        QRegularExpression re("^([^+\\-\\*]*)([+\\-\\*])([ ]?)");
+        QRegularExpression re("^(\\s*)([+\\-\\*])([ ]?)");
         QRegularExpressionMatchIterator i = re.globalMatch(currentLineText);
 
         if (i.hasNext()) {
