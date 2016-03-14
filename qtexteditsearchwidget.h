@@ -25,6 +25,7 @@ class QTextEditSearchWidget : public QWidget
     Q_OBJECT
 public:
     explicit QTextEditSearchWidget(QTextEdit *parent = 0);
+    void doSearch(bool searchDown = true);
 
 protected:
     QTextEdit *_textEdit;
@@ -34,7 +35,6 @@ protected:
     QPushButton *_searchUpButton;
     QPushButton *_searchDownButton;
     bool eventFilter(QObject *obj, QEvent *event);
-    void doSearch(bool searchDown = true);
 
 signals:
 

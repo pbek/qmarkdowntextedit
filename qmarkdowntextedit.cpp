@@ -107,6 +107,10 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             return false;
         } else if (keyEvent->key() == Qt::Key_Return) {
             return handleReturnEntered();
+        } else if ((keyEvent->key() == Qt::Key_F3)) {
+            _searchWidget->doSearch(
+                    !keyEvent->modifiers().testFlag(Qt::ShiftModifier));
+            return true;
         }
 
         return false;

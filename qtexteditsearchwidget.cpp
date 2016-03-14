@@ -111,6 +111,9 @@ bool QTextEditSearchWidget::eventFilter(QObject *obj, QEvent *event) {
                  (keyEvent->key() == Qt::Key_Down)) {
             doSearchDown();
             return true;
+        } else if (keyEvent->key() == Qt::Key_F3) {
+            doSearch(!keyEvent->modifiers().testFlag(Qt::ShiftModifier));
+            return true;
         }
 
         return false;
