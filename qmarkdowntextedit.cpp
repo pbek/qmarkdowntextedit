@@ -442,6 +442,9 @@ bool QMarkdownTextEdit::handleReturnEntered() {
 
         c.setPosition(position);
         c.insertText("\n" + whitespaces + listCharacter + whitespaceCharacter);
+
+        // scroll to the cursor if we are at the bottom of the document
+        ensureCursorVisible();
         return true;
     }
 
