@@ -74,13 +74,35 @@ void QMarkdownTextEdit::adjustRightMargin() {
 }
 
 bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
-    if (event->type() == QEvent::KeyPress) {
+    if (event->type() == QEvent::HoverMove) {
+        QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
+
+        QWidget *viewPort = this->viewport();
+        // toggle cursor when control key has been pressed or released
+        viewPort->setCursor(mouseEvent->modifiers().testFlag(
+                Qt::ControlModifier) ?
+                            Qt::PointingHandCursor :
+                            Qt::IBeamCursor);
+    } else if (event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+
+        // set cursor to pointing hand if control key was pressed
+        if (keyEvent->modifiers().testFlag(Qt::ControlModifier)) {
+            QWidget *viewPort = this->viewport();
+            viewPort->setCursor(Qt::PointingHandCursor);
+            return false;
+        }
+
         // disallow keys if text edit hasn't focus
         if (!this->hasFocus()) {
             return true;
         }
 
-        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+        // reset cursor if control key was released
+        if (!keyEvent->modifiers().testFlag(Qt::ControlModifier)) {
+            QWidget *viewPort = this->viewport();
+            viewPort->setCursor(Qt::IBeamCursor);
+        }
 
         if ((keyEvent->key() == Qt::Key_Escape) && _searchWidget->isVisible()) {
             _searchWidget->deactivate();
@@ -100,11 +122,6 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             // duplicate text with `Ctrl + Alt + Down`
             duplicateText();
             return true;
-        } else if (keyEvent->key() == Qt::Key_Control) {
-            // set cursor to pointing hand if control key was pressed
-            QWidget *viewPort = this->viewport();
-            viewPort->setCursor(Qt::PointingHandCursor);
-            return false;
         } else if (keyEvent->key() == Qt::Key_Return) {
             return handleReturnEntered();
         } else if ((keyEvent->key() == Qt::Key_F3)) {
