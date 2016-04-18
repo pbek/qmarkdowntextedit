@@ -90,7 +90,6 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
         if (keyEvent->modifiers().testFlag(Qt::ControlModifier)) {
             QWidget *viewPort = this->viewport();
             viewPort->setCursor(Qt::PointingHandCursor);
-            return false;
         }
 
         // disallow keys if text edit hasn't focus
