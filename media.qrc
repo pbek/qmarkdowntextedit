@@ -3,5 +3,6 @@
         <file>media/window-close.svg</file>
         <file>media/go-top.svg</file>
         <file>media/go-bottom.svg</file>
+        <file>media/edit-find-replace.svg</file>
     </qresource>
 </RCC>

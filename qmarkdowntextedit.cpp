@@ -115,6 +115,10 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
                  keyEvent->modifiers().testFlag(Qt::ControlModifier)) {
             _searchWidget->activate();
             return true;
+        } else if ((keyEvent->key() == Qt::Key_R) &&
+                 keyEvent->modifiers().testFlag(Qt::ControlModifier)) {
+            _searchWidget->activateReplace();
+            return true;
         } else if ((keyEvent->key() == Qt::Key_Down) &&
                  keyEvent->modifiers().testFlag(Qt::ControlModifier) &&
                  keyEvent->modifiers().testFlag(Qt::AltModifier)) {

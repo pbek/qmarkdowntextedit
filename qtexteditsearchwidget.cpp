@@ -34,26 +34,45 @@ QTextEditSearchWidget::QTextEditSearchWidget(QTextEdit *parent) :
                      this, SLOT(doSearchDown()));
     QObject::connect(ui->searchUpButton, SIGNAL(clicked()),
                      this, SLOT(doSearchUp()));
+    QObject::connect(ui->replaceToggleButton, SIGNAL(toggled(bool)),
+                     this, SLOT(setReplaceMode(bool)));
+    QObject::connect(ui->replaceButton, SIGNAL(clicked()),
+                     this, SLOT(doReplace()));
+    QObject::connect(ui->replaceAllButton, SIGNAL(clicked()),
+                     this, SLOT(doReplaceAll()));
 
     installEventFilter(this);
     ui->searchLineEdit->installEventFilter(this);
+    ui->replaceLineEdit->installEventFilter(this);
 }
 
-QTextEditSearchWidget::~QTextEditSearchWidget()
-{
+QTextEditSearchWidget::~QTextEditSearchWidget() {
     delete ui;
 }
 
 void QTextEditSearchWidget::activate() {
+    setReplaceMode(false);
     show();
     ui->searchLineEdit->setFocus();
     ui->searchLineEdit->selectAll();
     doSearchDown();
 }
 
+void QTextEditSearchWidget::activateReplace() {
+    activate();
+    setReplaceMode(true);
+}
+
 void QTextEditSearchWidget::deactivate() {
     hide();
     _textEdit->setFocus();
+}
+
+void QTextEditSearchWidget::setReplaceMode(bool enabled) {
+    ui->replaceToggleButton->setChecked(enabled);
+    ui->replaceLabel->setVisible(enabled);
+    ui->replaceLineEdit->setVisible(enabled);
+    ui->buttonFrame->setVisible(enabled);
 }
 
 bool QTextEditSearchWidget::eventFilter(QObject *obj, QEvent *event) {
@@ -77,6 +96,11 @@ bool QTextEditSearchWidget::eventFilter(QObject *obj, QEvent *event) {
             return true;
         }
 
+//        if ((obj == ui->replaceLineEdit) && (keyEvent->key() == Qt::Key_Tab)
+//                && ui->replaceToggleButton->isChecked()) {
+//            ui->replaceLineEdit->setFocus();
+//        }
+
         return false;
     }
 
@@ -96,15 +120,38 @@ void QTextEditSearchWidget::doSearchDown() {
     doSearch(true);
 }
 
+void QTextEditSearchWidget::doReplace() {
+    if (_textEdit->isReadOnly()) {
+        return;
+    }
+
+    QTextCursor c = _textEdit->textCursor();
+
+    if (!c.selectedText().isEmpty()) {
+        c.insertText(ui->replaceLineEdit->text());
+        doSearch(true);
+    }
+}
+
+void QTextEditSearchWidget::doReplaceAll() {
+    if (_textEdit->isReadOnly()) {
+        return;
+    }
+
+    while (doSearch(true)) {
+        _textEdit->textCursor().insertText(ui->replaceLineEdit->text());
+    }
+}
+
 /**
  * @brief Searches for text in the text edit
  */
-void QTextEditSearchWidget::doSearch(bool searchDown) {
+bool QTextEditSearchWidget::doSearch(bool searchDown) {
     QString text = ui->searchLineEdit->text();
 
     if (text == "") {
         ui->searchLineEdit->setStyleSheet("* { background: none; }");
-        return;
+        return false;
     }
 
     QTextDocument::FindFlag options = searchDown ? QTextDocument::FindFlag(0)
@@ -133,5 +180,7 @@ void QTextEditSearchWidget::doSearch(bool searchDown) {
     // add a background color according if we found the text or not
     QString colorCode = found ? "#D5FAE2" : "#FAE9EB";
     ui->searchLineEdit->setStyleSheet("* { background: " + colorCode + "; }");
+
+    return found;
 }
 

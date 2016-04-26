@@ -27,7 +27,7 @@ class QTextEditSearchWidget : public QWidget
 
 public:
     explicit QTextEditSearchWidget(QTextEdit *parent = 0);
-    void doSearch(bool searchDown = true);
+    bool doSearch(bool searchDown = true);
     ~QTextEditSearchWidget();
 
 private:
@@ -42,6 +42,10 @@ public slots:
     void deactivate();
     void doSearchDown();
     void doSearchUp();
+    void setReplaceMode(bool enabled);
+    void activateReplace();
+    void doReplace();
+    void doReplaceAll();
 
 protected slots:
     void searchLineEditTextChanged(const QString &arg1);
