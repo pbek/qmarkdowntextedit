@@ -13,80 +13,41 @@
  */
 
 #include "qtexteditsearchwidget.h"
+#include "ui_qtexteditsearchwidget.h"
 #include <QEvent>
-#include <QHBoxLayout>
 #include <QKeyEvent>
 #include <QDebug>
-#include <QPushButton>
 
-QTextEditSearchWidget::QTextEditSearchWidget(QTextEdit *parent) : QWidget(
-        parent) {
+QTextEditSearchWidget::QTextEditSearchWidget(QTextEdit *parent) :
+    QWidget(parent),
+    ui(new Ui::QTextEditSearchWidget)
+{
+    ui->setupUi(this);
     _textEdit = parent;
-    this->hide();
-    this->setAutoFillBackground(true);
-    QHBoxLayout *layout = new QHBoxLayout;
-    layout->setContentsMargins(0, 0, 0, 0);
-    layout->setMargin(0);
+    hide();
 
-    // add the close button
-    _closeButton = new QPushButton();
-    _closeButton->setIcon(QIcon::fromTheme(
-                    "window-close",
-                    QIcon(":/media/window-close.svg")));
-    _closeButton->setToolTip(tr("close search"));
-    _closeButton->setFlat(true);
-    QObject::connect(_closeButton, SIGNAL(clicked()), this, SLOT(deactivate()));
-    layout->addWidget(_closeButton);
-
-    // add the find label
-    _label = new QLabel(tr("Find:"));
-    layout->addWidget(_label);
-
-    // add the search line edit
-    _searchLineEdit = new QLineEdit;
-    _searchLineEdit->setPlaceholderText(tr("find in text"));
-    _searchLineEdit->setClearButtonEnabled(true);
-    layout->addWidget(_searchLineEdit);
-    QObject::connect(
-            _searchLineEdit,
-            SIGNAL(textChanged(const QString &)),
-            this,
-            SLOT(searchLineEditTextChanged(const QString &)));
-
-    // add the search forward button
-    _searchDownButton = new QPushButton();
-    _searchDownButton->setIcon(QIcon(":/media/go-bottom.svg"));
-    _searchDownButton->setIcon(QIcon::fromTheme(
-            "go-bottom",
-            QIcon(":/media/go-bottom.svg")));
-    _searchDownButton->setToolTip(tr("search forward"));
-    _searchDownButton->setFlat(true);
-    QObject::connect(_searchDownButton, SIGNAL(clicked()), this,
-                     SLOT(doSearchDown()));
-    layout->addWidget(_searchDownButton);
-
-    // add the search backward button
-    _searchUpButton = new QPushButton();
-    _searchUpButton->setIcon(QIcon(":/media/go-top.svg"));
-    _searchUpButton->setIcon(QIcon::fromTheme(
-            "go-top",
-            QIcon(":/media/go-top.svg")));
-    _searchUpButton->setToolTip(tr("search backward"));
-    _searchUpButton->setFlat(true);
-    QObject::connect(_searchUpButton, SIGNAL(clicked()), this,
-                     SLOT(doSearchUp()));
-    layout->addWidget(_searchUpButton);
-
-    this->setLayout(layout);
+    QObject::connect(ui->closeButton, SIGNAL(clicked()),
+                     this, SLOT(deactivate()));
+    QObject::connect(ui->searchLineEdit, SIGNAL(textChanged(const QString &)),
+                     this, SLOT(searchLineEditTextChanged(const QString &)));
+    QObject::connect(ui->searchDownButton, SIGNAL(clicked()),
+                     this, SLOT(doSearchDown()));
+    QObject::connect(ui->searchUpButton, SIGNAL(clicked()),
+                     this, SLOT(doSearchUp()));
 
     installEventFilter(this);
-    _searchLineEdit->installEventFilter(this);
+    ui->searchLineEdit->installEventFilter(this);
+}
+
+QTextEditSearchWidget::~QTextEditSearchWidget()
+{
+    delete ui;
 }
 
 void QTextEditSearchWidget::activate() {
     show();
-    _searchLineEdit->setFocus();
-    _searchLineEdit->selectAll();
+    ui->searchLineEdit->setFocus();
+    ui->searchLineEdit->selectAll();
     doSearchDown();
 }
 
@@ -139,10 +100,10 @@ void QTextEditSearchWidget::doSearchDown() {
  * @brief Searches for text in the text edit
  */
 void QTextEditSearchWidget::doSearch(bool searchDown) {
-    QString text = _searchLineEdit->text();
+    QString text = ui->searchLineEdit->text();
 
     if (text == "") {
-        _searchLineEdit->setStyleSheet("* { background: none; }");
+        ui->searchLineEdit->setStyleSheet("* { background: none; }");
         return;
     }
 
@@ -171,6 +132,6 @@ void QTextEditSearchWidget::doSearch(bool searchDown) {
 
     // add a background color according if we found the text or not
     QString colorCode = found ? "#D5FAE2" : "#FAE9EB";
-    _searchLineEdit->setStyleSheet("* { background: " + colorCode + "; }");
+    ui->searchLineEdit->setStyleSheet("* { background: " + colorCode + "; }");
 }
 

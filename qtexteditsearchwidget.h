@@ -14,29 +14,28 @@
 
 #pragma once
 
-#include <QLabel>
-#include <QLineEdit>
-#include <QPushButton>
-#include <QTextEdit>
 #include <QWidget>
+#include <QTextEdit>
+
+namespace Ui {
+class QTextEditSearchWidget;
+}
 
 class QTextEditSearchWidget : public QWidget
 {
     Q_OBJECT
+
 public:
     explicit QTextEditSearchWidget(QTextEdit *parent = 0);
     void doSearch(bool searchDown = true);
+    ~QTextEditSearchWidget();
+
+private:
+    Ui::QTextEditSearchWidget *ui;
 
 protected:
     QTextEdit *_textEdit;
-    QLabel *_label;
-    QLineEdit *_searchLineEdit;
-    QPushButton *_closeButton;
-    QPushButton *_searchUpButton;
-    QPushButton *_searchDownButton;
     bool eventFilter(QObject *obj, QEvent *event);
-
-signals:
 
 public slots:
     void activate();

@@ -11,3 +11,5 @@ SOURCES += \
 
 RESOURCES += \
     $$PWD/media.qrc
+
+FORMS += $$PWD/qtexteditsearchwidget.ui
