@@ -12,13 +12,15 @@ find_package( Qt5Core REQUIRED )
 find_package( Qt5Widgets REQUIRED )
 find_package( Qt5Gui REQUIRED )
 
+qt5_wrap_ui(ui_qtexteditsearchwidget.h qtexteditsearchwidget.ui)
+
+set(RESOURCE_FILES
+        media.qrc
+        )
+
+qt5_add_resources(RESOURCE_ADDED ${RESOURCE_FILES})
+
 set(SOURCE_FILES
-    build-qmarkdowntextedit-Desktop-Debug/moc_highlighter.cpp
-    build-qmarkdowntextedit-Desktop-Debug/moc_mainwindow.cpp
-    build-qmarkdowntextedit-Desktop-Debug/moc_qmarkdowntextedit.cpp
-    build-qmarkdowntextedit-Desktop-Debug/moc_qtexteditsearchwidget.cpp
-    build-qmarkdowntextedit-Desktop-Debug/qrc_media.cpp
-    build-qmarkdowntextedit-Desktop-Debug/ui_mainwindow.h
     lib/peg-markdown-highlight/pmh_definitions.h
     lib/peg-markdown-highlight/pmh_parser.c
     lib/peg-markdown-highlight/pmh_parser.h
@@ -27,12 +29,14 @@ set(SOURCE_FILES
     main.cpp
     mainwindow.cpp
     mainwindow.h
+    mainwindow.ui
     qmarkdowntextedit.cpp
     qmarkdowntextedit.h
+    qtexteditsearchwidget.ui
     qtexteditsearchwidget.cpp
     qtexteditsearchwidget.h)
 
-add_executable(qmarkdowntextedit ${SOURCE_FILES})
+add_executable(qmarkdowntextedit ${SOURCE_FILES} ${RESOURCE_ADDED})
 
 include_directories(${Qt5Widgets_INCLUDES})
 
