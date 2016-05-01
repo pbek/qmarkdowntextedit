@@ -71,6 +71,9 @@ private slots:
 
     void timerTimeout();
 
+signals:
+    void parsingFinished();
+
 private:
     QTimer *timer;
     QTextDocument *document;

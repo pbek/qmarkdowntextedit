@@ -178,7 +178,8 @@ void QMarkdownHighlighter::highlight() {
                 QTextBlock block = document->findBlockByNumber(j);
 
                 QTextLayout *layout = block.layout();
-                QList<QTextLayout::FormatRange> list = layout->additionalFormats();
+                QList<QTextLayout::FormatRange> list =
+                        layout->additionalFormats();
                 int blockpos = block.position();
                 QTextLayout::FormatRange r;
                 r.format = style.format;
@@ -188,6 +189,11 @@ void QMarkdownHighlighter::highlight() {
                     r.length = (startBlockNum == endBlockNum)
                                ? elem_cursor->end - elem_cursor->pos
                                : block.length() - r.start;
+
+                    // save the element type for later processing
+                    // we do that just here because some blocks had the
+                    // wrong type if we do it for all if-cases
+                    block.setUserState(style.type);
                 } else if (j == endBlockNum) {
                     r.start = 0;
                     r.length = elem_cursor->end - blockpos;
@@ -238,10 +244,13 @@ void QMarkdownHighlighter::threadFinished() {
     workerThread->result = NULL;
 
     this->highlight();
+    emit(parsingFinished());
 }
 
 void QMarkdownHighlighter::handleContentsChange(int position, int charsRemoved,
                                                 int charsAdded) {
+    Q_UNUSED(position);
+
     if (charsRemoved == 0 && charsAdded == 0)
         return;
     timer->stop();
