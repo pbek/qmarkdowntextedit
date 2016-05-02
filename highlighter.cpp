@@ -178,6 +178,12 @@ void QMarkdownHighlighter::highlight() {
                 QTextBlock block = document->findBlockByNumber(j);
 
                 QTextLayout *layout = block.layout();
+
+                // sometime we get NULL and would crash
+                if (layout == NULL) {
+                    continue;
+                }
+
                 QList<QTextLayout::FormatRange> list =
                         layout->additionalFormats();
                 int blockpos = block.position();
