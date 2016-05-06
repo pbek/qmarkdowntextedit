@@ -89,6 +89,7 @@ void QTextEditSearchWidget::setReplaceMode(bool enabled) {
     ui->replaceLineEdit->setVisible(enabled);
     ui->modeLabel->setVisible(enabled);
     ui->buttonFrame->setVisible(enabled);
+    ui->matchCaseSensitiveButton->setVisible(enabled);
 }
 
 bool QTextEditSearchWidget::eventFilter(QObject *obj, QEvent *event) {
@@ -194,6 +195,10 @@ bool QTextEditSearchWidget::doSearch(bool searchDown, bool allowRestartAtTop) {
                                               : QTextDocument::FindBackward;
     if (searchMode == WholeWordsMode) {
         options |= QTextDocument::FindWholeWords;
+    }
+
+    if (ui->matchCaseSensitiveButton->isChecked()) {
+        options |= QTextDocument::FindCaseSensitively;
     }
 
     bool found;

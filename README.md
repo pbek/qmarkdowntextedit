@@ -15,6 +15,7 @@ QMarkdownTextEdit uses [PEG Markdown Highlight](https://github.com/ali-rantakari
     - jump between search results with `Up` and `Down`
     - close search field with `Escape`
 - replacing of text with `Ctrl + R`
+    - you can also replace text with regular expressions or whole words
 
 ## Screenshot
 ![Screenhot](screenshot.png)

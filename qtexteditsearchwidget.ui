@@ -214,6 +214,26 @@
      </property>
     </widget>
    </item>
+   <item row="1" column="4">
+    <widget class="QPushButton" name="matchCaseSensitiveButton">
+     <property name="toolTip">
+      <string>Match case sensitive</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset theme="format-text-superscript" resource="media.qrc">
+       <normaloff>:/media/format-text-superscript.svg</normaloff>:/media/format-text-superscript.svg</iconset>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <tabstops>
