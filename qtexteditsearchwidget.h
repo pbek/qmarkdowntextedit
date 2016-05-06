@@ -33,7 +33,7 @@ public:
     };
 
     explicit QTextEditSearchWidget(QTextEdit *parent = 0);
-    bool doSearch(bool searchDown = true);
+    bool doSearch(bool searchDown = true, bool allowRestartAtTop = true);
     ~QTextEditSearchWidget();
 
 private:

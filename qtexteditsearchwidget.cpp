@@ -169,13 +169,17 @@ void QTextEditSearchWidget::doReplaceAll() {
         return;
     }
 
-    while (doSearch(true) && doReplace(true)) {}
+    // start at the top
+    _textEdit->moveCursor(QTextCursor::Start);
+
+    // replace until everything to the bottom is replaced
+    while (doSearch(true, false) && doReplace(true)) {}
 }
 
 /**
  * @brief Searches for text in the text edit
  */
-bool QTextEditSearchWidget::doSearch(bool searchDown) {
+bool QTextEditSearchWidget::doSearch(bool searchDown, bool allowRestartAtTop) {
     QString text = ui->searchLineEdit->text();
 
     if (text == "") {
@@ -199,8 +203,8 @@ bool QTextEditSearchWidget::doSearch(bool searchDown) {
         found = _textEdit->find(text, options);
     }
 
-    // start at the top if not found
-    if (!found) {
+    // start at the top (or bottom) if not found
+    if (!found && allowRestartAtTop) {
         _textEdit->moveCursor(
                 searchDown ? QTextCursor::Start : QTextCursor::End);
         found = _textEdit->find(text, options);
