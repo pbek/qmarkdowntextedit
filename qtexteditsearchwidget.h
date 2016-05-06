@@ -26,6 +26,12 @@ class QTextEditSearchWidget : public QWidget
     Q_OBJECT
 
 public:
+    enum SearchMode {
+        PlainTextMode,
+        WholeWordsMode,
+        RegularExpressionMode
+    };
+
     explicit QTextEditSearchWidget(QTextEdit *parent = 0);
     bool doSearch(bool searchDown = true);
     ~QTextEditSearchWidget();
@@ -44,7 +50,7 @@ public slots:
     void doSearchUp();
     void setReplaceMode(bool enabled);
     void activateReplace();
-    void doReplace();
+    bool doReplace(bool forAll = false);
     void doReplaceAll();
 
 protected slots:

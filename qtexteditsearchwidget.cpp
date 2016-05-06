@@ -87,6 +87,7 @@ void QTextEditSearchWidget::setReplaceMode(bool enabled) {
     ui->replaceToggleButton->setChecked(enabled);
     ui->replaceLabel->setVisible(enabled);
     ui->replaceLineEdit->setVisible(enabled);
+    ui->modeLabel->setVisible(enabled);
     ui->buttonFrame->setVisible(enabled);
 }
 
@@ -135,17 +136,24 @@ void QTextEditSearchWidget::doSearchDown() {
     doSearch(true);
 }
 
-void QTextEditSearchWidget::doReplace() {
+bool QTextEditSearchWidget::doReplace(bool forAll) {
     if (_textEdit->isReadOnly()) {
-        return;
+        return false;
     }
 
     QTextCursor c = _textEdit->textCursor();
 
-    if (!c.selectedText().isEmpty()) {
-        c.insertText(ui->replaceLineEdit->text());
+    if (!forAll && c.selectedText().isEmpty()) {
+        return false;
+    }
+
+    c.insertText(ui->replaceLineEdit->text());
+
+    if (!forAll) {
         doSearch(true);
     }
+
+    return true;
 }
 
 void QTextEditSearchWidget::doReplaceAll() {
@@ -153,9 +161,7 @@ void QTextEditSearchWidget::doReplaceAll() {
         return;
     }
 
-    while (doSearch(true)) {
-        _textEdit->textCursor().insertText(ui->replaceLineEdit->text());
-    }
+    while (doSearch(true) && doReplace(true)) {}
 }
 
 /**
@@ -169,9 +175,21 @@ bool QTextEditSearchWidget::doSearch(bool searchDown) {
         return false;
     }
 
-    QTextDocument::FindFlag options = searchDown ? QTextDocument::FindFlag(0)
-                                                 : QTextDocument::FindBackward;
-    bool found = _textEdit->find(text, options);
+    int searchMode = ui->modeComboBox->currentIndex();
+
+    QFlags<QTextDocument::FindFlag> options = searchDown ?
+                                              QTextDocument::FindFlag(0)
+                                              : QTextDocument::FindBackward;
+    if (searchMode == WholeWordsMode) {
+        options |= QTextDocument::FindWholeWords;
+    }
+
+    bool found;
+    if (searchMode == RegularExpressionMode) {
+        found = _textEdit->find(QRegExp(text), options);
+    } else {
+        found = _textEdit->find(text, options);
+    }
 
     // start at the top if not found
     if (!found) {
