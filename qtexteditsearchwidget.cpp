@@ -147,7 +147,15 @@ bool QTextEditSearchWidget::doReplace(bool forAll) {
         return false;
     }
 
-    c.insertText(ui->replaceLineEdit->text());
+    int searchMode = ui->modeComboBox->currentIndex();
+    if (searchMode == RegularExpressionMode) {
+        QString text = c.selectedText();
+        text.replace(QRegExp(ui->searchLineEdit->text()),
+                             ui->replaceLineEdit->text());
+        c.insertText(text);
+    } else {
+        c.insertText(ui->replaceLineEdit->text());
+    }
 
     if (!forAll) {
         doSearch(true);
