@@ -73,9 +73,9 @@ void QTextEditSearchWidget::activate() {
 }
 
 void QTextEditSearchWidget::activateReplace() {
-    activate();
     ui->searchLineEdit->setText(_textEdit->textCursor().selectedText());
     ui->searchLineEdit->selectAll();
+    activate();
     setReplaceMode(true);
 }
 
