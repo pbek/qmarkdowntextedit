@@ -160,7 +160,13 @@ bool QTextEditSearchWidget::doReplace(bool forAll) {
     }
 
     if (!forAll) {
-        doSearch(true);
+        int position = c.position();
+
+        if (!doSearch(true)) {
+            // restore the last cursor position if text wasn't found any more
+            c.setPosition(position);
+            _textEdit->setTextCursor(c);
+        }
     }
 
     return true;
@@ -180,6 +186,7 @@ void QTextEditSearchWidget::doReplaceAll() {
 
 /**
  * @brief Searches for text in the text edit
+ * @returns true if found
  */
 bool QTextEditSearchWidget::doSearch(bool searchDown, bool allowRestartAtTop) {
     QString text = ui->searchLineEdit->text();
