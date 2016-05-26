@@ -73,6 +73,11 @@ void QTextEditSearchWidget::activate() {
 }
 
 void QTextEditSearchWidget::activateReplace() {
+    // replacing is prohibited if the text edit is readonly
+    if (_textEdit->isReadOnly()) {
+        return;
+    }
+
     ui->searchLineEdit->setText(_textEdit->textCursor().selectedText());
     ui->searchLineEdit->selectAll();
     activate();
