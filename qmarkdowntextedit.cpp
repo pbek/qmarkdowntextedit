@@ -22,6 +22,7 @@
 #include <QDesktopServices>
 #include <QLayout>
 #include <QTimer>
+#include <QSettings>
 
 
 QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent)
@@ -29,8 +30,12 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent)
     installEventFilter(this);
     viewport()->installEventFilter(this);
 
+    QSettings settings;
+    // it is not easy to set this interval later so we use a setting
+    int interval = settings.value("markdownHighlightingInterval", 200).toInt();
+
     // setup the markdown highlighting
-    _highlighter = new QMarkdownHighlighter(document(), 1000);
+    _highlighter = new QMarkdownHighlighter(document(), interval);
 
     QFont font = this->font();
 

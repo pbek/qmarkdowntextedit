@@ -33,21 +33,24 @@ void WorkerThread::run() {
 
 
 QMarkdownHighlighter::QMarkdownHighlighter(QTextDocument *parent,
-                                           int aWaitInterval) : QObject(
+                                           int waitInterval) : QObject(
         parent) {
     highlightingStyles = NULL;
     workerThread = NULL;
     cached_elements = NULL;
-    waitInterval = aWaitInterval;
     timer = new QTimer(this);
-    timer->setSingleShot(true);
-    timer->setInterval(aWaitInterval);
-    connect(timer, SIGNAL(timeout()), this, SLOT(timerTimeout()));
+    _highlightingEnabled = waitInterval > 0;
     document = parent;
+
     connect(document, SIGNAL(contentsChange(int, int, int)),
             this, SLOT(handleContentsChange(int, int, int)));
 
-    this->parse();
+    if (_highlightingEnabled) {
+        timer->setSingleShot(true);
+        timer->setInterval(waitInterval);
+        connect(timer, SIGNAL(timeout()), this, SLOT(timerTimeout()));
+        this->parse();
+    }
 }
 
 void QMarkdownHighlighter::setStyles(QVector<HighlightingStyle> &styles) {
@@ -220,6 +223,10 @@ void QMarkdownHighlighter::highlight() {
 }
 
 void QMarkdownHighlighter::parse() {
+    if (!_highlightingEnabled) {
+        return;
+    }
+
     if (workerThread != NULL && workerThread->isRunning()) {
         parsePending = true;
         return;

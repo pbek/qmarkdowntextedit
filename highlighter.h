@@ -51,11 +51,9 @@ class QMarkdownHighlighter : public QObject {
 Q_OBJECT
 
 public:
-    QMarkdownHighlighter(QTextDocument *parent = 0, int aWaitInterval = 2000);
+    QMarkdownHighlighter(QTextDocument *parent = 0, int waitInterval = 200);
 
     void setStyles(QVector<HighlightingStyle> &styles);
-
-    int waitInterval;
 
     void parse();
 
@@ -81,6 +79,7 @@ private:
     bool parsePending;
     pmh_element **cached_elements;
     QVector<HighlightingStyle> *highlightingStyles;
+    bool _highlightingEnabled;
 
     void clearFormatting();
 
