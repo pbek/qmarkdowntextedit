@@ -54,3 +54,16 @@ notifications:
   email:
     on_success: change
     on_failure: change
+  irc:
+    # https://docs.travis-ci.com/user/notifications/#IRC-notification
+    channels:
+      - "chat.freenode.net#qownnotes"
+    template:
+      - "[%{commit}] %{repository} (%{branch}): %{message}"
+      - "[%{commit}] Commit message : %{commit_message}"
+      - "[%{commit}] Change view : %{compare_url}"
+      - "[%{commit}] Build details : %{build_url}"
+    on_success: always
+    on_failure: always
+    use_notice: true
+    skip_join: true
