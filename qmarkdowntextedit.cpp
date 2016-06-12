@@ -239,7 +239,7 @@ bool QMarkdownTextEdit::increaseSelectedTextIndention(bool reverse) {
 /**
  * @brief Opens the link (if any) at the current cursor position
  */
-void QMarkdownTextEdit::openLinkAtCursorPosition() {
+bool QMarkdownTextEdit::openLinkAtCursorPosition() {
     QTextCursor c = this->textCursor();
     int clickedPosition = c.position();
 
@@ -262,7 +262,11 @@ void QMarkdownTextEdit::openLinkAtCursorPosition() {
             // open the url
             openUrl(url);
         }
+
+        return true;
     }
+
+    return false;
 }
 
 /**

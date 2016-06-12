@@ -39,6 +39,7 @@ public slots:
     void setPlainText(const QString & text);
     void adjustRightMargin();
     void hide();
+    bool openLinkAtCursorPosition();
 
 protected:
     QMarkdownHighlighter *_highlighter;
@@ -48,7 +49,6 @@ protected:
     bool eventFilter(QObject *obj, QEvent *event);
     bool increaseSelectedTextIndention(bool reverse);
     bool handleTabEntered(bool reverse);
-    void openLinkAtCursorPosition();
     QMap<QString, QString> parseMarkdownUrlsFromText(QString text);
     bool handleReturnEntered();
 
