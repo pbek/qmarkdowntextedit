@@ -67,6 +67,14 @@ QTextEditSearchWidget::~QTextEditSearchWidget() {
 void QTextEditSearchWidget::activate() {
     setReplaceMode(false);
     show();
+
+    // preset the selected text as search text if there is any and there is no
+    // other search text
+    QString selectedText = _textEdit->textCursor().selectedText();
+    if (!selectedText.isEmpty() && ui->searchLineEdit->text().isEmpty()) {
+        ui->searchLineEdit->setText(selectedText);
+    }
+
     ui->searchLineEdit->setFocus();
     ui->searchLineEdit->selectAll();
     doSearchDown();
