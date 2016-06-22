@@ -38,7 +38,6 @@ QMarkdownHighlighter::QMarkdownHighlighter(QTextDocument *parent,
     highlightingStyles = NULL;
     workerThread = NULL;
     cached_elements = NULL;
-    timer = new QTimer(this);
     _highlightingEnabled = waitInterval > 0;
     document = parent;
 
@@ -46,6 +45,7 @@ QMarkdownHighlighter::QMarkdownHighlighter(QTextDocument *parent,
             this, SLOT(handleContentsChange(int, int, int)));
 
     if (_highlightingEnabled) {
+        timer = new QTimer(this);
         timer->setSingleShot(true);
         timer->setInterval(waitInterval);
         connect(timer, SIGNAL(timeout()), this, SLOT(timerTimeout()));
@@ -264,8 +264,10 @@ void QMarkdownHighlighter::handleContentsChange(int position, int charsRemoved,
                                                 int charsAdded) {
     Q_UNUSED(position);
 
-    if (charsRemoved == 0 && charsAdded == 0)
+    if ((charsRemoved == 0 && charsAdded == 0) || !_highlightingEnabled) {
         return;
+    }
+
     timer->stop();
     timer->start();
 }
