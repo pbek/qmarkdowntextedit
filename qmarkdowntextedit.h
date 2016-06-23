@@ -28,8 +28,8 @@ public:
     QMarkdownHighlighter *highlighter();
     QTextEditSearchWidget *searchWidget();
     void setIgnoredClickUrlSchemata(QStringList ignoredUrlSchemata);
-    virtual void openUrl(QUrl url);
-    QUrl getMarkdownUrlAtPosition(QString text, int position);
+    virtual void openUrl(QString urlString);
+    QString getMarkdownUrlAtPosition(QString text, int position);
     void initSearchFrame(QWidget *searchFrame);
 
 public slots:
@@ -53,5 +53,5 @@ protected:
     bool handleReturnEntered();
 
 signals:
-    void urlClicked(QUrl url);
+    void urlClicked(QString url);
 };

@@ -252,15 +252,22 @@ bool QMarkdownTextEdit::openLinkAtCursorPosition() {
     QString selectedText = c.selectedText();
 
     // find out which url in the selected text was clicked
-    QUrl url = getMarkdownUrlAtPosition(selectedText, positionFromStart);
-    if (url.isValid()) {
-        qDebug() << __func__ << " - 'emit urlClicked( url )': " << url;
-        emit urlClicked(url);
+    QString urlString = getMarkdownUrlAtPosition(selectedText,
+                                                 positionFromStart);
+    QUrl url = QUrl(urlString);
+    bool isRelativeFileUrl = urlString.startsWith("file://..");
+
+    if (url.isValid() || isRelativeFileUrl) {
+        qDebug() << __func__ << " - 'emit urlClicked( urlString )': "
+            << urlString;
+
+        emit urlClicked(urlString);
 
         // ignore some schemata
-        if (!_ignoredClickUrlSchemata.contains(url.scheme())) {
+        if (!(_ignoredClickUrlSchemata.contains(url.scheme()) ||
+                isRelativeFileUrl)) {
             // open the url
-            openUrl(url);
+            openUrl(urlString);
         }
 
         return true;
@@ -278,10 +285,11 @@ bool QMarkdownTextEdit::openLinkAtCursorPosition() {
  *   "/path/to/my/file/QOwnNotes.pdf" if the operating system supports that
  *  handler
  */
-void QMarkdownTextEdit::openUrl(QUrl url) {
-    qDebug() << "QMarkdownTextEdit " << __func__ << " - 'url': " << url;
+void QMarkdownTextEdit::openUrl(QString urlString) {
+    qDebug() << "QMarkdownTextEdit " << __func__ << " - 'urlString': "
+        << urlString;
 
-    QDesktopServices::openUrl(url);
+    QDesktopServices::openUrl(QUrl(urlString));
 }
 
 /**
@@ -348,8 +356,9 @@ QMap<QString, QString> QMarkdownTextEdit::parseMarkdownUrlsFromText(
  * @param position
  * @return url string
  */
-QUrl QMarkdownTextEdit::getMarkdownUrlAtPosition(QString text, int position) {
-    QUrl url;
+QString QMarkdownTextEdit::getMarkdownUrlAtPosition(
+        QString text, int position) {
+    QString url;
 
     // get a map of parsed markdown urls with their link texts as key
     QMap<QString, QString> urlMap = parseMarkdownUrlsFromText(text);
@@ -369,7 +378,7 @@ QUrl QMarkdownTextEdit::getMarkdownUrlAtPosition(QString text, int position) {
             // check if position is in found string range
             if ((position >= foundPositionStart) &&
                 (position <= foundPositionEnd)) {
-                url = QUrl(urlString);
+                url = urlString;
             }
         }
     }
