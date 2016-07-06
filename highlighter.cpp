@@ -16,6 +16,7 @@
  */
 
 #include <QtGui>
+#include <QFontDatabase>
 #include "highlighter.h"
 
 
@@ -110,9 +111,10 @@ void QMarkdownHighlighter::setDefaultStyles(int defaultFontSize) {
 
     /* <pre> */
     QTextCharFormat code;
+    QFont codeFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+    code.setFont(codeFont);
     code.setForeground(QBrush(Qt::darkGreen));
     code.setBackground(QBrush(QColor(217, 231, 217)));
-    code.setFontFamily("Courier");
     STY(pmh_CODE, code);
     STY(pmh_VERBATIM, code);
 
