@@ -17,7 +17,7 @@
 
 #include <QtGui>
 #include <QFontDatabase>
-#include "highlighter.h"
+#include "markdownhighlighter.h"
 
 
 WorkerThread::~WorkerThread() {
