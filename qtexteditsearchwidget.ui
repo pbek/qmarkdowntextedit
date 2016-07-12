@@ -89,7 +89,7 @@
       <string/>
      </property>
      <property name="icon">
-      <iconset theme="go-button" resource="media.qrc">
+      <iconset theme="go-bottom" resource="media.qrc">
        <normaloff>:/media/go-bottom.svg</normaloff>:/media/go-bottom.svg</iconset>
      </property>
      <property name="flat">
