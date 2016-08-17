@@ -23,6 +23,7 @@
 #include <QLayout>
 #include <QTimer>
 #include <QSettings>
+#include <QTextBlock>
 
 
 QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent)
@@ -130,6 +131,27 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             // duplicate text with `Ctrl + Alt + Down`
             duplicateText();
             return true;
+        } else if (keyEvent->key() == Qt::Key_Down) {
+            // if you are in the last line and press cursor down the cursor will
+            // jump to the end of the line
+            QTextCursor c = textCursor();
+            if (c.position() >= document()->lastBlock().position()) {
+                c.movePosition(QTextCursor::EndOfLine);
+                setTextCursor(c);
+            }
+            return false;
+        } else if (keyEvent->key() == Qt::Key_Up) {
+            // if you are in the first line and press cursor up the cursor will
+            // jump to the start of the line
+            QTextCursor c = textCursor();
+            QTextBlock block = document()->firstBlock();
+            int endOfFirstLinePos = block.position() + block.length();
+
+            if (c.position() <= endOfFirstLinePos) {
+                c.movePosition(QTextCursor::StartOfLine);
+                setTextCursor(c);
+            }
+            return false;
         } else if (keyEvent->key() == Qt::Key_Return) {
             return handleReturnEntered();
         } else if ((keyEvent->key() == Qt::Key_F3)) {
