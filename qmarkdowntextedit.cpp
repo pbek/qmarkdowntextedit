@@ -131,7 +131,8 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             // duplicate text with `Ctrl + Alt + Down`
             duplicateText();
             return true;
-        } else if (keyEvent->key() == Qt::Key_Down) {
+        } else if ((keyEvent->key() == Qt::Key_Down) &&
+                keyEvent->modifiers().testFlag(Qt::NoModifier)) {
             // if you are in the last line and press cursor down the cursor will
             // jump to the end of the line
             QTextCursor c = textCursor();
@@ -140,7 +141,8 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
                 setTextCursor(c);
             }
             return false;
-        } else if (keyEvent->key() == Qt::Key_Up) {
+        } else if ((keyEvent->key() == Qt::Key_Up) &&
+                   keyEvent->modifiers().testFlag(Qt::NoModifier)) {
             // if you are in the first line and press cursor up the cursor will
             // jump to the start of the line
             QTextCursor c = textCursor();
