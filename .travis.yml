@@ -19,9 +19,9 @@ install:
   - if [ "${TRAVIS_OS_NAME}" = "linux" ]; then
          lsb_release -a
       && sudo apt-add-repository -y ppa:ubuntu-toolchain-r/test
-      && sudo apt-add-repository -y ppa:beineri/opt-qt57
+      && sudo apt-add-repository -y ppa:beineri/opt-qt561
       && sudo apt-get -qq update
-      && sudo apt-get -qq install g++-4.8 libc6-i386 qt57tools qt57svg qt57webkit qt57script
+      && sudo apt-get -qq install g++-4.8 libc6-i386 qt56tools qt56svg qt56webkit qt56script
       && export CXX="g++-4.8"
       && export CC="gcc-4.8"
       ;
@@ -34,9 +34,9 @@ install:
 
 script:
   - if [ "${TRAVIS_OS_NAME}" = "linux" ]; then
-         QTDIR="/opt/qt57"
+         QTDIR="/opt/qt56"
       && PATH="$QTDIR/bin:$PATH"
-      && qt57-env.sh
+      && qt56-env.sh
       ;
     else
          QTDIR="/usr/local/opt/qt5"
