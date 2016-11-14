@@ -125,6 +125,21 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
                  keyEvent->modifiers().testFlag(Qt::ControlModifier)) {
             _searchWidget->activateReplace();
             return true;
+        } else if (keyEvent->key() == Qt::Key_Asterisk) {
+            return handleCharacterMatching("*");
+        } else if (keyEvent->key() == Qt::Key_QuoteDbl) {
+            return handleCharacterMatching("\"");
+        } else if (keyEvent->key() == Qt::Key_Apostrophe) {
+            return handleCharacterMatching("'");
+        } else if (keyEvent->key() == Qt::Key_acute) {
+            // for some reason this key doesn't get triggered
+            return handleCharacterMatching("`");
+        } else if (keyEvent->key() == Qt::Key_ParenLeft) {
+            return handleCharacterMatching("(", ")");
+        } else if (keyEvent->key() == Qt::Key_BraceLeft) {
+            return handleCharacterMatching("{", "}");
+        } else if (keyEvent->key() == Qt::Key_BracketLeft) {
+            return handleCharacterMatching("[", "]");
         } else if ((keyEvent->key() == Qt::Key_Down) &&
                  keyEvent->modifiers().testFlag(Qt::ControlModifier) &&
                  keyEvent->modifiers().testFlag(Qt::AltModifier)) {
@@ -188,6 +203,35 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
     }
 
     return QTextEdit::eventFilter(obj, event);
+}
+
+/**
+ * Enters a closing character after an opening character if needed
+ *
+ * @param openingCharacter
+ * @param closingCharacter
+ * @return
+ */
+bool QMarkdownTextEdit::handleCharacterMatching(QString openingCharacter,
+                                                QString closingCharacter ) {
+    if (closingCharacter.isEmpty()) {
+        closingCharacter = openingCharacter;
+    }
+
+    QTextCursor c = textCursor();
+
+    // check if there already was entered a opening character before if
+    // opening and closing characters are the same
+    if ((openingCharacter == closingCharacter) &&
+        (c.block().text().count(openingCharacter) % 2 == 1)) {
+        return false;
+    }
+
+    c.insertText(openingCharacter);
+    c.insertText(closingCharacter);
+    c.setPosition(c.position() - 1);
+    setTextCursor(c);
+    return true;
 }
 
 /**

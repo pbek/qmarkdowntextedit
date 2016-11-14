@@ -51,6 +51,8 @@ protected:
     bool handleTabEntered(bool reverse);
     QMap<QString, QString> parseMarkdownUrlsFromText(QString text);
     bool handleReturnEntered();
+    bool handleCharacterMatching(QString openingCharacter,
+                                 QString closingCharacter = "");
 
 signals:
     void urlClicked(QString url);
