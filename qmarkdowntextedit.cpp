@@ -126,6 +126,8 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
                  keyEvent->modifiers().testFlag(Qt::ControlModifier)) {
             _searchWidget->activateReplace();
             return true;
+        } else if (keyEvent->key() == Qt::Key_Delete) {
+            return handleBracketRemoval();
         } else if (keyEvent->key() == Qt::Key_Asterisk) {
             return handleBracketClosing("*");
         } else if (keyEvent->key() == Qt::Key_QuoteDbl) {
@@ -255,6 +257,32 @@ bool QMarkdownTextEdit::handleBracketClosing(QString openingCharacter,
     c.insertText(openingCharacter);
     c.insertText(closingCharacter);
     c.setPosition(c.position() - 1);
+    setTextCursor(c);
+    return true;
+}
+
+bool QMarkdownTextEdit::handleBracketRemoval() {
+    // check if bracket removal is enabled
+    if (!(_autoTextOptions & AutoTextOption::BracketRemoval)) {
+        return false;
+    }
+
+    QTextCursor c = textCursor();
+
+    // return if some text was selected
+    if (!c.selectedText().isEmpty()) {
+        return false;
+    }
+
+    int positionInBlock = c.position() - c.block().position();
+
+    // get the current text from the block
+    QString text = c.block().text();
+    // remove everything after the cursor
+    text.remove(positionInBlock, text.count());
+
+    qDebug() << __func__ << " - 'text': " << text;
+
     setTextCursor(c);
     return true;
 }

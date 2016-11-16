@@ -27,8 +27,11 @@ public:
     enum AutoTextOption {
         None = 0x0000,
 
-        // inserts closing characters for certain characters
-        BracketClosing = 0x0001
+        // inserts closing characters for brackets and markdown characters
+        BracketClosing = 0x0001,
+
+        // removes matching brackets and markdown characters
+        BracketRemoval = 0x0002
     };
 
     Q_DECLARE_FLAGS(AutoTextOptions, AutoTextOption)
@@ -50,6 +53,7 @@ public slots:
     void adjustRightMargin();
     void hide();
     bool openLinkAtCursorPosition();
+    bool handleBracketRemoval();
 
 protected:
     QMarkdownHighlighter *_highlighter;
