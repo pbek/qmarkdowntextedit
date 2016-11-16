@@ -130,11 +130,6 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             return handleBracketClosing("*");
         } else if (keyEvent->key() == Qt::Key_QuoteDbl) {
             return handleBracketClosing("\"");
-        } else if (keyEvent->key() == Qt::Key_Apostrophe) {
-            return handleBracketClosing("'");
-        } else if (keyEvent->key() == Qt::Key_acute) {
-            // for some reason this key doesn't get triggered
-            return handleBracketClosing("`");
         } else if (keyEvent->key() == Qt::Key_ParenLeft) {
             return handleBracketClosing("(", ")");
         } else if (keyEvent->key() == Qt::Key_BraceLeft) {
