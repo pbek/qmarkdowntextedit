@@ -30,6 +30,7 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent)
         : QTextEdit(parent) {
     installEventFilter(this);
     viewport()->installEventFilter(this);
+    _autoTextOptions = AutoTextOption::None;
 
     QSettings settings;
     // it is not easy to set this interval later so we use a setting
@@ -126,20 +127,22 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             _searchWidget->activateReplace();
             return true;
         } else if (keyEvent->key() == Qt::Key_Asterisk) {
-            return handleCharacterMatching("*");
+            return handleBracketClosing("*");
         } else if (keyEvent->key() == Qt::Key_QuoteDbl) {
-            return handleCharacterMatching("\"");
+            return handleBracketClosing("\"");
         } else if (keyEvent->key() == Qt::Key_Apostrophe) {
-            return handleCharacterMatching("'");
+            return handleBracketClosing("'");
         } else if (keyEvent->key() == Qt::Key_acute) {
             // for some reason this key doesn't get triggered
-            return handleCharacterMatching("`");
+            return handleBracketClosing("`");
         } else if (keyEvent->key() == Qt::Key_ParenLeft) {
-            return handleCharacterMatching("(", ")");
+            return handleBracketClosing("(", ")");
         } else if (keyEvent->key() == Qt::Key_BraceLeft) {
-            return handleCharacterMatching("{", "}");
+            return handleBracketClosing("{", "}");
         } else if (keyEvent->key() == Qt::Key_BracketLeft) {
-            return handleCharacterMatching("[", "]");
+            return handleBracketClosing("[", "]");
+        } else if (keyEvent->key() == Qt::Key_Less) {
+            return handleBracketClosing("<", ">");
         } else if ((keyEvent->key() == Qt::Key_Down) &&
                  keyEvent->modifiers().testFlag(Qt::ControlModifier) &&
                  keyEvent->modifiers().testFlag(Qt::AltModifier)) {
@@ -212,8 +215,13 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
  * @param closingCharacter
  * @return
  */
-bool QMarkdownTextEdit::handleCharacterMatching(QString openingCharacter,
-                                                QString closingCharacter ) {
+bool QMarkdownTextEdit::handleBracketClosing(QString openingCharacter,
+                                             QString closingCharacter) {
+    // check if bracket closing is enabled
+    if (!(_autoTextOptions & AutoTextOption::BracketClosing)) {
+        return false;
+    }
+
     if (closingCharacter.isEmpty()) {
         closingCharacter = openingCharacter;
     }
@@ -615,4 +623,11 @@ bool QMarkdownTextEdit::handleTabEntered(bool reverse) {
 
     // check if we want to intent the whole text
     return increaseSelectedTextIndention(reverse);
+}
+
+/**
+ * Sets the auto text options
+ */
+void QMarkdownTextEdit::setAutoTextOptions(AutoTextOptions options) {
+    _autoTextOptions = options;
 }

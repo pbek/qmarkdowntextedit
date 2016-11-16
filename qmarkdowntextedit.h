@@ -24,6 +24,15 @@ class QMarkdownTextEdit : public QTextEdit
     Q_OBJECT
 
 public:
+    enum AutoTextOption {
+        None = 0x0000,
+
+        // inserts closing characters for certain characters
+        BracketClosing = 0x0001
+    };
+
+    Q_DECLARE_FLAGS(AutoTextOptions, AutoTextOption)
+
     explicit QMarkdownTextEdit(QWidget *parent = 0);
     QMarkdownHighlighter *highlighter();
     QTextEditSearchWidget *searchWidget();
@@ -31,6 +40,7 @@ public:
     virtual void openUrl(QString urlString);
     QString getMarkdownUrlAtPosition(QString text, int position);
     void initSearchFrame(QWidget *searchFrame);
+    void setAutoTextOptions(AutoTextOptions options);
 
 public slots:
     void duplicateText();
@@ -46,13 +56,15 @@ protected:
     QStringList _ignoredClickUrlSchemata;
     QTextEditSearchWidget *_searchWidget;
     QWidget *_searchFrame;
+    AutoTextOptions _autoTextOptions;
+
     bool eventFilter(QObject *obj, QEvent *event);
     bool increaseSelectedTextIndention(bool reverse);
     bool handleTabEntered(bool reverse);
     QMap<QString, QString> parseMarkdownUrlsFromText(QString text);
     bool handleReturnEntered();
-    bool handleCharacterMatching(QString openingCharacter,
-                                 QString closingCharacter = "");
+    bool handleBracketClosing(QString openingCharacter,
+                              QString closingCharacter = "");
 
 signals:
     void urlClicked(QString url);
