@@ -219,16 +219,20 @@ bool QMarkdownTextEdit::handleBracketClosing(QString openingCharacter,
         return false;
     }
 
+    QTextCursor c = textCursor();
+    int positionInBlock = c.position() - c.block().position();
+
+    // only allow the closing if the cursor was at the end of a block
+    if (positionInBlock != c.block().text().count()) {
+        return false;
+    }
+
     if (closingCharacter.isEmpty()) {
         closingCharacter = openingCharacter;
     }
 
-    QTextCursor c = textCursor();
-
     // we don't want to close "*" when used in a list
     if (openingCharacter == "*") {
-        int positionInBlock = c.position() - c.block().position();
-
         // return if the cursor is at the beginning of the block
         if (positionInBlock == 0) {
             return false;
