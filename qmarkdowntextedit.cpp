@@ -31,6 +31,10 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent)
     installEventFilter(this);
     viewport()->installEventFilter(this);
     _autoTextOptions = AutoTextOption::None;
+    _openingCharacters =
+            QStringList() << "(" << "[" << "{" << "<" << "*" << "\"";
+    _closingCharacters =
+            QStringList() << ")" << "]" << "}" << ">" << "*" << "\"";
 
     QSettings settings;
     // it is not easy to set this interval later so we use a setting
@@ -126,7 +130,8 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
                  keyEvent->modifiers().testFlag(Qt::ControlModifier)) {
             _searchWidget->activateReplace();
             return true;
-        } else if (keyEvent->key() == Qt::Key_Delete) {
+//        } else if (keyEvent->key() == Qt::Key_Delete) {
+        } else if (keyEvent->key() == Qt::Key_Backspace) {
             return handleBracketRemoval();
         } else if (keyEvent->key() == Qt::Key_Asterisk) {
             return handleBracketClosing("*");
@@ -265,6 +270,12 @@ bool QMarkdownTextEdit::handleBracketClosing(QString openingCharacter,
     return true;
 }
 
+/**
+ * Handles removing of matching brackets and other markdown characters
+ * Only works with backspace to remove text
+ *
+ * @return
+ */
 bool QMarkdownTextEdit::handleBracketRemoval() {
     // check if bracket removal is enabled
     if (!(_autoTextOptions & AutoTextOption::BracketRemoval)) {
@@ -278,17 +289,46 @@ bool QMarkdownTextEdit::handleBracketRemoval() {
         return false;
     }
 
-    int positionInBlock = c.position() - c.block().position();
+    int position = c.position();
+    int positionInBlock = position - c.block().position();
+
+    // return if backspace was pressed at the beginning of a block
+    if (positionInBlock == 0) {
+        return false;
+    }
 
     // get the current text from the block
     QString text = c.block().text();
-    // remove everything after the cursor
-    text.remove(positionInBlock, text.count());
+    QString charInFront = text.at(positionInBlock - 1);
+    int openingCharacterIndex = _openingCharacters.indexOf(charInFront);
 
-    qDebug() << __func__ << " - 'text': " << text;
+    // return if the character in front of the cursor is no opening character
+    if (openingCharacterIndex == -1) {
+        return false;
+    }
 
+    QString closingCharacter = _closingCharacters.at(openingCharacterIndex);
+
+    // remove everything in front of the cursor
+    text.remove(0, positionInBlock);
+    int closingCharacterIndex = text.indexOf(closingCharacter);
+
+    // return if no closing character was found in the text after the cursor
+    if (closingCharacterIndex == -1) {
+        return false;
+    }
+
+    // removing the closing character
+    c.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor,
+                   closingCharacterIndex);
+    c.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor);
+    c.removeSelectedText();
+
+    // moving the cursor back to the old position so the previous character
+    // can be removed
+    c.setPosition(position);
     setTextCursor(c);
-    return true;
+    return false;
 }
 
 /**

@@ -61,6 +61,8 @@ protected:
     QTextEditSearchWidget *_searchWidget;
     QWidget *_searchFrame;
     AutoTextOptions _autoTextOptions;
+    QStringList _openingCharacters;
+    QStringList _closingCharacters;
 
     bool eventFilter(QObject *obj, QEvent *event);
     bool increaseSelectedTextIndention(bool reverse);
