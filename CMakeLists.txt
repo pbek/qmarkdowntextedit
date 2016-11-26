@@ -21,9 +21,6 @@ set(RESOURCE_FILES
 qt5_add_resources(RESOURCE_ADDED ${RESOURCE_FILES})
 
 set(SOURCE_FILES
-    lib/peg-markdown-highlight/pmh_definitions.h
-    lib/peg-markdown-highlight/pmh_parser.c
-    lib/peg-markdown-highlight/pmh_parser.h
     highlighter.cpp
     highlighter.h
     main.cpp

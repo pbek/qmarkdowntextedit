@@ -4,8 +4,6 @@
 
 QMarkdownTextEdit is a C++ Qt [QTextEdit](http://doc.qt.io/qt-5/qtextedit.html) widget with [markdown](https://en.wikipedia.org/wiki/Markdown) highlighting and some other goodies.
 
-QMarkdownTextEdit uses [PEG Markdown Highlight](https://github.com/ali-rantakari/peg-markdown-highlight) for markdown highlighting.
-
 ## Features
 - markdown highlighting
 - clickable links with `Ctrl + Click`

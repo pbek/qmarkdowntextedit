@@ -37,7 +37,7 @@ public:
     Q_DECLARE_FLAGS(AutoTextOptions, AutoTextOption)
 
     explicit QMarkdownTextEdit(QWidget *parent = 0);
-    QMarkdownHighlighter *highlighter();
+    MarkdownHighlighter *highlighter();
     QTextEditSearchWidget *searchWidget();
     void setIgnoredClickUrlSchemata(QStringList ignoredUrlSchemata);
     virtual void openUrl(QString urlString);
@@ -56,7 +56,7 @@ public slots:
     bool handleBracketRemoval();
 
 protected:
-    QMarkdownHighlighter *_highlighter;
+    MarkdownHighlighter *_highlighter;
     QStringList _ignoredClickUrlSchemata;
     QTextEditSearchWidget *_searchWidget;
     QWidget *_searchFrame;

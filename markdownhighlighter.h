@@ -16,74 +16,83 @@
  */
 
 
-#ifndef HIGHLIGHTER_H
-#define HIGHLIGHTER_H
+#pragma once
 
 #include <QTextCharFormat>
-#include <QThread>
-
-extern "C" {
-#include "lib/peg-markdown-highlight/pmh_parser.h"
-}
+#include <QSyntaxHighlighter>
+#include <QRegularExpression>
 
 QT_BEGIN_NAMESPACE
 class QTextDocument;
 
 QT_END_NAMESPACE
 
-class WorkerThread : public QThread {
-public:
-    ~WorkerThread();
-
-    void run();
-
-    char *content;
-    pmh_element **result;
-};
-
-struct HighlightingStyle {
-    pmh_element_type type;
-    QTextCharFormat format;
-};
-
-
-class QMarkdownHighlighter : public QObject {
+class MarkdownHighlighter : public QSyntaxHighlighter
+{
 Q_OBJECT
 
 public:
-    QMarkdownHighlighter(QTextDocument *parent = 0, int waitInterval = 200);
+    MarkdownHighlighter(QTextDocument *parent = 0);
 
-    void setStyles(QVector<HighlightingStyle> &styles);
+    enum HighlighterState {
+//        None,
+        Link,
+        Image = 3,
+        CodeBlock,
+        Italic = 7,
+        Bold,
+        List,
+        Comment = 11,
+        H1,
+        H2,
+        H3,
+        H4,
+        H5,
+        H6,
+        BlockQuote,
+        HorizontalRuler = 21,
+        Table,
+        InlineCodeBlock,
 
-    void parse();
+        // internal
+        CodeBlockEnd = 100
+    };
 
-    void setDefaultStyles(int defaultFontSize = 12);
+//    enum BlockState {
+//        NoBlockState = 0,
+//        H1,
+//        H2,
+//        H3,
+//        Table,
+//        CodeBlock,
+//        CodeBlockEnd
+//    };
+
+
+    void setTextFormats(QHash<HighlighterState, QTextCharFormat> formats);
+    void setTextFormat(HighlighterState state, QTextCharFormat format);
 
 protected:
+    void highlightBlock(const QString &text) Q_DECL_OVERRIDE;
 
-private slots:
+    void initTextFormats(int defaultFontSize = 12);
 
-    void handleContentsChange(int position, int charsRemoved, int charsAdded);
+    void highlightMarkdown(QString text);
 
-    void threadFinished();
+    void highlightHeadline(QString text);
 
-    void timerTimeout();
+    void highlightAdditionalRules(QString text);
 
-signals:
-    void parsingFinished();
+    void highlightCodeBlock(QString text);
+
+    void highlightCommentBlock(QString text);
 
 private:
-    QTimer *timer;
-    QTextDocument *document;
-    WorkerThread *workerThread;
-    bool parsePending;
-    pmh_element **cached_elements;
-    QVector<HighlightingStyle> *highlightingStyles;
-    bool _highlightingEnabled;
-
-    void clearFormatting();
-
-    void highlight();
+    struct HighlightingRule
+    {
+        QRegularExpression pattern;
+        HighlighterState state;
+    };
+    QVector<HighlightingRule> _highlightingRules;
+    QHash<HighlighterState, QTextCharFormat> _formats;
 };
-
-#endif

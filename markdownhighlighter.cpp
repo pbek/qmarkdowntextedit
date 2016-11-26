@@ -20,265 +20,351 @@
 #include "markdownhighlighter.h"
 
 
-WorkerThread::~WorkerThread() {
-    if (result != NULL)
-        pmh_free_elements(result);
-    free(content);
+MarkdownHighlighter::MarkdownHighlighter(QTextDocument *parent)
+        : QSyntaxHighlighter(parent) {
+    HighlightingRule rule;
+
+    // markdown syntax
+    // http://daringfireball.net/projects/markdown/syntax
+
+    // highlight bold
+    rule.pattern = QRegularExpression("\\B\\*{2}.+?\\*{2}\\B");
+    rule.state = HighlighterState::Bold;
+    _highlightingRules.append(rule);
+
+    // highlight italic
+    rule.pattern = QRegularExpression("(^|\\s)\\*[^\\*]+\\*($|\\s)");
+    rule.state = HighlighterState::Italic;
+    _highlightingRules.append(rule);
+
+    // highlight urls
+    rule.pattern = QRegularExpression("<.+?://.+?>");
+    rule.state = HighlighterState::Link;
+    _highlightingRules.append(rule);
+
+    // highlight urls with title
+    rule.pattern = QRegularExpression("\\[.+?\\]\\(.+?://.+?\\)");
+    rule.state = HighlighterState::Link;
+    _highlightingRules.append(rule);
+
+    // highlight email links
+    rule.pattern = QRegularExpression("<.+?@.+?>");
+    rule.state = HighlighterState::Link;
+    _highlightingRules.append(rule);
+
+    // highlight inline code
+    rule.pattern = QRegularExpression("`.+?`");
+    rule.state = HighlighterState::InlineCodeBlock;
+    _highlightingRules.append(rule);
+
+    // highlight unordered lists
+    rule.pattern = QRegularExpression("^\\s*[-\\*\\+]\\s");
+    rule.state = HighlighterState::List;
+    _highlightingRules.append(rule);
+
+    // highlight ordered lists
+    rule.pattern = QRegularExpression("^\\s*\\d\\.\\s");
+    rule.state = HighlighterState::List;
+    _highlightingRules.append(rule);
+
+    // highlight images
+    rule.pattern = QRegularExpression("!\\[.+?\\]\\(.+?\\)");
+    rule.state = HighlighterState::Image;
+    _highlightingRules.append(rule);
+
+    // highlight block quotes
+    rule.pattern = QRegularExpression("^> ");
+    rule.state = HighlighterState::BlockQuote;
+    _highlightingRules.append(rule);
+
+    // highlight inline comments
+    rule.pattern = QRegularExpression("<!\\-\\-.+?\\-\\->");
+    rule.state = HighlighterState::Comment;
+    _highlightingRules.append(rule);
+
+    // highlight horizontal rulers
+    rule.pattern = QRegularExpression("^([*\\-]\\s?){3,}$");
+    rule.state = HighlighterState::HorizontalRuler;
+    _highlightingRules.append(rule);
+
+    // highlight tables
+    rule.pattern = QRegularExpression("^\\|.+?\\|$");
+    rule.state = HighlighterState::Table;
+    _highlightingRules.append(rule);
+
+
+    // initialize the text formats
+    initTextFormats();
 }
 
-void WorkerThread::run() {
-    if (content == NULL)
+/**
+ * Initializes the text formats
+ *
+ * @param defaultFontSize
+ */
+void MarkdownHighlighter::initTextFormats(int defaultFontSize) {
+    QTextCharFormat format;
+
+    // set character formats for headlines
+    format = QTextCharFormat();
+    format.setForeground(QBrush(QColor(0, 49, 110)));
+    format.setBackground(QBrush(QColor(230, 230, 240)));
+    format.setFontWeight(QFont::Bold);
+    format.setFontPointSize(defaultFontSize * 1.2);
+    _formats[H1] = format;
+    format.setFontPointSize(defaultFontSize * 1.1);
+    _formats[H2] = format;
+    format.setFontPointSize(defaultFontSize);
+    _formats[H3] = format;
+    _formats[H4] = format;
+    _formats[H5] = format;
+    _formats[H6] = format;
+
+    // set character format for horizontal rulers
+    format = QTextCharFormat();
+    format.setForeground(QBrush(Qt::darkGray));
+    format.setBackground(QBrush(Qt::lightGray));
+    _formats[HorizontalRuler] = format;
+
+    // set character format for lists
+    format = QTextCharFormat();
+    format.setForeground(QBrush(QColor(163, 0, 123)));
+    _formats[List] = format;
+
+    // set character format for links
+    format = QTextCharFormat();
+    format.setForeground(QBrush(QColor(255, 128, 0)));
+    format.setBackground(QBrush(QColor(255, 233, 211)));
+    _formats[Link] = format;
+
+    // set character format for images
+    format = QTextCharFormat();
+    format.setForeground(QBrush(QColor(0, 191, 0)));
+    format.setBackground(QBrush(QColor(228, 255, 228)));
+    _formats[Image] = format;
+
+    // set character format for code blocks
+    format = QTextCharFormat();
+    format.setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+    format.setForeground(QBrush(Qt::darkGreen));
+    format.setBackground(QBrush(QColor(217, 231, 217)));
+    _formats[CodeBlock] = format;
+    _formats[InlineCodeBlock] = format;
+
+    // set character format for italic
+    format = QTextCharFormat();
+    format.setFontWeight(QFont::StyleItalic);
+    format.setForeground(QBrush(QColor(0, 87, 174)));
+    _formats[Italic] = format;
+
+    // set character format for bold
+    format = QTextCharFormat();
+    format.setFontWeight(QFont::Bold);
+    format.setForeground(QBrush(QColor(0, 66, 138)));
+    _formats[Bold] = format;
+
+    // set character format for comments
+    format = QTextCharFormat();
+    format.setForeground(QBrush(Qt::gray));
+    _formats[Comment] = format;
+
+    // set character format for tables
+    format = QTextCharFormat();
+    format.setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+    format.setForeground(QBrush(QColor("#649449")));
+    _formats[Table] = format;
+
+    // set character format for block quotes
+    format = QTextCharFormat();
+    format.setForeground(QBrush(QColor(Qt::darkRed)));
+    _formats[BlockQuote] = format;
+}
+
+/**
+ * Sets the text formats
+ *
+ * @param formats
+ */
+void MarkdownHighlighter::setTextFormats(
+        QHash<HighlighterState, QTextCharFormat> formats) {
+    _formats = formats;
+}
+
+/**
+ * Sets a text format
+ *
+ * @param formats
+ */
+void MarkdownHighlighter::setTextFormat(HighlighterState state,
+                                        QTextCharFormat format) {
+    _formats[state] = format;
+}
+
+/**
+ * Does the markdown highlighting
+ *
+ * @param text
+ */
+void MarkdownHighlighter::highlightBlock(const QString &text) {
+    setCurrentBlockState(-1);
+    highlightMarkdown(text);
+}
+
+void MarkdownHighlighter::highlightMarkdown(QString text) {
+    if (!text.isEmpty()) {
+        highlightAdditionalRules(text);
+
+        // needs to be called after the horizontal ruler highlighting
+        highlightHeadline(text);
+    }
+
+    highlightCommentBlock(text);
+    highlightCodeBlock(text);
+}
+
+/**
+ * Highlight headlines
+ *
+ * @param text
+ */
+void MarkdownHighlighter::highlightHeadline(QString text) {
+    QRegularExpression re("^(#+) .+?$");
+    QRegularExpressionMatch match = re.match(text);
+
+    // check for headline blocks with # in front of them
+    if (match.hasMatch()) {
+        int count = match.captured(1).count();
+
+        // we just have H1 to H6
+        count = qMin(count, 6);
+
+        HighlighterState state = HighlighterState(
+                HighlighterState::H1 + count - 1);
+
+        setFormat(match.capturedStart(), match.capturedLength(),
+                  _formats[state]);
+        setCurrentBlockState(state);
         return;
-    pmh_markdown_to_elements(content, pmh_EXT_NONE, &result);
-}
-
-
-QMarkdownHighlighter::QMarkdownHighlighter(QTextDocument *parent,
-                                           int waitInterval) : QObject(
-        parent) {
-    highlightingStyles = NULL;
-    workerThread = NULL;
-    cached_elements = NULL;
-    _highlightingEnabled = waitInterval > 0;
-    document = parent;
-
-    connect(document, SIGNAL(contentsChange(int, int, int)),
-            this, SLOT(handleContentsChange(int, int, int)));
-
-    if (_highlightingEnabled) {
-        timer = new QTimer(this);
-        timer->setSingleShot(true);
-        timer->setInterval(waitInterval);
-        connect(timer, SIGNAL(timeout()), this, SLOT(timerTimeout()));
-        this->parse();
-    }
-}
-
-void QMarkdownHighlighter::setStyles(QVector<HighlightingStyle> &styles) {
-    this->highlightingStyles = &styles;
-}
-
-
-// The initial define causes an error with Visual Studio 2015:
-// "error C4576: a parenthesized type followed by an initializer list is
-// a non-standard explicit type conversion syntax"
-// The replacement works, probably also on other platforms (to be tested)
-//#define STY(type, format) styles->append((HighlightingStyle){type, format})
-#define STY(type, format) styles->append({type, format})
-
-void QMarkdownHighlighter::setDefaultStyles(int defaultFontSize) {
-    QVector<HighlightingStyle> *styles = new QVector<HighlightingStyle>();
-
-    QTextCharFormat headers;
-    headers.setForeground(QBrush(QColor(0, 49, 110)));
-    headers.setBackground(QBrush(QColor(230, 230, 240)));
-    headers.setFontWeight(QFont::Bold);
-    headers.setFontPointSize(defaultFontSize * 1.2);
-    STY(pmh_H1, headers);
-
-    headers.setFontPointSize(defaultFontSize * 1.1);
-    STY(pmh_H2, headers);
-
-    headers.setFontPointSize(defaultFontSize);
-    STY(pmh_H3, headers);
-    STY(pmh_H4, headers);
-    STY(pmh_H5, headers);
-    STY(pmh_H6, headers);
-
-    QTextCharFormat hrule;
-    hrule.setForeground(QBrush(Qt::darkGray));
-    hrule.setBackground(QBrush(Qt::lightGray));
-    STY(pmh_HRULE, hrule);
-
-    /* <ul> */
-    QTextCharFormat list;
-    list.setForeground(QBrush(QColor(163, 0, 123)));
-    STY(pmh_LIST_BULLET, list);
-    STY(pmh_LIST_ENUMERATOR, list);
-
-    /* <a href> */
-    QTextCharFormat link;
-    link.setForeground(QBrush(QColor(255, 128, 0)));
-    link.setBackground(QBrush(QColor(255, 233, 211)));
-    STY(pmh_LINK, link);
-    STY(pmh_AUTO_LINK_URL, link);
-    STY(pmh_AUTO_LINK_EMAIL, link);
-
-    /* <img> */
-    QTextCharFormat image;
-    image.setForeground(QBrush(QColor(0, 191, 0)));
-    image.setBackground(QBrush(QColor(228, 255, 228)));
-    STY(pmh_IMAGE, image);
-
-    QTextCharFormat ref;
-    ref.setForeground(QBrush(QColor(213, 178, 178)));
-    STY(pmh_REFERENCE, ref);
-
-    /* <pre> */
-    QTextCharFormat code;
-    QFont codeFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
-    code.setFont(codeFont);
-    code.setForeground(QBrush(Qt::darkGreen));
-    code.setBackground(QBrush(QColor(217, 231, 217)));
-    STY(pmh_CODE, code);
-    STY(pmh_VERBATIM, code);
-
-    /* <em> */
-    QTextCharFormat emph;
-    emph.setForeground(QBrush(QColor(0, 87, 174)));
-    emph.setFontItalic(true);
-    STY(pmh_EMPH, emph);
-
-    /* <strong> */
-    QTextCharFormat strong;
-    strong.setForeground(QBrush(QColor(0, 66, 138)));
-    strong.setFontWeight(QFont::Bold);
-    STY(pmh_STRONG, strong);
-
-    QTextCharFormat comment;
-    comment.setForeground(QBrush(Qt::gray));
-    STY(pmh_COMMENT, comment);
-
-    QTextCharFormat blockquote;
-    blockquote.setForeground(QBrush(Qt::darkRed));
-    STY(pmh_BLOCKQUOTE, blockquote);
-
-    this->setStyles(*styles);
-}
-
-void QMarkdownHighlighter::clearFormatting() {
-    QTextBlock block = document->firstBlock();
-    while (block.isValid()) {
-        block.layout()->clearAdditionalFormats();
-        block = block.next();
-    }
-}
-
-void QMarkdownHighlighter::highlight() {
-    if (cached_elements == NULL) {
-        qDebug() << "cached_elements is NULL";
-        return;
     }
 
-    if (highlightingStyles == NULL)
-        this->setDefaultStyles();
+    // take care of ==== and ---- headlines
+    QRegularExpression patternH1 = QRegularExpression("^=+$");
+    QRegularExpression patternH2 = QRegularExpression("^\\-+$");
 
-    this->clearFormatting();
+    // check for ===== after a headline and highlight as H1
+    if (patternH1.match(text).hasMatch()) {
+        QTextBlock previousBlock = currentBlock().previous();
 
-    for (int i = 0; i < highlightingStyles->size(); i++) {
-        HighlightingStyle style = highlightingStyles->at(i);
-        pmh_element *elem_cursor = cached_elements[style.type];
-        while (elem_cursor != NULL) {
-            if (elem_cursor->end <= elem_cursor->pos) {
-                elem_cursor = elem_cursor->next;
-                continue;
-            }
+        if (previousBlockState() == HighlighterState::H1 &&
+                previousBlock.isValid()) {
+//            rehighlightBlock(previousBlock);
+//            previousBlock.set
+//            rehighlight();
 
-            // "The QTextLayout object can only be modified from the
-            // documentChanged implementation of a QAbstractTextDocumentLayout
-            // subclass. Any changes applied from the outside cause undefined
-            // behavior." -- we are breaking this rule here. There might be
-            // a better (more correct) way to do this.
-
-            int startBlockNum = document->findBlock(
-                    elem_cursor->pos).blockNumber();
-            int endBlockNum = document->findBlock(
-                    elem_cursor->end).blockNumber();
-            for (int j = startBlockNum; j <= endBlockNum; j++) {
-                QTextBlock block = document->findBlockByNumber(j);
-
-                QTextLayout *layout = block.layout();
-
-                // sometime we get NULL and would crash
-                if (layout == NULL) {
-                    continue;
-                }
-
-                QList<QTextLayout::FormatRange> list =
-                        layout->additionalFormats();
-                int blockpos = block.position();
-                QTextLayout::FormatRange r;
-                r.format = style.format;
-
-                if (j == startBlockNum) {
-                    r.start = elem_cursor->pos - blockpos;
-                    r.length = (startBlockNum == endBlockNum)
-                               ? elem_cursor->end - elem_cursor->pos
-                               : block.length() - r.start;
-
-                    // save the element type for later processing
-                    // we do that just here because some blocks had the
-                    // wrong type if we do it for all if-cases
-                    block.setUserState(style.type);
-                } else if (j == endBlockNum) {
-                    r.start = 0;
-                    r.length = elem_cursor->end - blockpos;
-                } else {
-                    r.start = 0;
-                    r.length = block.length();
-                }
-
-                list.append(r);
-                layout->setAdditionalFormats(list);
-            }
-
-            elem_cursor = elem_cursor->next;
+//            QTimer::singleShot(150, this, SLOT(rehighlight()));
+            setFormat(0, text.length(), _formats[HighlighterState::H1]);
         }
-    }
 
-    document->markContentsDirty(0, document->characterCount());
-}
-
-void QMarkdownHighlighter::parse() {
-    if (!_highlightingEnabled) {
         return;
     }
 
-    if (workerThread != NULL && workerThread->isRunning()) {
-        parsePending = true;
+    // check for ----- after a headline and highlight as H2
+    if (patternH2.match(text).hasMatch()) {
+        QTextBlock previousBlock = currentBlock().previous();
+
+        if (previousBlockState() == HighlighterState::H2 &&
+                previousBlock.isValid()) {
+            setFormat(0, text.length(), _formats[HighlighterState::H2]);
+        }
+
         return;
     }
 
-    QString content = document->toPlainText();
-    QByteArray ba = content.toUtf8();
-    char *content_cstring = strdup((char *) ba.data());
+    QTextBlock nextBlock = currentBlock().next();
+    QString nextBlockText = nextBlock.text();
 
-    if (workerThread != NULL)
-        delete workerThread;
-    workerThread = new WorkerThread();
-    workerThread->content = content_cstring;
-    connect(workerThread, SIGNAL(finished()), this, SLOT(threadFinished()));
-    parsePending = false;
-    workerThread->start();
-}
-
-void QMarkdownHighlighter::threadFinished() {
-    if (parsePending) {
-        this->parse();
-        return;
+    // highlight as H1 if next block is =====
+    if (patternH1.match(nextBlockText).hasMatch() ||
+            patternH2.match(nextBlockText).hasMatch()) {
+        setFormat(0, text.length(), _formats[HighlighterState::H1]);
+        setCurrentBlockState(HighlighterState::H1);
     }
 
-    if (cached_elements != NULL)
-        pmh_free_elements(cached_elements);
-    cached_elements = workerThread->result;
-    workerThread->result = NULL;
-
-    this->highlight();
-    emit(parsingFinished());
+    // highlight as H2 if next block is -----
+    if (patternH2.match(nextBlockText).hasMatch()) {
+        setFormat(0, text.length(), _formats[HighlighterState::H2]);
+        setCurrentBlockState(HighlighterState::H2);
+    }
 }
 
-void QMarkdownHighlighter::handleContentsChange(int position, int charsRemoved,
-                                                int charsAdded) {
-    Q_UNUSED(position);
+/**
+ * Highlight multiline code blocks
+ *
+ * @param text
+ */
+void MarkdownHighlighter::highlightCodeBlock(QString text) {
+    bool highlight = false;
 
-    if ((charsRemoved == 0 && charsAdded == 0) || !_highlightingEnabled) {
-        return;
+    QRegularExpression re("^```\\w*?$");
+    QRegularExpressionMatch match = re.match(text);
+
+    if (match.hasMatch()) {
+        setCurrentBlockState(
+                previousBlockState() == HighlighterState::CodeBlock ?
+                HighlighterState::CodeBlockEnd : HighlighterState::CodeBlock);
+        highlight = true;
+    } else if (previousBlockState() == HighlighterState::CodeBlock) {
+        setCurrentBlockState(HighlighterState::CodeBlock);
+        highlight = true;
     }
 
-    timer->stop();
-    timer->start();
+    if (highlight) {
+        setFormat(0, text.length(), _formats[HighlighterState::CodeBlock]);
+    }
 }
 
-void QMarkdownHighlighter::timerTimeout() {
-    this->parse();
+/**
+ * Highlight multiline comments
+ *
+ * @param text
+ */
+void MarkdownHighlighter::highlightCommentBlock(QString text) {
+    qDebug() << __func__ << " - 'previousBlockState()': "
+             << previousBlockState();
+    qDebug() << __func__ << " - 'text': " << text;
+
+    bool highlight = false;
+    QString startText = "<!--";
+    QString endText = "-->";
+
+    if ((text == startText) ||
+            ((text != endText) &&
+                    ((previousBlockState() == HighlighterState::Comment)))) {
+        setCurrentBlockState(HighlighterState::Comment);
+        highlight = true;
+    } else if (text == endText) {
+        highlight = true;
+    }
+
+    if (highlight) {
+        setFormat(0, text.length(), _formats[HighlighterState::Comment]);
+    }
+}
+
+/**
+ * Highlights the rules from the _highlightingRules list
+ *
+ * @param text
+ */
+void MarkdownHighlighter::highlightAdditionalRules(QString text) {
+    foreach(const HighlightingRule &rule, _highlightingRules) {
+            QRegularExpression expression(rule.pattern);
+            QRegularExpressionMatchIterator i = expression.globalMatch(text);
+
+            while (i.hasNext()) {
+                QRegularExpressionMatch match = i.next();
+                setFormat(match.capturedStart(), match.capturedLength(),
+                          _formats[rule.state]);
+            }
+        }
 }

@@ -38,10 +38,12 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent)
 
     QSettings settings;
     // it is not easy to set this interval later so we use a setting
-    int interval = settings.value("markdownHighlightingInterval", 200).toInt();
+    bool highlightingEnabled = settings.value("markdownHighlightingEnabled",
+                                              true).toBool();
 
     // setup the markdown highlighting
-    _highlighter = new QMarkdownHighlighter(document(), interval);
+    _highlighter = new MarkdownHighlighter(highlightingEnabled ? document() :
+                                           new QTextDocument());
 
     QFont font = this->font();
 
@@ -461,7 +463,7 @@ void QMarkdownTextEdit::openUrl(QString urlString) {
  * @brief Returns the highlighter instance
  * @return
  */
-QMarkdownHighlighter *QMarkdownTextEdit::highlighter() {
+MarkdownHighlighter *QMarkdownTextEdit::highlighter() {
     return _highlighter;
 }
 
