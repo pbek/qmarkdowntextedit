@@ -329,10 +329,6 @@ void MarkdownHighlighter::highlightCodeBlock(QString text) {
  * @param text
  */
 void MarkdownHighlighter::highlightCommentBlock(QString text) {
-    qDebug() << __func__ << " - 'previousBlockState()': "
-             << previousBlockState();
-    qDebug() << __func__ << " - 'text': " << text;
-
     bool highlight = false;
     QString startText = "<!--";
     QString endText = "-->";
