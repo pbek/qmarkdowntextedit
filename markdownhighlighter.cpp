@@ -274,10 +274,10 @@ void MarkdownHighlighter::highlightHeadline(QString text) {
 
     // take care of ==== and ---- headlines
     QRegularExpression patternH1 = QRegularExpression("^=+$");
-    QRegularExpression patternH2 = QRegularExpression("^\\-+$");
+    QRegularExpression patternH2 = QRegularExpression("^-+$");
     QTextBlock previousBlock = currentBlock().previous();
     QString previousText = previousBlock.text();
-    previousText.remove(QRegularExpression("[=-\\s]"));
+    previousText.trimmed().remove(QRegularExpression("[=-]"));
 
     // check for ===== after a headline text and highlight as H1
     if (patternH1.match(text).hasMatch()) {
@@ -287,12 +287,12 @@ void MarkdownHighlighter::highlightHeadline(QString text) {
             setFormat(0, text.length(), _formats[HighlighterState::H1]);
             setCurrentBlockState(HighlighterState::HeadlineEnd);
 
-            // set the style of the previous block
-            QTextCursor cursor(document());
-            cursor.setPosition(previousBlock.position());
-            cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor,
-                                 previousBlock.length());
             // TODO: can causes text to be formatted the same way when writing after this text
+            // set the style of the previous block
+//            QTextCursor cursor(document());
+//            cursor.setPosition(previousBlock.position());
+//            cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor,
+//                                previousBlock.length());
 //            cursor.setCharFormat(_formats[HighlighterState::H1]);
             previousBlock.setUserState(HighlighterState::H1);
         }
@@ -308,12 +308,12 @@ void MarkdownHighlighter::highlightHeadline(QString text) {
             setFormat(0, text.length(), _formats[HighlighterState::H2]);
             setCurrentBlockState(HighlighterState::HeadlineEnd);
 
-            // set the style of the previous block
-            QTextCursor cursor(document());
-            cursor.setPosition(previousBlock.position());
-            cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor,
-                                previousBlock.length());
             // TODO: can causes text to be formatted the same way when writing after this text
+            // set the style of the previous block
+//            QTextCursor cursor(document());
+//            cursor.setPosition(previousBlock.position());
+//            cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor,
+//                                previousBlock.length());
 //            cursor.setCharFormat(_formats[HighlighterState::H2]);
             previousBlock.setUserState(HighlighterState::H2);
         }
