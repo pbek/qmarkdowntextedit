@@ -34,6 +34,44 @@
  */
 MarkdownHighlighter::MarkdownHighlighter(QTextDocument *parent)
         : QSyntaxHighlighter(parent) {
+    _dirtyBlockTimer = new QTimer(this);
+    QObject::connect(_dirtyBlockTimer, SIGNAL(timeout()),
+                     this, SLOT(reHighlightDirtyBlocks()));
+    _dirtyBlockTimer->start(1000);
+
+    // initialize the highlighting rules
+    initHighlightingRules();
+
+    // initialize the text formats
+    initTextFormats();
+}
+
+/**
+ * Re-highlights all dirty blocks
+ */
+void MarkdownHighlighter::reHighlightDirtyBlocks() {
+    while (_dirtyTextBlocks.count() > 0) {
+        QTextBlock block = _dirtyTextBlocks.at(0);
+        rehighlightBlock(block);
+        _dirtyTextBlocks.removeFirst();
+    }
+}
+
+/**
+ * Adds a dirty block to the list if it doesn't already exist
+ *
+ * @param block
+ */
+void MarkdownHighlighter::addDirtyBlock(QTextBlock block) {
+    if (!_dirtyTextBlocks.contains(block)) {
+        _dirtyTextBlocks.append(block);
+    }
+}
+
+/**
+ * Initializes the highlighting rules
+ */
+void MarkdownHighlighter::initHighlightingRules() {
     HighlightingRule rule;
 
     // highlight bold
@@ -127,10 +165,6 @@ MarkdownHighlighter::MarkdownHighlighter(QTextDocument *parent)
     _highlightingRules.append(rule);
     rule.pattern = QRegularExpression("^.+? \\| .+? \\| .+$");
     _highlightingRules.append(rule);
-
-
-    // initialize the text formats
-    initTextFormats();
 }
 
 /**
@@ -300,15 +334,15 @@ void MarkdownHighlighter::highlightHeadline(QString text) {
                 (previousText.length() > 0)) {
             setFormat(0, text.length(), _formats[HighlighterState::H1]);
             setCurrentBlockState(HighlighterState::HeadlineEnd);
-
-            // TODO: can causes text to be formatted the same way when writing after this text
-            // set the style of the previous block
-//            QTextCursor cursor(document());
-//            cursor.setPosition(previousBlock.position());
-//            cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor,
-//                                previousBlock.length());
-//            cursor.setCharFormat(_formats[HighlighterState::H1]);
             previousBlock.setUserState(HighlighterState::H1);
+
+            // we want to re-highlight the previous block
+            // this must not done directly, but with a queue, otherwise it
+            // will crash
+            // setting the character format of the previous text, because this
+            // causes text to be formatted the same way when writing after
+            // the text
+            addDirtyBlock(previousBlock);
         }
 
         return;
@@ -321,15 +355,10 @@ void MarkdownHighlighter::highlightHeadline(QString text) {
             (previousText.length() > 0)) {
             setFormat(0, text.length(), _formats[HighlighterState::H2]);
             setCurrentBlockState(HighlighterState::HeadlineEnd);
-
-            // TODO: can causes text to be formatted the same way when writing after this text
-            // set the style of the previous block
-//            QTextCursor cursor(document());
-//            cursor.setPosition(previousBlock.position());
-//            cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor,
-//                                previousBlock.length());
-//            cursor.setCharFormat(_formats[HighlighterState::H2]);
             previousBlock.setUserState(HighlighterState::H2);
+
+            // we want to re-highlight the previous block
+            addDirtyBlock(previousBlock);
         }
 
         return;

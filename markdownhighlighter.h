@@ -78,6 +78,9 @@ public:
 signals:
     void highlightingFinished();
 
+protected slots:
+    void reHighlightDirtyBlocks();
+
 protected:
     void highlightBlock(const QString &text) Q_DECL_OVERRIDE;
 
@@ -93,6 +96,10 @@ protected:
 
     void highlightCommentBlock(QString text);
 
+    void initHighlightingRules();
+
+    void addDirtyBlock(QTextBlock block);
+
 private:
     struct HighlightingRule {
         QRegularExpression pattern;
@@ -102,5 +109,7 @@ private:
     };
 
     QVector<HighlightingRule> _highlightingRules;
+    QVector<QTextBlock> _dirtyTextBlocks;
     QHash<HighlighterState, QTextCharFormat> _formats;
+    QTimer *_dirtyBlockTimer;
 };
