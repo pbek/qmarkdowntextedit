@@ -277,7 +277,7 @@ void MarkdownHighlighter::highlightHeadline(QString text) {
     QRegularExpression patternH2 = QRegularExpression("^\\-+$");
     QTextBlock previousBlock = currentBlock().previous();
     QString previousText = previousBlock.text();
-    previousText.trimmed();
+    previousText.remove(QRegularExpression("[=-\\s]"));
 
     // check for ===== after a headline text and highlight as H1
     if (patternH1.match(text).hasMatch()) {
@@ -292,7 +292,8 @@ void MarkdownHighlighter::highlightHeadline(QString text) {
             cursor.setPosition(previousBlock.position());
             cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor,
                                  previousBlock.length());
-            cursor.setCharFormat(_formats[HighlighterState::H1]);
+            // TODO: can causes text to be formatted the same way when writing after this text
+//            cursor.setCharFormat(_formats[HighlighterState::H1]);
             previousBlock.setUserState(HighlighterState::H1);
         }
 
@@ -312,7 +313,8 @@ void MarkdownHighlighter::highlightHeadline(QString text) {
             cursor.setPosition(previousBlock.position());
             cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor,
                                 previousBlock.length());
-            cursor.setCharFormat(_formats[HighlighterState::H2]);
+            // TODO: can causes text to be formatted the same way when writing after this text
+//            cursor.setCharFormat(_formats[HighlighterState::H2]);
             previousBlock.setUserState(HighlighterState::H2);
         }
 
