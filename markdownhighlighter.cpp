@@ -20,12 +20,21 @@
 #include "markdownhighlighter.h"
 
 
+/**
+ * Markdown syntax highlighting
+ *
+ * markdown syntax:
+ * http://daringfireball.net/projects/markdown/syntax
+ *
+ * regexp tester:
+ * https://regex101.com
+ *
+ * @param parent
+ * @return
+ */
 MarkdownHighlighter::MarkdownHighlighter(QTextDocument *parent)
         : QSyntaxHighlighter(parent) {
     HighlightingRule rule;
-
-    // markdown syntax
-    // http://daringfireball.net/projects/markdown/syntax
 
     // highlight bold
     rule.pattern = QRegularExpression("\\B\\*{2}.+?\\*{2}\\B");
@@ -62,6 +71,11 @@ MarkdownHighlighter::MarkdownHighlighter(QTextDocument *parent)
     // highlight inline code
     rule.pattern = QRegularExpression("`.+?`");
     rule.state = HighlighterState::InlineCodeBlock;
+    _highlightingRules.append(rule);
+
+    // highlight code blocks with spaces or a \t in front of them
+    rule.pattern = QRegularExpression("^(\\t|(  )).+$");
+    rule.state = HighlighterState::CodeBlock;
     _highlightingRules.append(rule);
 
     // highlight unordered lists
