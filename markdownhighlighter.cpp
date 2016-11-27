@@ -214,7 +214,8 @@ void MarkdownHighlighter::setTextFormat(HighlighterState state,
  * @param text
  */
 void MarkdownHighlighter::highlightBlock(const QString &text) {
-    setCurrentBlockState(-1);
+    setCurrentBlockState(HighlighterState::NoState);
+    currentBlock().setUserState(HighlighterState::NoState);
     highlightMarkdown(text);
     emit(highlightingFinished());
 }
@@ -260,31 +261,45 @@ void MarkdownHighlighter::highlightHeadline(QString text) {
     // take care of ==== and ---- headlines
     QRegularExpression patternH1 = QRegularExpression("^=+$");
     QRegularExpression patternH2 = QRegularExpression("^\\-+$");
+    QTextBlock previousBlock = currentBlock().previous();
+    QString previousText = previousBlock.text();
+    previousText.trimmed();
 
-    // check for ===== after a headline and highlight as H1
+    // check for ===== after a headline text and highlight as H1
     if (patternH1.match(text).hasMatch()) {
-        QTextBlock previousBlock = currentBlock().previous();
-
-        if (previousBlockState() == HighlighterState::H1 &&
-                previousBlock.isValid()) {
-//            rehighlightBlock(previousBlock);
-//            previousBlock.set
-//            rehighlight();
-
-//            QTimer::singleShot(150, this, SLOT(rehighlight()));
+        if (((previousBlockState() == HighlighterState::H1) ||
+                (previousBlockState() == HighlighterState::NoState)) &&
+                (previousText.length() > 0)) {
             setFormat(0, text.length(), _formats[HighlighterState::H1]);
+            setCurrentBlockState(HighlighterState::HeadlineEnd);
+
+            // set the style of the previous block
+            QTextCursor cursor(document());
+            cursor.setPosition(previousBlock.position());
+            cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor,
+                                 previousBlock.length());
+            cursor.setCharFormat(_formats[HighlighterState::H1]);
+            previousBlock.setUserState(HighlighterState::H1);
         }
 
         return;
     }
 
-    // check for ----- after a headline and highlight as H2
+    // check for ----- after a headline text and highlight as H2
     if (patternH2.match(text).hasMatch()) {
-        QTextBlock previousBlock = currentBlock().previous();
-
-        if (previousBlockState() == HighlighterState::H2 &&
-                previousBlock.isValid()) {
+        if (((previousBlockState() == HighlighterState::H2) ||
+             (previousBlockState() == HighlighterState::NoState)) &&
+            (previousText.length() > 0)) {
             setFormat(0, text.length(), _formats[HighlighterState::H2]);
+            setCurrentBlockState(HighlighterState::HeadlineEnd);
+
+            // set the style of the previous block
+            QTextCursor cursor(document());
+            cursor.setPosition(previousBlock.position());
+            cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor,
+                                previousBlock.length());
+            cursor.setCharFormat(_formats[HighlighterState::H2]);
+            previousBlock.setUserState(HighlighterState::H2);
         }
 
         return;

@@ -37,7 +37,8 @@ public:
     // we use some predefined numbers here to be compatible with
     // the peg-markdown parser
     enum HighlighterState {
-        Link,
+        NoState = -1,
+        Link = 0,
         Image = 3,
         CodeBlock,
         Italic = 7,
@@ -56,7 +57,8 @@ public:
         InlineCodeBlock,
 
         // internal
-        CodeBlockEnd = 100
+        CodeBlockEnd = 100,
+        HeadlineEnd
     };
 
 //    enum BlockState {
