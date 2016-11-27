@@ -10,9 +10,7 @@
  * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
  * for more details.
  *
- * highlighter.cpp
- *
- * QTextEdit highlighter
+ * QTextEdit markdown highlighter
  */
 
 
