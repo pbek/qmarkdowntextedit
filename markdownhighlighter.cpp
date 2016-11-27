@@ -44,12 +44,19 @@ MarkdownHighlighter::MarkdownHighlighter(QTextDocument *parent)
 
     // highlight urls with title
     rule.pattern = QRegularExpression("\\[.+?\\]\\(.+?://.+?\\)");
-    rule.state = HighlighterState::Link;
     _highlightingRules.append(rule);
 
     // highlight email links
     rule.pattern = QRegularExpression("<.+?@.+?>");
-    rule.state = HighlighterState::Link;
+    _highlightingRules.append(rule);
+
+    // highlight reference links
+    rule.pattern = QRegularExpression("\\[.+?\\]\\[\\d+\\]");
+    _highlightingRules.append(rule);
+
+    // highlight the reference of reference links
+    rule.pattern = QRegularExpression("^\\[\\d+?\\]: .+://.+$");
+    rule.state = HighlighterState::Comment;
     _highlightingRules.append(rule);
 
     // highlight inline code
@@ -64,7 +71,6 @@ MarkdownHighlighter::MarkdownHighlighter(QTextDocument *parent)
 
     // highlight ordered lists
     rule.pattern = QRegularExpression("^\\s*\\d\\.\\s");
-    rule.state = HighlighterState::List;
     _highlightingRules.append(rule);
 
     // highlight images
@@ -83,13 +89,15 @@ MarkdownHighlighter::MarkdownHighlighter(QTextDocument *parent)
     _highlightingRules.append(rule);
 
     // highlight horizontal rulers
-    rule.pattern = QRegularExpression("^([*\\-]\\s?){3,}$");
+    rule.pattern = QRegularExpression("^([*\\-_]\\s?){3,}$");
     rule.state = HighlighterState::HorizontalRuler;
     _highlightingRules.append(rule);
 
     // highlight tables
     rule.pattern = QRegularExpression("^\\|.+?\\|$");
     rule.state = HighlighterState::Table;
+    _highlightingRules.append(rule);
+    rule.pattern = QRegularExpression("^.+? \\| .+? \\| .+$");
     _highlightingRules.append(rule);
 
 
@@ -208,6 +216,7 @@ void MarkdownHighlighter::setTextFormat(HighlighterState state,
 void MarkdownHighlighter::highlightBlock(const QString &text) {
     setCurrentBlockState(-1);
     highlightMarkdown(text);
+    emit(highlightingFinished());
 }
 
 void MarkdownHighlighter::highlightMarkdown(QString text) {
@@ -244,6 +253,7 @@ void MarkdownHighlighter::highlightHeadline(QString text) {
         setFormat(match.capturedStart(), match.capturedLength(),
                   _formats[state]);
         setCurrentBlockState(state);
+        currentBlock().setUserState(state);
         return;
     }
 
@@ -288,12 +298,14 @@ void MarkdownHighlighter::highlightHeadline(QString text) {
             patternH2.match(nextBlockText).hasMatch()) {
         setFormat(0, text.length(), _formats[HighlighterState::H1]);
         setCurrentBlockState(HighlighterState::H1);
+        currentBlock().setUserState(HighlighterState::H1);
     }
 
     // highlight as H2 if next block is -----
     if (patternH2.match(nextBlockText).hasMatch()) {
         setFormat(0, text.length(), _formats[HighlighterState::H2]);
         setCurrentBlockState(HighlighterState::H2);
+        currentBlock().setUserState(HighlighterState::H2);
     }
 }
 

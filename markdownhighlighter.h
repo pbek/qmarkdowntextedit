@@ -72,6 +72,9 @@ public:
     void setTextFormats(QHash<HighlighterState, QTextCharFormat> formats);
     void setTextFormat(HighlighterState state, QTextCharFormat format);
 
+signals:
+    void highlightingFinished();
+
 protected:
     void highlightBlock(const QString &text) Q_DECL_OVERRIDE;
 
