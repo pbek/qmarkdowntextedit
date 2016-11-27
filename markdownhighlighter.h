@@ -97,9 +97,10 @@ private:
     struct HighlightingRule {
         QRegularExpression pattern;
         HighlighterState state;
-        bool useStateAsCurrentBlockState = false;
-        bool disableIfCurrentStateIsSet = false;
+        bool useStateAsCurrentBlockState;
+        bool disableIfCurrentStateIsSet;
     };
+
     QVector<HighlightingRule> _highlightingRules;
     QHash<HighlighterState, QTextCharFormat> _formats;
 };
