@@ -36,14 +36,10 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent)
     _closingCharacters =
             QStringList() << ")" << "]" << "}" << ">" << "*" << "\"";
 
-    QSettings settings;
-    // it is not easy to set this interval later so we use a setting
-    bool highlightingEnabled = settings.value("markdownHighlightingEnabled",
-                                              true).toBool();
-
-    // setup the markdown highlighting
-    _highlighter = new MarkdownHighlighter(highlightingEnabled ? document() :
-                                           new QTextDocument());
+    // markdown highlighting es enabled by default
+    _highlightingEnabled = true;
+    _highlighter = new MarkdownHighlighter(document());
+//    setHighlightingEnabled(true);
 
     QFont font = this->font();
 
@@ -72,6 +68,24 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent)
 
     // workaround for disabled signals up initialization
     QTimer::singleShot(300, this, SLOT(adjustRightMargin()));
+}
+
+/**
+ * Enables or disables the markdown highlighting
+ *
+ * @param enabled
+ */
+void QMarkdownTextEdit::setHighlightingEnabled(bool enabled) {
+    if (_highlightingEnabled == enabled) {
+        return;
+    }
+
+    _highlighter->setDocument(enabled ? document() : Q_NULLPTR);
+    _highlightingEnabled = enabled;
+
+    if (enabled) {
+        _highlighter->rehighlight();
+    }
 }
 
 /**

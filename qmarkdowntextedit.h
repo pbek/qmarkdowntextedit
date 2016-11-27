@@ -44,6 +44,7 @@ public:
     QString getMarkdownUrlAtPosition(QString text, int position);
     void initSearchFrame(QWidget *searchFrame);
     void setAutoTextOptions(AutoTextOptions options);
+    void setHighlightingEnabled(bool enabled);
 
 public slots:
     void duplicateText();
@@ -57,6 +58,7 @@ public slots:
 
 protected:
     MarkdownHighlighter *_highlighter;
+    bool _highlightingEnabled;
     QStringList _ignoredClickUrlSchemata;
     QTextEditSearchWidget *_searchWidget;
     QWidget *_searchFrame;

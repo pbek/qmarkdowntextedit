@@ -34,8 +34,9 @@ Q_OBJECT
 public:
     MarkdownHighlighter(QTextDocument *parent = 0);
 
+    // we use some predefined numbers here to be compatible with
+    // the peg-markdown parser
     enum HighlighterState {
-//        None,
         Link,
         Image = 3,
         CodeBlock,
