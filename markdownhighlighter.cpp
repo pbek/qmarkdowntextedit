@@ -42,11 +42,13 @@ MarkdownHighlighter::MarkdownHighlighter(QTextDocument *parent)
     _highlightingRules.append(rule);
 
     // highlight italic
+    rule = HighlightingRule();
     rule.pattern = QRegularExpression("(^|\\s)\\*[^\\*]+\\*($|\\s)");
     rule.state = HighlighterState::Italic;
     _highlightingRules.append(rule);
 
     // highlight urls
+    rule = HighlightingRule();
     rule.pattern = QRegularExpression("<.+?://.+?>");
     rule.state = HighlighterState::Link;
     _highlightingRules.append(rule);
@@ -64,50 +66,62 @@ MarkdownHighlighter::MarkdownHighlighter(QTextDocument *parent)
     _highlightingRules.append(rule);
 
     // highlight the reference of reference links
+    rule = HighlightingRule();
     rule.pattern = QRegularExpression("^\\[\\d+?\\]: .+://.+$");
     rule.state = HighlighterState::Comment;
     _highlightingRules.append(rule);
 
-    // highlight inline code
-    rule.pattern = QRegularExpression("`.+?`");
-    rule.state = HighlighterState::InlineCodeBlock;
-    _highlightingRules.append(rule);
-
-    // highlight code blocks with spaces or a \t in front of them
-    rule.pattern = QRegularExpression("^(\\t|(  )).+$");
-    rule.state = HighlighterState::CodeBlock;
-    _highlightingRules.append(rule);
-
     // highlight unordered lists
-    rule.pattern = QRegularExpression("^\\s*[-\\*\\+]\\s");
+    rule = HighlightingRule();
+    rule.pattern = QRegularExpression("^\\s*[-*+]\\s");
     rule.state = HighlighterState::List;
+    rule.useStateAsCurrentBlockState = true;
     _highlightingRules.append(rule);
 
     // highlight ordered lists
     rule.pattern = QRegularExpression("^\\s*\\d\\.\\s");
     _highlightingRules.append(rule);
 
+    // highlight inline code
+    rule = HighlightingRule();
+    rule.pattern = QRegularExpression("`.+?`");
+    rule.state = HighlighterState::InlineCodeBlock;
+    _highlightingRules.append(rule);
+
+    // highlight code blocks with four spaces or tabs in front of them
+    // and no list character after that
+    rule = HighlightingRule();
+    rule.pattern = QRegularExpression("^((\\t)|( {4,})).+$");
+    rule.state = HighlighterState::CodeBlock;
+    rule.disableIfCurrentStateIsSet = true;
+    _highlightingRules.append(rule);
+
     // highlight images
+    rule = HighlightingRule();
     rule.pattern = QRegularExpression("!\\[.+?\\]\\(.+?\\)");
     rule.state = HighlighterState::Image;
     _highlightingRules.append(rule);
 
     // highlight block quotes
+    rule = HighlightingRule();
     rule.pattern = QRegularExpression("^> ");
     rule.state = HighlighterState::BlockQuote;
     _highlightingRules.append(rule);
 
     // highlight inline comments
+    rule = HighlightingRule();
     rule.pattern = QRegularExpression("<!\\-\\-.+?\\-\\->");
     rule.state = HighlighterState::Comment;
     _highlightingRules.append(rule);
 
     // highlight horizontal rulers
+    rule = HighlightingRule();
     rule.pattern = QRegularExpression("^([*\\-_]\\s?){3,}$");
     rule.state = HighlighterState::HorizontalRuler;
     _highlightingRules.append(rule);
 
     // highlight tables
+    rule = HighlightingRule();
     rule.pattern = QRegularExpression("^\\|.+?\\|$");
     rule.state = HighlighterState::Table;
     _highlightingRules.append(rule);
@@ -397,9 +411,23 @@ void MarkdownHighlighter::highlightCommentBlock(QString text) {
  */
 void MarkdownHighlighter::highlightAdditionalRules(QString text) {
     foreach(const HighlightingRule &rule, _highlightingRules) {
+            // continue if an other current block state was already set if
+            // disableIfCurrentStateIsSet is set
+            if (rule.disableIfCurrentStateIsSet &&
+                    (currentBlockState() != HighlighterState::NoState)) {
+                continue;
+            }
+
             QRegularExpression expression(rule.pattern);
             QRegularExpressionMatchIterator i = expression.globalMatch(text);
 
+            // store the current block state if useStateAsCurrentBlockState
+            // is set
+            if (i.hasNext() && rule.useStateAsCurrentBlockState) {
+                setCurrentBlockState(rule.state);
+            }
+
+            // find and format all occurrences
             while (i.hasNext()) {
                 QRegularExpressionMatch match = i.next();
                 setFormat(match.capturedStart(), match.capturedLength(),

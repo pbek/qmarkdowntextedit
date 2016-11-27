@@ -94,10 +94,11 @@ protected:
     void highlightCommentBlock(QString text);
 
 private:
-    struct HighlightingRule
-    {
+    struct HighlightingRule {
         QRegularExpression pattern;
         HighlighterState state;
+        bool useStateAsCurrentBlockState = false;
+        bool disableIfCurrentStateIsSet = false;
     };
     QVector<HighlightingRule> _highlightingRules;
     QHash<HighlighterState, QTextCharFormat> _formats;
