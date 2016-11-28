@@ -69,7 +69,6 @@ public:
 //        CodeBlockEnd
 //    };
 
-
     void setTextFormats(QHash<HighlighterState, QTextCharFormat> formats);
     void setTextFormat(HighlighterState state, QTextCharFormat format);
 
@@ -80,6 +79,13 @@ protected slots:
     void reHighlightDirtyBlocks();
 
 protected:
+    struct HighlightingRule {
+        QRegularExpression pattern;
+        HighlighterState state;
+        bool useStateAsCurrentBlockState;
+        bool disableIfCurrentStateIsSet;
+    };
+
     void highlightBlock(const QString &text) Q_DECL_OVERRIDE;
 
     void initTextFormats(int defaultFontSize = 12);
@@ -88,7 +94,8 @@ protected:
 
     void highlightHeadline(QString text);
 
-    void highlightAdditionalRules(QString text);
+    void highlightAdditionalRules(QVector<HighlightingRule> &rules,
+                                  QString text);
 
     void highlightCodeBlock(QString text);
 
@@ -99,14 +106,8 @@ protected:
     void addDirtyBlock(QTextBlock block);
 
 private:
-    struct HighlightingRule {
-        QRegularExpression pattern;
-        HighlighterState state;
-        bool useStateAsCurrentBlockState;
-        bool disableIfCurrentStateIsSet;
-    };
-
-    QVector<HighlightingRule> _highlightingRules;
+    QVector<HighlightingRule> _highlightingRulesPre;
+    QVector<HighlightingRule> _highlightingRulesAfter;
     QVector<QTextBlock> _dirtyTextBlocks;
     QHash<HighlighterState, QTextCharFormat> _formats;
     QTimer *_dirtyBlockTimer;

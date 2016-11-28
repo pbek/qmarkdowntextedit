@@ -528,6 +528,16 @@ QMap<QString, QString> QMarkdownTextEdit::parseMarkdownUrlsFromText(
         urlMap[linkText] = url;
     }
 
+    // match urls like this: http://mylink
+    re = QRegularExpression("(\\b\\w+?:\\/\\/[^\\s\\)>]+)");
+    i = re.globalMatch(text);
+    while (i.hasNext()) {
+        QRegularExpressionMatch match = i.next();
+        QString linkText = match.captured(1);
+        QString url = match.captured(1);
+        urlMap[linkText] = url;
+    }
+
     return urlMap;
 }
 
