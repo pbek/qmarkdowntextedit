@@ -71,6 +71,62 @@ void MarkdownHighlighter::addDirtyBlock(QTextBlock block) {
 void MarkdownHighlighter::initHighlightingRules() {
     HighlightingRule rule;
 
+    // highlight the reference of reference links
+    rule = HighlightingRule();
+    rule.pattern = QRegularExpression("^\\[\\d+?\\]: .+://.+$");
+    rule.state = HighlighterState::Comment;
+    _highlightingRulesPre.append(rule);
+
+    // highlight unordered lists
+    rule = HighlightingRule();
+    rule.pattern = QRegularExpression("^\\s*[-*+]\\s");
+    rule.state = HighlighterState::List;
+    rule.useStateAsCurrentBlockState = true;
+    _highlightingRulesPre.append(rule);
+
+    // highlight ordered lists
+    rule.pattern = QRegularExpression("^\\s*\\d\\.\\s");
+    _highlightingRulesPre.append(rule);
+
+    // highlight inline code
+    rule = HighlightingRule();
+    rule.pattern = QRegularExpression("`.+?`");
+    rule.state = HighlighterState::InlineCodeBlock;
+    _highlightingRulesPre.append(rule);
+
+    // highlight code blocks with four spaces or tabs in front of them
+    // and no list character after that
+    rule = HighlightingRule();
+    rule.pattern = QRegularExpression("^((\\t)|( {4,})).+$");
+    rule.state = HighlighterState::CodeBlock;
+    rule.disableIfCurrentStateIsSet = true;
+    _highlightingRulesPre.append(rule);
+
+    // highlight block quotes
+    rule = HighlightingRule();
+    rule.pattern = QRegularExpression("^> ");
+    rule.state = HighlighterState::BlockQuote;
+    _highlightingRulesPre.append(rule);
+
+    // highlight inline comments
+    rule = HighlightingRule();
+    rule.pattern = QRegularExpression("<!\\-\\-.+?\\-\\->");
+    rule.state = HighlighterState::Comment;
+    _highlightingRulesPre.append(rule);
+
+    // highlight horizontal rulers
+    rule = HighlightingRule();
+    rule.pattern = QRegularExpression("^([*\\-_]\\s?){3,}$");
+    rule.state = HighlighterState::HorizontalRuler;
+    _highlightingRulesPre.append(rule);
+
+    // highlight tables without starting |
+    rule = HighlightingRule();
+    rule.pattern = QRegularExpression("^.+? \\| .+? \\| .+$");
+    rule.state = HighlighterState::Table;
+    _highlightingRulesPre.append(rule);
+
+
     // highlight bold
     rule.pattern = QRegularExpression("\\B\\*{2}.+?\\*{2}\\B");
     rule.state = HighlighterState::Bold;
@@ -108,68 +164,17 @@ void MarkdownHighlighter::initHighlightingRules() {
     rule.pattern = QRegularExpression("\\[.+?\\]\\[\\d+\\]");
     _highlightingRulesAfter.append(rule);
 
-    // highlight the reference of reference links
-    rule = HighlightingRule();
-    rule.pattern = QRegularExpression("^\\[\\d+?\\]: .+://.+$");
-    rule.state = HighlighterState::Comment;
-    _highlightingRulesPre.append(rule);
-
-    // highlight unordered lists
-    rule = HighlightingRule();
-    rule.pattern = QRegularExpression("^\\s*[-*+]\\s");
-    rule.state = HighlighterState::List;
-    rule.useStateAsCurrentBlockState = true;
-    _highlightingRulesPre.append(rule);
-
-    // highlight ordered lists
-    rule.pattern = QRegularExpression("^\\s*\\d\\.\\s");
-    _highlightingRulesPre.append(rule);
-
-    // highlight inline code
-    rule = HighlightingRule();
-    rule.pattern = QRegularExpression("`.+?`");
-    rule.state = HighlighterState::InlineCodeBlock;
-    _highlightingRulesPre.append(rule);
-
-    // highlight code blocks with four spaces or tabs in front of them
-    // and no list character after that
-    rule = HighlightingRule();
-    rule.pattern = QRegularExpression("^((\\t)|( {4,})).+$");
-    rule.state = HighlighterState::CodeBlock;
-    rule.disableIfCurrentStateIsSet = true;
-    _highlightingRulesPre.append(rule);
-
     // highlight images
     rule = HighlightingRule();
     rule.pattern = QRegularExpression("!\\[.*?\\]\\(.+?\\)");
     rule.state = HighlighterState::Image;
-    _highlightingRulesPre.append(rule);
+    _highlightingRulesAfter.append(rule);
 
-    // highlight block quotes
-    rule = HighlightingRule();
-    rule.pattern = QRegularExpression("^> ");
-    rule.state = HighlighterState::BlockQuote;
-    _highlightingRulesPre.append(rule);
-
-    // highlight inline comments
-    rule = HighlightingRule();
-    rule.pattern = QRegularExpression("<!\\-\\-.+?\\-\\->");
-    rule.state = HighlighterState::Comment;
-    _highlightingRulesPre.append(rule);
-
-    // highlight horizontal rulers
-    rule = HighlightingRule();
-    rule.pattern = QRegularExpression("^([*\\-_]\\s?){3,}$");
-    rule.state = HighlighterState::HorizontalRuler;
-    _highlightingRulesPre.append(rule);
-
-    // highlight tables
+    // highlight tables with starting |
     rule = HighlightingRule();
     rule.pattern = QRegularExpression("^\\|.+?\\|$");
     rule.state = HighlighterState::Table;
-    _highlightingRulesPre.append(rule);
-    rule.pattern = QRegularExpression("^.+? \\| .+? \\| .+$");
-    _highlightingRulesPre.append(rule);
+    _highlightingRulesAfter.append(rule);
 }
 
 /**
