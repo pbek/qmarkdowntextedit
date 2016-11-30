@@ -76,7 +76,7 @@ signals:
     void highlightingFinished();
 
 protected slots:
-    void reHighlightDirtyBlocks();
+    void timerTick();
 
 protected:
     struct HighlightingRule {
@@ -105,10 +105,13 @@ protected:
 
     void addDirtyBlock(QTextBlock block);
 
+    void reHighlightDirtyBlocks();
+
 private:
     QVector<HighlightingRule> _highlightingRulesPre;
     QVector<HighlightingRule> _highlightingRulesAfter;
     QVector<QTextBlock> _dirtyTextBlocks;
     QHash<HighlighterState, QTextCharFormat> _formats;
-    QTimer *_dirtyBlockTimer;
+    QTimer *_timer;
+    bool _highlightingFinished;
 };

@@ -28,16 +28,30 @@
  */
 MarkdownHighlighter::MarkdownHighlighter(QTextDocument *parent)
         : QSyntaxHighlighter(parent) {
-    _dirtyBlockTimer = new QTimer(this);
-    QObject::connect(_dirtyBlockTimer, SIGNAL(timeout()),
-                     this, SLOT(reHighlightDirtyBlocks()));
-    _dirtyBlockTimer->start(1000);
+    _timer = new QTimer(this);
+    QObject::connect(_timer, SIGNAL(timeout()),
+                     this, SLOT(timerTick()));
+    _timer->start(1000);
 
     // initialize the highlighting rules
     initHighlightingRules();
 
     // initialize the text formats
     initTextFormats();
+}
+
+/**
+ * Does jobs every second
+ */
+void MarkdownHighlighter::timerTick() {
+    // re-highlight all dirty blocks
+    reHighlightDirtyBlocks();
+
+    // emit a signal every second if there was some highlighting done
+    if (_highlightingFinished) {
+        _highlightingFinished = false;
+        emit(highlightingFinished());
+    }
 }
 
 /**
@@ -289,7 +303,7 @@ void MarkdownHighlighter::highlightBlock(const QString &text) {
     setCurrentBlockState(HighlighterState::NoState);
     currentBlock().setUserState(HighlighterState::NoState);
     highlightMarkdown(text);
-    emit(highlightingFinished());
+    _highlightingFinished = true;
 }
 
 void MarkdownHighlighter::highlightMarkdown(QString text) {
