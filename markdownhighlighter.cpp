@@ -102,20 +102,6 @@ void MarkdownHighlighter::initHighlightingRules() {
     rule.pattern = QRegularExpression("^\\s*\\d\\.\\s");
     _highlightingRulesPre.append(rule);
 
-    // highlight inline code
-    rule = HighlightingRule();
-    rule.pattern = QRegularExpression("`.+?`");
-    rule.state = HighlighterState::InlineCodeBlock;
-    _highlightingRulesPre.append(rule);
-
-    // highlight code blocks with four spaces or tabs in front of them
-    // and no list character after that
-    rule = HighlightingRule();
-    rule.pattern = QRegularExpression("^((\\t)|( {4,})).+$");
-    rule.state = HighlighterState::CodeBlock;
-    rule.disableIfCurrentStateIsSet = true;
-    _highlightingRulesPre.append(rule);
-
     // highlight block quotes
     rule = HighlightingRule();
     rule.pattern = QRegularExpression("^> ");
@@ -182,6 +168,20 @@ void MarkdownHighlighter::initHighlightingRules() {
     rule = HighlightingRule();
     rule.pattern = QRegularExpression("!\\[.*?\\]\\(.+?\\)");
     rule.state = HighlighterState::Image;
+    _highlightingRulesAfter.append(rule);
+
+    // highlight inline code
+    rule = HighlightingRule();
+    rule.pattern = QRegularExpression("`.+?`");
+    rule.state = HighlighterState::InlineCodeBlock;
+    _highlightingRulesAfter.append(rule);
+
+    // highlight code blocks with four spaces or tabs in front of them
+    // and no list character after that
+    rule = HighlightingRule();
+    rule.pattern = QRegularExpression("^((\\t)|( {4,})).+$");
+    rule.state = HighlighterState::CodeBlock;
+    rule.disableIfCurrentStateIsSet = true;
     _highlightingRulesAfter.append(rule);
 
     // highlight tables with starting |
