@@ -514,7 +514,7 @@ QMap<QString, QString> QMarkdownTextEdit::parseMarkdownUrlsFromText(
     QMap<QString, QString> urlMap;
 
     // match urls like this: [this url](http://mylink)
-    QRegularExpression re("(\\[.*?\\]\\((.+?://.+?)\\))");
+    QRegularExpression re("(\\[.*?\\]\\((.+?:\\/\\/.+?)\\))");
     QRegularExpressionMatchIterator i = re.globalMatch(text);
     while (i.hasNext()) {
         QRegularExpressionMatch match = i.next();
@@ -524,7 +524,7 @@ QMap<QString, QString> QMarkdownTextEdit::parseMarkdownUrlsFromText(
     }
 
     // match urls like this: <http://mylink>
-    re = QRegularExpression("(<(.+?://.+?)>)");
+    re = QRegularExpression("(<(.+?:\\/\\/.+?)>)");
     i = re.globalMatch(text);
     while (i.hasNext()) {
         QRegularExpressionMatch match = i.next();
@@ -538,9 +538,28 @@ QMap<QString, QString> QMarkdownTextEdit::parseMarkdownUrlsFromText(
     i = re.globalMatch(text);
     while (i.hasNext()) {
         QRegularExpressionMatch match = i.next();
-        QString linkText = match.captured(1);
         QString url = match.captured(1);
-        urlMap[linkText] = url;
+        urlMap[url] = url;
+    }
+
+    // match reference urls like this: [this url][1] with this later:
+    // [1]: http://domain
+    re = QRegularExpression("\\[(.*?)\\]\\[(\\d+)\\]");
+    i = re.globalMatch(text);
+    while (i.hasNext()) {
+        QRegularExpressionMatch match = i.next();
+        QString linkText = match.captured(1);
+        int referenceId = match.captured(2).toInt();
+
+        // search for the referenced url in the whole text edit
+        QRegularExpression refRegExp("\\[" + QString::number(referenceId) +
+                                             "\\]: (.+?:\\/\\/.+)");
+        QRegularExpressionMatch urlMatch = refRegExp.match(toPlainText());
+
+        if (urlMatch.hasMatch()) {
+            QString url = urlMatch.captured(1);
+            urlMap[linkText] = url;
+        }
     }
 
     return urlMap;
