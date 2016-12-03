@@ -243,8 +243,14 @@ bool QMarkdownTextEdit::handleBracketClosing(QString openingCharacter,
     QTextCursor c = textCursor();
     int positionInBlock = c.position() - c.block().position();
 
+    // get the current text from the block
+    QString text = c.block().text();
+
     // only allow the closing if the cursor was at the end of a block
-    if (positionInBlock != c.block().text().count()) {
+    // we are making a special allowance for openingCharacter == *
+    if ((positionInBlock != text.count()) &&
+            !((openingCharacter == "*") &&
+              (positionInBlock == (text.count() - 1)))) {
         return false;
     }
 
@@ -259,8 +265,6 @@ bool QMarkdownTextEdit::handleBracketClosing(QString openingCharacter,
             return false;
         }
 
-        // get the current text from the block
-        QString text = c.block().text();
         // remove everything after the cursor
         text.remove(positionInBlock, text.count());
         // remove whitespaces
@@ -274,8 +278,9 @@ bool QMarkdownTextEdit::handleBracketClosing(QString openingCharacter,
 
     // check if there already was entered an opening character before when
     // opening and closing characters are the same
-    if ((openingCharacter == closingCharacter) &&
-        (c.block().text().count(openingCharacter) % 2 == 1)) {
+    // we only want to check that if openingCharacter was not *
+    if ((openingCharacter == closingCharacter) && (openingCharacter != "*") &&
+        (text.count(openingCharacter) % 2 == 1)) {
         return false;
     }
 
