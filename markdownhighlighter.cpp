@@ -121,10 +121,11 @@ void MarkdownHighlighter::initHighlightingRules() {
     _highlightingRulesPre.append(rule);
 
     // highlight tables without starting |
-    rule = HighlightingRule();
-    rule.pattern = QRegularExpression("^.+? \\| .+? \\| .+$");
-    rule.state = HighlighterState::Table;
-    _highlightingRulesPre.append(rule);
+    // we drop that for now, it's far too messy to deal with
+//    rule = HighlightingRule();
+//    rule.pattern = QRegularExpression("^.+? \\| .+? \\| .+$");
+//    rule.state = HighlighterState::Table;
+//    _highlightingRulesPre.append(rule);
 
 
     // highlight bold
