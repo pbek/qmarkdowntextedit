@@ -87,7 +87,7 @@ void MarkdownHighlighter::initHighlightingRules() {
 
     // highlight the reference of reference links
     rule = HighlightingRule();
-    rule.pattern = QRegularExpression("^\\[\\d+?\\]: .+://.+$");
+    rule.pattern = QRegularExpression("^\\[.+?\\]: .+://.+$");
     rule.state = HighlighterState::Comment;
     _highlightingRulesPre.append(rule);
 
@@ -162,7 +162,7 @@ void MarkdownHighlighter::initHighlightingRules() {
     _highlightingRulesAfter.append(rule);
 
     // highlight reference links
-    rule.pattern = QRegularExpression("\\[.+?\\]\\[\\d+\\]");
+    rule.pattern = QRegularExpression("\\[.+?\\]\\s?\\[.+?\\]");
     _highlightingRulesAfter.append(rule);
 
     // highlight images

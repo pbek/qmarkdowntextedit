@@ -544,16 +544,17 @@ QMap<QString, QString> QMarkdownTextEdit::parseMarkdownUrlsFromText(
 
     // match reference urls like this: [this url][1] with this later:
     // [1]: http://domain
-    re = QRegularExpression("\\[(.*?)\\]\\[(\\d+)\\]");
+    re = QRegularExpression("\\[(.*?)\\]\\s?\\[(.+?)\\]");
     i = re.globalMatch(text);
     while (i.hasNext()) {
         QRegularExpressionMatch match = i.next();
         QString linkText = match.captured(1);
-        int referenceId = match.captured(2).toInt();
+        QString referenceId = match.captured(2);
 
         // search for the referenced url in the whole text edit
-        QRegularExpression refRegExp("\\[" + QString::number(referenceId) +
-                                             "\\]: (.+?:\\/\\/.+)");
+        QRegularExpression refRegExp(
+                "\\[" + QRegularExpression::escape(referenceId) +
+                        "\\]: (.+?:\\/\\/.+)");
         QRegularExpressionMatch urlMatch = refRegExp.match(toPlainText());
 
         if (urlMatch.hasMatch()) {
