@@ -421,7 +421,6 @@ bool QMarkdownTextEdit::increaseSelectedTextIndention(bool reverse) {
     return false;
 }
 
-
 /**
  * @brief Opens the link (if any) at the current cursor position
  */
