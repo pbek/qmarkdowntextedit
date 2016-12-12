@@ -83,7 +83,7 @@ protected:
     struct HighlightingRule {
         QRegularExpression pattern;
         HighlighterState state;
-        int capturingGroup = 0;
+        int capturingGroup;
         bool useStateAsCurrentBlockState;
         bool disableIfCurrentStateIsSet;
     };
