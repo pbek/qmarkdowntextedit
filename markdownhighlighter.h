@@ -53,6 +53,7 @@ public:
         HorizontalRuler = 21,
         Table,
         InlineCodeBlock,
+        MaskedSyntax,
 
         // internal
         CodeBlockEnd = 100,
@@ -82,6 +83,7 @@ protected:
     struct HighlightingRule {
         QRegularExpression pattern;
         HighlighterState state;
+        int capturingGroup = 0;
         bool useStateAsCurrentBlockState;
         bool disableIfCurrentStateIsSet;
     };
