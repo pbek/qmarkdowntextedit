@@ -370,6 +370,9 @@ void MarkdownHighlighter::highlightHeadline(QString text) {
         setFormat(match.capturedStart(2), match.capturedLength(2),
                   _formats[state]);
 
+        // set a margin for the current block
+        setCurrentBlockMargin(state);
+
         setCurrentBlockState(state);
         currentBlock().setUserState(state);
         return;
@@ -394,6 +397,9 @@ void MarkdownHighlighter::highlightHeadline(QString text) {
             setFormat(0, text.length(), maskedFormat);
             setCurrentBlockState(HighlighterState::HeadlineEnd);
             previousBlock.setUserState(HighlighterState::H1);
+
+            // set a margin for the current block
+            setCurrentBlockMargin(HighlighterState::H1);
 
             // we want to re-highlight the previous block
             // this must not done directly, but with a queue, otherwise it
@@ -420,6 +426,9 @@ void MarkdownHighlighter::highlightHeadline(QString text) {
             setCurrentBlockState(HighlighterState::HeadlineEnd);
             previousBlock.setUserState(HighlighterState::H2);
 
+            // set a margin for the current block
+            setCurrentBlockMargin(HighlighterState::H2);
+
             // we want to re-highlight the previous block
             addDirtyBlock(previousBlock);
         }
@@ -444,6 +453,42 @@ void MarkdownHighlighter::highlightHeadline(QString text) {
         setCurrentBlockState(HighlighterState::H2);
         currentBlock().setUserState(HighlighterState::H2);
     }
+}
+
+/**
+ * Sets a margin for the current block
+ *
+ * @param state
+ */
+void MarkdownHighlighter::setCurrentBlockMargin(
+        MarkdownHighlighter::HighlighterState state) {
+    qreal margin;
+
+    switch (state) {
+        case HighlighterState::H1:
+            margin = 10;
+            break;
+        case HighlighterState::H2:
+            margin = 6;
+            break;
+        case HighlighterState::H3:
+            margin = 4;
+            break;
+        case HighlighterState::H4:
+        case HighlighterState::H5:
+        case HighlighterState::H6:
+            margin = 3;
+            break;
+        default:
+            return;
+    }
+
+    QTextBlockFormat blockFormat = currentBlock().blockFormat();
+    blockFormat.setTopMargin(2);
+    blockFormat.setBottomMargin(margin);
+
+    QTextCursor* myCursor = new QTextCursor(currentBlock());
+    myCursor->setBlockFormat(blockFormat);
 }
 
 /**

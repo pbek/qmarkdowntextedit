@@ -116,4 +116,6 @@ private:
     QHash<HighlighterState, QTextCharFormat> _formats;
     QTimer *_timer;
     bool _highlightingFinished;
+
+    void setCurrentBlockMargin(HighlighterState state);
 };
