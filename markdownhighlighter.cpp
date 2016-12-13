@@ -466,14 +466,10 @@ void MarkdownHighlighter::setCurrentBlockMargin(
 
     switch (state) {
         case HighlighterState::H1:
-            margin = 10;
+            margin = 5;
             break;
         case HighlighterState::H2:
-            margin = 6;
-            break;
         case HighlighterState::H3:
-            margin = 4;
-            break;
         case HighlighterState::H4:
         case HighlighterState::H5:
         case HighlighterState::H6:
