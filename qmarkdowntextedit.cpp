@@ -442,12 +442,12 @@ bool QMarkdownTextEdit::openLinkAtCursorPosition() {
     QUrl url = QUrl(urlString);
     bool isRelativeFileUrl = urlString.startsWith("file://..");
 
-    if (url.isValid() || isRelativeFileUrl) {
-        qDebug() << __func__ << " - 'emit urlClicked( urlString )': "
-            << urlString;
+    qDebug() << __func__ << " - 'emit urlClicked( urlString )': "
+             << urlString;
 
-        emit urlClicked(urlString);
+    emit urlClicked(urlString);
 
+    if ((url.isValid() && isValidUrl(urlString)) || isRelativeFileUrl) {
         // ignore some schemata
         if (!(_ignoredClickUrlSchemata.contains(url.scheme()) ||
                 isRelativeFileUrl)) {
@@ -459,6 +459,18 @@ bool QMarkdownTextEdit::openLinkAtCursorPosition() {
     }
 
     return false;
+}
+
+/**
+ * Checks if urlString is a valid url
+ *
+ * @param urlString
+ * @return
+ */
+bool QMarkdownTextEdit::isValidUrl(QString urlString) {
+    QRegularExpressionMatch match =
+            QRegularExpression("^\\w+:\\/\\/.+").match(urlString);
+    return match.hasMatch();
 }
 
 /**
@@ -513,7 +525,8 @@ QMap<QString, QString> QMarkdownTextEdit::parseMarkdownUrlsFromText(
     QMap<QString, QString> urlMap;
 
     // match urls like this: [this url](http://mylink)
-    QRegularExpression re("(\\[.*?\\]\\((.+?:\\/\\/.+?)\\))");
+//    QRegularExpression re("(\\[.*?\\]\\((.+?:\\/\\/.+?)\\))");
+    QRegularExpression re("(\\[.*?\\]\\((.+?)\\))");
     QRegularExpressionMatchIterator i = re.globalMatch(text);
     while (i.hasNext()) {
         QRegularExpressionMatch match = i.next();
@@ -523,7 +536,8 @@ QMap<QString, QString> QMarkdownTextEdit::parseMarkdownUrlsFromText(
     }
 
     // match urls like this: <http://mylink>
-    re = QRegularExpression("(<(.+?:\\/\\/.+?)>)");
+//    re = QRegularExpression("(<(.+?:\\/\\/.+?)>)");
+    re = QRegularExpression("(<(.+?)>)");
     i = re.globalMatch(text);
     while (i.hasNext()) {
         QRegularExpressionMatch match = i.next();
@@ -551,9 +565,11 @@ QMap<QString, QString> QMarkdownTextEdit::parseMarkdownUrlsFromText(
         QString referenceId = match.captured(2);
 
         // search for the referenced url in the whole text edit
+//        QRegularExpression refRegExp(
+//                "\\[" + QRegularExpression::escape(referenceId) +
+//                        "\\]: (.+?:\\/\\/.+)");
         QRegularExpression refRegExp(
-                "\\[" + QRegularExpression::escape(referenceId) +
-                        "\\]: (.+?:\\/\\/.+)");
+                "\\[" + QRegularExpression::escape(referenceId) + "\\]: (.+?)");
         QRegularExpressionMatch urlMatch = refRegExp.match(toPlainText());
 
         if (urlMatch.hasMatch()) {

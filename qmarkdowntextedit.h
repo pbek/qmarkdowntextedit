@@ -45,6 +45,7 @@ public:
     void initSearchFrame(QWidget *searchFrame);
     void setAutoTextOptions(AutoTextOptions options);
     void setHighlightingEnabled(bool enabled);
+    static bool isValidUrl(QString urlString);
 
 public slots:
     void duplicateText();
