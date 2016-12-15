@@ -14,6 +14,7 @@ QMarkdownTextEdit is a C++ Qt [QTextEdit](http://doc.qt.io/qt-5/qtextedit.html) 
     - close search field with `Escape`
 - replacing of text with `Ctrl + R`
     - you can also replace text with regular expressions or whole words
+- and much more...
 
 ## Screenshot
 ![Screenhot](screenshot.png)
