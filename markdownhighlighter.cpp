@@ -104,7 +104,7 @@ void MarkdownHighlighter::initHighlightingRules() {
 
     // highlight block quotes
     rule = HighlightingRule();
-    rule.pattern = QRegularExpression("^> ");
+    rule.pattern = QRegularExpression("^\\s*(>\\s*)+");
     rule.state = HighlighterState::BlockQuote;
     _highlightingRulesPre.append(rule);
 
@@ -352,7 +352,7 @@ void MarkdownHighlighter::highlightMarkdown(QString text) {
  * @param text
  */
 void MarkdownHighlighter::highlightHeadline(QString text) {
-    QRegularExpression re("^(#+) (.+?)$");
+    QRegularExpression re("^(#+)\\s*(.+?)$");
     QRegularExpressionMatch match = re.match(text);
     QTextCharFormat &maskedFormat = _formats[HighlighterState::MaskedSyntax];
 
