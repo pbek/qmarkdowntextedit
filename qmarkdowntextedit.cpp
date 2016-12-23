@@ -258,22 +258,38 @@ bool QMarkdownTextEdit::handleBracketClosing(QString openingCharacter,
         closingCharacter = openingCharacter;
     }
 
-    // we don't want to close "*" when used in a list
-    if ((openingCharacter == "*") &&
-            ((positionInBlock == 0) || text.startsWith("* "))) {
-        return false;
+    int moduloPosition = 1;
+    int cursorSubtract = 1;
+
+    // special handling for `*` opening character
+    if (openingCharacter == "*") {
+        // when used in lists modify the modulo to close `*` characters
+        if (text.startsWith("* ")) {
+            moduloPosition = 0;
+        }
+
+        // we don't want to close "*" when used in a list
+        if (positionInBlock == 0) {
+            return false;
+        }
+
+        // special handling if someone want's to start a line with a bold text
+        // cursor should then don't move between the `*`
+        if (text.startsWith("**") && (text.count("**") == 1)) {
+            cursorSubtract = 0;
+        }
     }
 
     // check if there already was entered an opening character before when
     // opening and closing characters are the same
     if ((openingCharacter == closingCharacter) &&
-        ((text.count(openingCharacter)) % 2 == 1)) {
+        ((text.count(openingCharacter)) % 2 == moduloPosition)) {
         return false;
     }
 
     c.insertText(openingCharacter);
     c.insertText(closingCharacter);
-    c.setPosition(c.position() - 1);
+    c.setPosition(c.position() - cursorSubtract);
     setTextCursor(c);
     return true;
 }
