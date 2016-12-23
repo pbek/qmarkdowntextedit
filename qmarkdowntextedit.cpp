@@ -259,28 +259,15 @@ bool QMarkdownTextEdit::handleBracketClosing(QString openingCharacter,
     }
 
     // we don't want to close "*" when used in a list
-    if (openingCharacter == "*") {
-        // return if the cursor is at the beginning of the block
-        if (positionInBlock == 0) {
-            return false;
-        }
-
-        // remove everything after the cursor
-        text.remove(positionInBlock, text.count());
-        // remove whitespaces
-        text.remove(QRegularExpression("\\s"));
-
-        // return if there were just whitespaces in front of the cursor
-        if (text.isEmpty()) {
-            return false;
-        }
+    if ((openingCharacter == "*") &&
+            ((positionInBlock == 0) || text.startsWith("* "))) {
+        return false;
     }
 
     // check if there already was entered an opening character before when
     // opening and closing characters are the same
-    // we only want to check that if openingCharacter was not *
-    if ((openingCharacter == closingCharacter) && (openingCharacter != "*") &&
-        (text.count(openingCharacter) % 2 == 1)) {
+    if ((openingCharacter == closingCharacter) &&
+        ((text.count(openingCharacter)) % 2 == 1)) {
         return false;
     }
 

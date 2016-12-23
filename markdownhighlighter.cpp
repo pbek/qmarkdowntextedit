@@ -503,8 +503,6 @@ void MarkdownHighlighter::setCurrentBlockMargin(
  * @param text
  */
 void MarkdownHighlighter::highlightCodeBlock(QString text) {
-    bool highlight = false;
-
     QRegularExpression re("^```\\w*?$");
     QRegularExpressionMatch match = re.match(text);
 
