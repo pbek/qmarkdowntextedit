@@ -263,6 +263,14 @@ bool QMarkdownTextEdit::handleBracketClosing(QString openingCharacter,
 
     // special handling for `*` opening character
     if (openingCharacter == "*") {
+        // special handling for closing a bold tag at the start of a line
+        if (text == "*") {
+            c.insertText("**");
+            c.setPosition(c.position() - 2);
+            setTextCursor(c);
+            return false;
+        }
+
         // when used in lists modify the modulo to close `*` characters
         if (text.startsWith("* ")) {
             moduloPosition = 0;
