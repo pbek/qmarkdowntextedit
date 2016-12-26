@@ -128,13 +128,25 @@ void MarkdownHighlighter::initHighlightingRules() {
 //    rule.state = HighlighterState::Table;
 //    _highlightingRulesPre.append(rule);
 
-    // highlight italic
-    // this goes before bold so that bold can overwrite italic
+    /*
+     * highlight italic
+     * this goes before bold so that bold can overwrite italic
+     *
+     * text to test:
+     * **bold** normal **bold**
+     * *start of line* normal
+     * normal *end of line*
+     */
     rule = HighlightingRule();
-    rule.pattern = QRegularExpression("\\B\\*([^\\*]+)\\*\\B");
+    rule.pattern = QRegularExpression(
+            "(^|[^\\*\\b])(\\*([^\\*]+?)\\*)([^\\*\\b]|$)");
     rule.state = HighlighterState::Italic;
-    rule.capturingGroup = 1;
+    rule.maskedGroup = 2;
+    rule.capturingGroup = 3;
     _highlightingRulesAfter.append(rule);
+
+    rule.maskedGroup = 0;
+    rule.capturingGroup = 1;
     rule.pattern = QRegularExpression("\\b_([^_]+)_\\b");
     _highlightingRulesAfter.append(rule);
 
@@ -568,6 +580,7 @@ void MarkdownHighlighter::highlightAdditionalRules(
             QRegularExpression expression(rule.pattern);
             QRegularExpressionMatchIterator i = expression.globalMatch(text);
             int capturingGroup = rule.capturingGroup;
+            int maskedGroup = rule.maskedGroup;
             QTextCharFormat &format = _formats[rule.state];
 
             // store the current block state if useStateAsCurrentBlockState
@@ -588,7 +601,8 @@ void MarkdownHighlighter::highlightAdditionalRules(
                     // set the font size from the current rule's font format
                     maskedFormat.setFontPointSize(format.fontPointSize());
 
-                    setFormat(match.capturedStart(), match.capturedLength(),
+                    setFormat(match.capturedStart(maskedGroup),
+                              match.capturedLength(maskedGroup),
                               currentMaskedFormat);
                 }
 

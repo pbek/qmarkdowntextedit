@@ -84,6 +84,7 @@ protected:
         QRegularExpression pattern;
         HighlighterState state;
         int capturingGroup;
+        int maskedGroup;
         bool useStateAsCurrentBlockState;
         bool disableIfCurrentStateIsSet;
     };
