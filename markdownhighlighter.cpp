@@ -81,6 +81,9 @@ void MarkdownHighlighter::addDirtyBlock(QTextBlock block) {
  *
  * regexp tester:
  * https://regex101.com
+ *
+ * other examples:
+ * /usr/share/kde4/apps/katepart/syntax/markdown.xml
  */
 void MarkdownHighlighter::initHighlightingRules() {
     HighlightingRule rule;
