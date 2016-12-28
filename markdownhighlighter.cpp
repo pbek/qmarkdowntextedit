@@ -139,10 +139,13 @@ void MarkdownHighlighter::initHighlightingRules() {
      * **bold** normal **bold**
      * *start of line* normal
      * normal *end of line*
+     * * list item *italic*
      */
     rule = HighlightingRule();
+    // we don't allow a space after the starting * to prevent problems with
+    // unordered lists starting with a *
     rule.pattern = QRegularExpression(
-            "(^|[^\\*\\b])(\\*([^\\*]+?)\\*)([^\\*\\b]|$)");
+            "(^|[^\\*\\b])(\\*([^\\* ][^\\*]*?)\\*)([^\\*\\b]|$)");
     rule.state = HighlighterState::Italic;
     rule.maskedGroup = 2;
     rule.capturingGroup = 3;
