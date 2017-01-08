@@ -207,6 +207,17 @@ void MarkdownHighlighter::initHighlightingRules() {
     rule.pattern = QRegularExpression("!\\[\\]\\((.+?)\\)");
     _highlightingRulesAfter.append(rule);
 
+    // highlight images links
+    rule = HighlightingRule();
+    rule.state = HighlighterState::Link;
+    rule.pattern = QRegularExpression("\\[!\\[(.+?)\\]\\(.+?\\)\\]\\(.+?\\)");
+    rule.capturingGroup = 1;
+    _highlightingRulesAfter.append(rule);
+
+    // highlight images links without text
+    rule.pattern = QRegularExpression("\\[!\\[\\]\\(.+?\\)\\]\\((.+?)\\)");
+    _highlightingRulesAfter.append(rule);
+
     // highlight inline code
     rule = HighlightingRule();
     rule.pattern = QRegularExpression("`(.+?)`");
