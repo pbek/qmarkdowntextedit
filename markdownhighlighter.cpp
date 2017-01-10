@@ -167,7 +167,7 @@ void MarkdownHighlighter::initHighlightingRules() {
     // highlight urls
     rule = HighlightingRule();
 //    rule.pattern = QRegularExpression("<(.+?:\\/\\/.+?)>");
-    rule.pattern = QRegularExpression("<([^\\s].*?[^\\s])>");
+    rule.pattern = QRegularExpression("<([^\\s`][^`]*?[^\\s`])>");
     rule.state = HighlighterState::Link;
     rule.capturingGroup = 1;
     _highlightingRulesAfter.append(rule);
