@@ -591,8 +591,6 @@ QMap<QString, QString> QMarkdownTextEdit::parseMarkdownUrlsFromText(
         }
     }
 
-    qDebug() << __func__ << " - 'urlMap': " << urlMap;
-
     return urlMap;
 }
 
@@ -628,9 +626,6 @@ QString QMarkdownTextEdit::getMarkdownUrlAtPosition(
             }
         }
     }
-
-    qDebug() << __func__ << " - 'url': " << url;
-
 
     return url;
 }
