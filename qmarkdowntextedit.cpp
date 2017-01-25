@@ -534,17 +534,8 @@ void QMarkdownTextEdit::setIgnoredClickUrlSchemata(
 QMap<QString, QString> QMarkdownTextEdit::parseMarkdownUrlsFromText(
         QString text) {
     QMap<QString, QString> urlMap;
-
-    // match urls like this: [this url](http://mylink)
-//    QRegularExpression re("(\\[.*?\\]\\((.+?:\\/\\/.+?)\\))");
-    QRegularExpression re("(\\[.*?\\]\\((.+?)\\))");
-    QRegularExpressionMatchIterator i = re.globalMatch(text);
-    while (i.hasNext()) {
-        QRegularExpressionMatch match = i.next();
-        QString linkText = match.captured(1);
-        QString url = match.captured(2);
-        urlMap[linkText] = url;
-    }
+    QRegularExpression re;
+    QRegularExpressionMatchIterator i;
 
     // match urls like this: <http://mylink>
 //    re = QRegularExpression("(<(.+?:\\/\\/.+?)>)");
@@ -557,8 +548,19 @@ QMap<QString, QString> QMarkdownTextEdit::parseMarkdownUrlsFromText(
         urlMap[linkText] = url;
     }
 
+    // match urls like this: [this url](http://mylink)
+//    QRegularExpression re("(\\[.*?\\]\\((.+?:\\/\\/.+?)\\))");
+    re = QRegularExpression("(\\[.*?\\]\\((.+?)\\))");
+    i = re.globalMatch(text);
+    while (i.hasNext()) {
+        QRegularExpressionMatch match = i.next();
+        QString linkText = match.captured(1);
+        QString url = match.captured(2);
+        urlMap[linkText] = url;
+    }
+
     // match urls like this: http://mylink
-    re = QRegularExpression("(\\b\\w+?:\\/\\/[^\\s\\)>]+)");
+    re = QRegularExpression("(\\b\\w+?:\\/\\/[^\\s>]+\\b)");
     i = re.globalMatch(text);
     while (i.hasNext()) {
         QRegularExpressionMatch match = i.next();
@@ -588,6 +590,8 @@ QMap<QString, QString> QMarkdownTextEdit::parseMarkdownUrlsFromText(
             urlMap[linkText] = url;
         }
     }
+
+    qDebug() << __func__ << " - 'urlMap': " << urlMap;
 
     return urlMap;
 }
@@ -624,6 +628,9 @@ QString QMarkdownTextEdit::getMarkdownUrlAtPosition(
             }
         }
     }
+
+    qDebug() << __func__ << " - 'url': " << url;
+
 
     return url;
 }
