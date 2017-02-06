@@ -161,6 +161,12 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             return handleBracketClosing("[", "]");
         } else if (keyEvent->key() == Qt::Key_Less) {
             return handleBracketClosing("<", ">");
+        } else if (keyEvent->key() == Qt::Key_ParenRight) {
+            return bracketClosingCheck("(", ")");
+        } else if (keyEvent->key() == Qt::Key_BraceRight) {
+            return bracketClosingCheck("{", "}");
+        } else if (keyEvent->key() == Qt::Key_BracketRight) {
+            return bracketClosingCheck("[", "]");
         } else if ((keyEvent->key() == Qt::Key_Down) &&
                  keyEvent->modifiers().testFlag(Qt::ControlModifier) &&
                  keyEvent->modifiers().testFlag(Qt::AltModifier)) {
@@ -298,6 +304,55 @@ bool QMarkdownTextEdit::handleBracketClosing(QString openingCharacter,
     c.insertText(openingCharacter);
     c.insertText(closingCharacter);
     c.setPosition(c.position() - cursorSubtract);
+    setTextCursor(c);
+    return true;
+}
+
+/**
+ * Checks if the closing character should be output or not
+ *
+ * @param openingCharacter
+ * @param closingCharacter
+ * @return
+ */
+bool QMarkdownTextEdit::bracketClosingCheck(QString openingCharacter,
+                                            QString closingCharacter) {
+    // check if bracket closing is enabled
+    if (!(_autoTextOptions & AutoTextOption::BracketClosing)) {
+        return false;
+    }
+
+    QTextCursor c = textCursor();
+    int positionInBlock = c.position() - c.block().position();
+
+    // get the current text from the block
+    QString text = c.block().text();
+    int textLength = text.length();
+
+    // if we are at the end of the line we just want to enter the character
+    if (positionInBlock >= textLength) {
+        return false;
+    }
+
+    QString currentChar = text.at(positionInBlock);
+
+    // if the current character is not the closing character we just want to
+    // enter the character
+    if (currentChar != closingCharacter) {
+        return false;
+    }
+
+    QString leftText = text.left(positionInBlock);
+    int openingCharacterCount = leftText.count(openingCharacter);
+    int closingCharacterCount = leftText.count(closingCharacter);
+
+    // if there were enough opening characters just enter the character
+    if (openingCharacterCount < (closingCharacterCount + 1)) {
+        return false;
+    }
+
+    // move the cursor to the right and don't enter the character
+    c.movePosition(QTextCursor::Right);
     setTextCursor(c);
     return true;
 }

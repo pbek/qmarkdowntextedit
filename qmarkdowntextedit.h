@@ -74,6 +74,8 @@ protected:
     bool handleReturnEntered();
     bool handleBracketClosing(QString openingCharacter,
                               QString closingCharacter = "");
+    bool bracketClosingCheck(QString openingCharacter,
+                             QString closingCharacter);
 
 signals:
     void urlClicked(QString url);
