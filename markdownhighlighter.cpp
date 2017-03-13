@@ -522,6 +522,7 @@ void MarkdownHighlighter::setCurrentBlockMargin(
     blockFormat.setTopMargin(2);
     blockFormat.setBottomMargin(margin);
 
+    // TODO: this prevents "undo" in headlines
     QTextCursor* myCursor = new QTextCursor(currentBlock());
     myCursor->setBlockFormat(blockFormat);
 }
