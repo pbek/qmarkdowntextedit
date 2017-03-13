@@ -173,7 +173,7 @@ void MarkdownHighlighter::initHighlightingRules() {
     _highlightingRulesAfter.append(rule);
 
     // highlight urls without any other markup
-    rule.pattern = QRegularExpression("\\b\\w+?:\\/\\/[^\\s]+\\b");
+    rule.pattern = QRegularExpression("\\b\\w+?:\\/\\/[^\\s]+[\\b\\/]");
     rule.capturingGroup = 0;
     _highlightingRulesAfter.append(rule);
 
