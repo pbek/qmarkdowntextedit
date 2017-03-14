@@ -166,21 +166,21 @@ void MarkdownHighlighter::initHighlightingRules() {
 
     // highlight urls
     rule = HighlightingRule();
-//    rule.pattern = QRegularExpression("<(.+?:\\/\\/.+?)>");
-    rule.pattern = QRegularExpression("<([^\\s`][^`]*?[^\\s`])>");
     rule.state = HighlighterState::Link;
-    rule.capturingGroup = 1;
-    _highlightingRulesAfter.append(rule);
 
     // highlight urls without any other markup
-    rule.pattern = QRegularExpression("\\b\\w+?:\\/\\/[^\\s]+[\\b\\/]");
+    rule.pattern = QRegularExpression("\\b\\w+?:\\/\\/[^\\s]+");
     rule.capturingGroup = 0;
+    _highlightingRulesAfter.append(rule);
+
+//    rule.pattern = QRegularExpression("<(.+?:\\/\\/.+?)>");
+    rule.pattern = QRegularExpression("<([^\\s`][^`]*?[^\\s`])>");
+    rule.capturingGroup = 1;
     _highlightingRulesAfter.append(rule);
 
     // highlight urls with title
 //    rule.pattern = QRegularExpression("\\[(.+?)\\]\\(.+?://.+?\\)");
-    rule.pattern = QRegularExpression("\\[(.+?)\\]\\(.+?\\)");
-    rule.capturingGroup = 1;
+    rule.pattern = QRegularExpression("\\[(.+?)\\]\\(.+\\)\\B");
     _highlightingRulesAfter.append(rule);
 
     // highlight urls with empty title
