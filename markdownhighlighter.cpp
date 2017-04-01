@@ -180,7 +180,8 @@ void MarkdownHighlighter::initHighlightingRules() {
 
     // highlight urls with title
 //    rule.pattern = QRegularExpression("\\[(.+?)\\]\\(.+?://.+?\\)");
-    rule.pattern = QRegularExpression("\\[(.+?)\\]\\(.+\\)\\B");
+//    rule.pattern = QRegularExpression("\\[(.+?)\\]\\(.+\\)\\B");
+    rule.pattern = QRegularExpression("\\[([^\\[\\]]+)\\]\\((\\S+|.+?)\\)\\B");
     _highlightingRulesAfter.append(rule);
 
     // highlight urls with empty title
