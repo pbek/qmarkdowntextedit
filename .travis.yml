@@ -21,7 +21,7 @@ install:
       && sudo apt-add-repository -y ppa:ubuntu-toolchain-r/test
       && sudo apt-add-repository -y ppa:beineri/opt-qt591-trusty
       && sudo apt-get -qq update
-      && sudo apt-get -qq install g++-4.8 libc6-i386 qt59tools qt59svg qt59webkit qt59script
+      && sudo apt-get -qq install g++-4.8 libc6-i386 qt59tools qt59svg qt59quickcontrols qt59quickcontrols2 qt59webengine qt59script
       && export CXX="g++-4.8"
       && export CC="gcc-4.8"
       ;
