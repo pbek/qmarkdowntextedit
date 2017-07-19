@@ -140,6 +140,10 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
                     keyEvent->key() == Qt::Key_Backtab);
         } else if ((keyEvent->key() == Qt::Key_F) &&
                  keyEvent->modifiers().testFlag(Qt::ControlModifier)) {
+            // reset the PointingHandCursor from pressing Ctrl
+            QWidget *viewPort = this->viewport();
+            viewPort->setCursor(Qt::IBeamCursor);
+
             _searchWidget->activate();
             return true;
         } else if ((keyEvent->key() == Qt::Key_R) &&
