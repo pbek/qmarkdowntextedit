@@ -126,8 +126,7 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
 
         // reset cursor if control key was released
         if (!keyEvent->modifiers().testFlag(Qt::ControlModifier)) {
-            QWidget *viewPort = this->viewport();
-            viewPort->setCursor(Qt::IBeamCursor);
+            resetMouseCursor();
         }
 
         if ((keyEvent->key() == Qt::Key_Escape) && _searchWidget->isVisible()) {
@@ -141,13 +140,15 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
         } else if ((keyEvent->key() == Qt::Key_F) &&
                  keyEvent->modifiers().testFlag(Qt::ControlModifier)) {
             // reset the PointingHandCursor from pressing Ctrl
-            QWidget *viewPort = this->viewport();
-            viewPort->setCursor(Qt::IBeamCursor);
+            resetMouseCursor();
 
             _searchWidget->activate();
             return true;
         } else if ((keyEvent->key() == Qt::Key_R) &&
                  keyEvent->modifiers().testFlag(Qt::ControlModifier)) {
+            // reset the PointingHandCursor from pressing Ctrl
+            resetMouseCursor();
+
             _searchWidget->activateReplace();
             return true;
 //        } else if (keyEvent->key() == Qt::Key_Delete) {
@@ -214,8 +215,7 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
 
         // reset cursor if control key was released
         if (keyEvent->key() == Qt::Key_Control) {
-            QWidget *viewPort = this->viewport();
-            viewPort->setCursor(Qt::IBeamCursor);
+            resetMouseCursor();
         }
 
         return false;
@@ -234,6 +234,14 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
     }
 
     return QTextEdit::eventFilter(obj, event);
+}
+
+/**
+ * Resets the cursor to Qt::IBeamCursor
+ */
+void QMarkdownTextEdit::resetMouseCursor() const {
+    QWidget *viewPort = viewport();
+    viewPort->setCursor(Qt::IBeamCursor);
 }
 
 /**

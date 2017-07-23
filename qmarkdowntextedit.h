@@ -76,6 +76,7 @@ protected:
                               QString closingCharacter = "");
     bool bracketClosingCheck(QString openingCharacter,
                              QString closingCharacter);
+    void resetMouseCursor() const;
 
 signals:
     void urlClicked(QString url);
