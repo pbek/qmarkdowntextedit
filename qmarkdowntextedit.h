@@ -19,6 +19,9 @@
 #include "markdownhighlighter.h"
 #include "qtexteditsearchwidget.h"
 
+// forward declaration because of "xxx does not name a type"
+//class QTextEditSearchWidget;
+
 class QMarkdownTextEdit : public QTextEdit
 {
     Q_OBJECT
@@ -46,6 +49,7 @@ public:
     void setAutoTextOptions(AutoTextOptions options);
     void setHighlightingEnabled(bool enabled);
     static bool isValidUrl(QString urlString);
+    void resetMouseCursor() const;
 
 public slots:
     void duplicateText();
@@ -76,7 +80,7 @@ protected:
                               QString closingCharacter = "");
     bool bracketClosingCheck(QString openingCharacter,
                              QString closingCharacter);
-    void resetMouseCursor() const;
+    void focusOutEvent(QFocusEvent *event);
 
 signals:
     void urlClicked(QString url);
