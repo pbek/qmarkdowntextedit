@@ -19,8 +19,6 @@
 #include "markdownhighlighter.h"
 #include "qtexteditsearchwidget.h"
 
-// forward declaration because of "xxx does not name a type"
-//class QTextEditSearchWidget;
 
 class QMarkdownTextEdit : public QTextEdit
 {

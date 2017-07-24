@@ -111,13 +111,6 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
                 Qt::ControlModifier) ?
                             Qt::PointingHandCursor :
                             Qt::IBeamCursor);
-    } else if (event->type() == QEvent::Show) {
-        qDebug()<<"Hide " << obj;
-        if (obj == this) {
-            qDebug()<<"reset cursor";
-            // reset cursor if control key was released
-            resetMouseCursor();
-        }
     } else if (event->type() == QEvent::KeyPress) {
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
 
@@ -125,9 +118,6 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
         if (keyEvent->modifiers().testFlag(Qt::ControlModifier)) {
             QWidget *viewPort = this->viewport();
             viewPort->setCursor(Qt::PointingHandCursor);
-        } else {
-            // reset cursor if control key was released
-            //resetMouseCursor();
         }
 
         // disallow keys if text edit hasn't focus
@@ -145,16 +135,10 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
                     keyEvent->key() == Qt::Key_Backtab);
         } else if ((keyEvent->key() == Qt::Key_F) &&
                  keyEvent->modifiers().testFlag(Qt::ControlModifier)) {
-            // reset the PointingHandCursor from pressing Ctrl
-            //resetMouseCursor();
-
             _searchWidget->activate();
             return true;
         } else if ((keyEvent->key() == Qt::Key_R) &&
                  keyEvent->modifiers().testFlag(Qt::ControlModifier)) {
-            // reset the PointingHandCursor from pressing Ctrl
-            //resetMouseCursor();
-
             _searchWidget->activateReplace();
             return true;
 //        } else if (keyEvent->key() == Qt::Key_Delete) {
