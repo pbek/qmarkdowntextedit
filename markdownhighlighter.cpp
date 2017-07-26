@@ -90,7 +90,7 @@ void MarkdownHighlighter::initHighlightingRules() {
 
     // highlight the reference of reference links
     rule = HighlightingRule();
-    rule.pattern = QRegularExpression("^\\[.+?\\]: .+://.+$");
+    rule.pattern = QRegularExpression("^\\[.+?\\]: \\w+://.+$");
     rule.state = HighlighterState::MaskedSyntax;
     _highlightingRulesPre.append(rule);
 
