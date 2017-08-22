@@ -111,13 +111,6 @@ void MarkdownHighlighter::initHighlightingRules() {
     rule.state = HighlighterState::BlockQuote;
     _highlightingRulesPre.append(rule);
 
-    // highlight inline comments
-    rule = HighlightingRule();
-    rule.pattern = QRegularExpression("<!\\-\\-(.+?)\\-\\->");
-    rule.state = HighlighterState::Comment;
-    rule.capturingGroup = 1;
-    _highlightingRulesPre.append(rule);
-
     // highlight horizontal rulers
     rule = HighlightingRule();
     rule.pattern = QRegularExpression("^([*\\-_]\\s?){3,}$");
@@ -232,6 +225,17 @@ void MarkdownHighlighter::initHighlightingRules() {
     rule.pattern = QRegularExpression("^((\\t)|( {4,})).+$");
     rule.state = HighlighterState::CodeBlock;
     rule.disableIfCurrentStateIsSet = true;
+    _highlightingRulesAfter.append(rule);
+
+    // highlight inline comments
+    rule = HighlightingRule();
+    rule.pattern = QRegularExpression("<!\\-\\-(.+?)\\-\\->");
+    rule.state = HighlighterState::Comment;
+    rule.capturingGroup = 1;
+    _highlightingRulesAfter.append(rule);
+
+    // highlight comments for Rmarkdown for academic papers
+    rule.pattern = QRegularExpression("^\\[Comment\\]: # \\(.+?\\)$");
     _highlightingRulesAfter.append(rule);
 
     // highlight tables with starting |
@@ -565,9 +569,15 @@ void MarkdownHighlighter::highlightCommentBlock(QString text) {
     QString startText = "<!--";
     QString endText = "-->";
 
-    if ((text.startsWith(startText)) ||
-            ((!text.endsWith(endText)) &&
-                    ((previousBlockState() == HighlighterState::Comment)))) {
+    // we will skip this case because that is an inline comment and causes
+    // troubles here
+    if (text.startsWith(startText) && text.contains(endText)) {
+        return;
+    }
+
+    if (text.startsWith(startText) ||
+            (!text.endsWith(endText) &&
+                    (previousBlockState() == HighlighterState::Comment))) {
         setCurrentBlockState(HighlighterState::Comment);
         highlight = true;
     } else if (text.endsWith(endText)) {
