@@ -235,7 +235,7 @@ void MarkdownHighlighter::initHighlightingRules() {
     _highlightingRulesAfter.append(rule);
 
     // highlight comments for Rmarkdown for academic papers
-    rule.pattern = QRegularExpression("^\\[Comment\\]: # \\(.+?\\)$");
+    rule.pattern = QRegularExpression("^\\[.+?\\]: # \\(.+?\\)$");
     _highlightingRulesAfter.append(rule);
 
     // highlight tables with starting |
