@@ -54,6 +54,7 @@ public:
         Table,
         InlineCodeBlock,
         MaskedSyntax,
+        CurrentLineBackgroundColor,
 
         // internal
         CodeBlockEnd = 100,
