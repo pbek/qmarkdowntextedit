@@ -506,6 +506,16 @@ void MarkdownHighlighter::highlightHeadline(QString text) {
  */
 void MarkdownHighlighter::setCurrentBlockMargin(
         MarkdownHighlighter::HighlighterState state) {
+    // this is currently disabled because it causes multiple problems:
+    // - it prevents "undo" in headlines
+    //   https://github.com/pbek/QOwnNotes/issues/520
+    // - invisible lines at the end of a note
+    //   https://github.com/pbek/QOwnNotes/issues/667
+    // - a crash when reaching the invisible lines when the current line is
+    //   highlighted
+    //   https://github.com/pbek/QOwnNotes/issues/701
+    return;
+
     qreal margin;
 
     switch (state) {
@@ -527,7 +537,7 @@ void MarkdownHighlighter::setCurrentBlockMargin(
     blockFormat.setTopMargin(2);
     blockFormat.setBottomMargin(margin);
 
-    // TODO: this prevents "undo" in headlines
+    // this prevents "undo" in headlines!
     QTextCursor* myCursor = new QTextCursor(currentBlock());
     myCursor->setBlockFormat(blockFormat);
 }
