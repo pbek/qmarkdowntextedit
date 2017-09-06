@@ -27,7 +27,7 @@
 
 
 QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent)
-        : QTextEdit(parent) {
+        : QPlainTextEdit(parent) {
     installEventFilter(this);
     viewport()->installEventFilter(this);
     _autoTextOptions = AutoTextOption::None;
@@ -225,7 +225,7 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
         }
     }
 
-    return QTextEdit::eventFilter(obj, event);
+    return QPlainTextEdit::eventFilter(obj, event);
 }
 
 /**
@@ -241,7 +241,7 @@ void QMarkdownTextEdit::resetMouseCursor() const {
  */
 void QMarkdownTextEdit::focusOutEvent(QFocusEvent *event) {
     resetMouseCursor();
-    QTextEdit::focusOutEvent(event);
+    QPlainTextEdit::focusOutEvent(event);
 }
 
 /**
@@ -739,17 +739,11 @@ void QMarkdownTextEdit::duplicateText() {
 }
 
 void QMarkdownTextEdit::setText(const QString & text) {
-    QTextEdit::setText(text);
-    adjustRightMargin();
-}
-
-void QMarkdownTextEdit::setHtml(const QString &text) {
-    QTextEdit::setHtml(text);
-    adjustRightMargin();
+    setPlainText(text);
 }
 
 void QMarkdownTextEdit::setPlainText(const QString & text) {
-    QTextEdit::setPlainText(text);
+    QPlainTextEdit::setPlainText(text);
     adjustRightMargin();
 }
 

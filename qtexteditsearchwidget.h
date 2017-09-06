@@ -15,7 +15,7 @@
 #pragma once
 
 #include <QWidget>
-#include <QTextEdit>
+#include <QPlainTextEdit>
 
 namespace Ui {
 class QTextEditSearchWidget;
@@ -32,7 +32,7 @@ public:
         RegularExpressionMode
     };
 
-    explicit QTextEditSearchWidget(QTextEdit *parent = 0);
+    explicit QTextEditSearchWidget(QPlainTextEdit *parent = 0);
     bool doSearch(bool searchDown = true, bool allowRestartAtTop = true);
     ~QTextEditSearchWidget();
 
@@ -40,7 +40,7 @@ private:
     Ui::QTextEditSearchWidget *ui;
 
 protected:
-    QTextEdit *_textEdit;
+    QPlainTextEdit *_textEdit;
     bool eventFilter(QObject *obj, QEvent *event);
 
 public slots:

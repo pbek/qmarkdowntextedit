@@ -2,7 +2,7 @@
 [![Build Status Linux/OS X](https://travis-ci.org/pbek/qmarkdowntextedit.svg?branch=develop)](https://travis-ci.org/pbek/qmarkdowntextedit)
 [![Build Status Windows](https://ci.appveyor.com/api/projects/status/github/pbek/qmarkdowntextedit)](https://ci.appveyor.com/project/pbek/qmarkdowntextedit)
 
-QMarkdownTextEdit is a C++ Qt [QTextEdit](http://doc.qt.io/qt-5/qtextedit.html) widget with [markdown](https://en.wikipedia.org/wiki/Markdown) highlighting and some other goodies.
+QMarkdownTextEdit is a C++ Qt [QPlainTextEdit](http://doc.qt.io/qt-5/qtextplainedit.html) widget with [markdown](https://en.wikipedia.org/wiki/Markdown) highlighting and some other goodies.
 
 ## Features
 - markdown highlighting
@@ -22,7 +22,7 @@ QMarkdownTextEdit is a C++ Qt [QTextEdit](http://doc.qt.io/qt-5/qtextedit.html) 
 ## How to use this widget
 - include [qmarkdowntextedit.pri](https://github.com/pbek/qmarkdowntextedit/blob/develop/qmarkdowntextedit.pri) 
   to your project like this `include (qmarkdowntextedit/qmarkdowntextedit.pri)`
-- add a normal `QTextEdit` to your UI and promote it to `QMarkdownTextEdit` (base class `QTextEdit`)
+- add a normal `QPlainTextEdit` to your UI and promote it to `QMarkdownTextEdit` (base class `QPlainTextEdit`)
 
 ## References
 - [QOwnNotes - cross-platform open source plain-text file notepad](http://www.qownnotes.org)

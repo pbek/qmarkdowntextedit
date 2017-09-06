@@ -14,13 +14,13 @@
 
 #pragma once
 
-#include <QTextEdit>
+#include <QPlainTextEdit>
 #include <QEvent>
 #include "markdownhighlighter.h"
 #include "qtexteditsearchwidget.h"
 
 
-class QMarkdownTextEdit : public QTextEdit
+class QMarkdownTextEdit : public QPlainTextEdit
 {
     Q_OBJECT
 
@@ -52,7 +52,6 @@ public:
 public slots:
     void duplicateText();
     void setText(const QString & text);
-    void setHtml(const QString &text);
     void setPlainText(const QString & text);
     void adjustRightMargin();
     void hide();

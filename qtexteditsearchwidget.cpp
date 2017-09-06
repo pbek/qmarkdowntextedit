@@ -18,7 +18,7 @@
 #include <QKeyEvent>
 #include <QDebug>
 
-QTextEditSearchWidget::QTextEditSearchWidget(QTextEdit *parent) :
+QTextEditSearchWidget::QTextEditSearchWidget(QPlainTextEdit *parent) :
     QWidget(parent),
     ui(new Ui::QTextEditSearchWidget)
 {
