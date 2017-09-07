@@ -152,7 +152,7 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             return handleBracketClosing("'");
         } else if (keyEvent->key() == Qt::Key_Underscore) {
             return handleBracketClosing("_");
-        } else if (keyEvent->key() == Qt::Key_Atilde) {
+        } else if (keyEvent->key() == Qt::Key_AsciiTilde) {
             return handleBracketClosing("~");
         } else if (keyEvent->key() == Qt::Key_ParenLeft) {
             return handleBracketClosing("(", ")");
