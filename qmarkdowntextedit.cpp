@@ -32,11 +32,11 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent)
     viewport()->installEventFilter(this);
     _autoTextOptions = AutoTextOption::None;
     _openingCharacters =
-            QStringList() << "(" << "[" << "{" << "<" << "*" << "\"" << "'";
+            QStringList() << "(" << "[" << "{" << "<" << "*" << "\"" << "'" << "_" << "~";
     _closingCharacters =
-            QStringList() << ")" << "]" << "}" << ">" << "*" << "\"" << "'";
+            QStringList() << ")" << "]" << "}" << ">" << "*" << "\"" << "'" << "_" << "~";
 
-    // markdown highlighting es enabled by default
+    // markdown highlighting is enabled by default
     _highlightingEnabled = true;
     _highlighter = new MarkdownHighlighter(document());
 //    setHighlightingEnabled(true);
@@ -150,6 +150,10 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             return handleBracketClosing("\"");
         } else if (keyEvent->key() == Qt::Key_Apostrophe) {
             return handleBracketClosing("'");
+        } else if (keyEvent->key() == Qt::Key_Underscore) {
+            return handleBracketClosing("_");
+        } else if (keyEvent->key() == Qt::Key_Atilde) {
+            return handleBracketClosing("~");
         } else if (keyEvent->key() == Qt::Key_ParenLeft) {
             return handleBracketClosing("(", ")");
         } else if (keyEvent->key() == Qt::Key_BraceLeft) {
