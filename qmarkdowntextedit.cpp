@@ -262,59 +262,41 @@ bool QMarkdownTextEdit::handleBracketClosing(QString openingCharacter,
         return false;
     }
 
-    QTextCursor c = textCursor();
-    int positionInBlock = c.position() - c.block().position();
-
-    // get the current text from the block
-    QString text = c.block().text();
-
-    // only allow the closing if the cursor was at the end of a block
-    // we are making a special allowance for openingCharacter == *
-    if ((positionInBlock != text.count()) &&
-            !((openingCharacter == "*") &&
-              (positionInBlock == (text.count() - 1)))) {
-        return false;
-    }
-
     if (closingCharacter.isEmpty()) {
         closingCharacter = openingCharacter;
     }
 
-    int moduloPosition = 1;
+    // Get the current text from the block (NOTE: inserted character not included).
+    QTextCursor c = textCursor();
+    QString text = c.block().text();
+
+    // Remove whitespace at start of string (e.g. in multilevel-lists).
+    text = text.remove(QRegExp("^\\s+"));
+
+    // Default positions to move the cursor back.
     int cursorSubtract = 1;
 
-    // special handling for `*` opening character
+    // Special handling for `*` opening character, as this could be:
+    // - start of a list (or sublist);
+    // - start of a bold text;
     if (openingCharacter == "*") {
-        // special handling for closing a bold tag at the start of a line
-        if (text == "*") {
-            c.insertText("**");
-            c.setPosition(c.position() - 2);
-            setTextCursor(c);
+        // User wants: '*'.
+        // This could be the start of a list, don't autocomplete.
+        if (text == "") {
             return false;
         }
-
-        // when used in lists modify the modulo to close `*` characters
-        if (text.startsWith("* ")) {
-            moduloPosition = 0;
+        // User wants: '**'.
+        // Not the start of a list, probably bold text. We autocomplete with
+        // extra closingCharacter and cursorSubtract to 'catchup'.
+        else if (text == "*") {
+            closingCharacter = "**";
+            cursorSubtract = 2;
         }
-
-        // we don't want to close "*" when used in a list
-        if (positionInBlock == 0) {
-            return false;
+        // User wants: '* *'.
+        // We are in a list already, proceed as normal (autocomplete).
+        else if (text == "* ") {
+            // no-op.
         }
-
-        // special handling if someone want's to start a line with a bold text
-        // cursor should then don't move between the `*`
-        if (text.startsWith("**") && (text.count("**") == 1)) {
-            cursorSubtract = 0;
-        }
-    }
-
-    // check if there already was entered an opening character before when
-    // opening and closing characters are the same
-    if ((openingCharacter == closingCharacter) &&
-        ((text.count(openingCharacter)) % 2 == moduloPosition)) {
-        return false;
     }
 
     c.insertText(openingCharacter);
