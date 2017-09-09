@@ -800,22 +800,32 @@ bool QMarkdownTextEdit::handleReturnEntered() {
         return true;
     }
 
-    // if the current line starts with a list character (possibly after
-    // whitespaces) add the whitespaces at the next line too
-    re = QRegularExpression("^(\\s*)([+\\-\\*])(\\s?)");
-    i = re.globalMatch(currentLineText);
-    if (i.hasNext()) {
-        QRegularExpressionMatch match = i.next();
-        QString whitespaces = match.captured(1);
-        QString listCharacter = match.captured(2);
-        QString whitespaceCharacter = match.captured(3);
+    // Check if we are in a list.
+    // We are in a list when we have '* ' or '- ', possibly with preceding
+    // whitespace. If e.g. user has entered '**text**' and pressed enter - we
+    // don't want do anymore list-stuff.
+    QChar char0 = currentLineText.trimmed()[0];
+    QChar char1 = currentLineText.trimmed()[1];
+    bool inList = ((char0 == '*' || char0 == '-') && char1 == ' ');
 
-        c.setPosition(position);
-        c.insertText("\n" + whitespaces + listCharacter + whitespaceCharacter);
+    if (inList) {
+        // if the current line starts with a list character (possibly after
+        // whitespaces) add the whitespaces at the next line too
+        re = QRegularExpression("^(\\s*)([+\\-\\*])(\\s?)");
+        i = re.globalMatch(currentLineText);
+        if (i.hasNext()) {
+            QRegularExpressionMatch match = i.next();
+            QString whitespaces = match.captured(1);
+            QString listCharacter = match.captured(2);
+            QString whitespaceCharacter = match.captured(3);
 
-        // scroll to the cursor if we are at the bottom of the document
-        ensureCursorVisible();
-        return true;
+            c.setPosition(position);
+            c.insertText("\n" + whitespaces + listCharacter + whitespaceCharacter);
+
+            // scroll to the cursor if we are at the bottom of the document
+            ensureCursorVisible();
+            return true;
+        }
     }
 
     return false;
