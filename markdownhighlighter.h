@@ -73,6 +73,7 @@ public:
 
     void setTextFormats(QHash<HighlighterState, QTextCharFormat> formats);
     void setTextFormat(HighlighterState state, QTextCharFormat format);
+    void clearDirtyBlocks();
 
 signals:
     void highlightingFinished();

@@ -729,6 +729,10 @@ void QMarkdownTextEdit::setText(const QString & text) {
 }
 
 void QMarkdownTextEdit::setPlainText(const QString & text) {
+    // clear the dirty blocks vector to increase performance and prevent
+    // a possible crash in QSyntaxHighlighter::rehighlightBlock
+    _highlighter->clearDirtyBlocks();
+
     QPlainTextEdit::setPlainText(text);
     adjustRightMargin();
 }

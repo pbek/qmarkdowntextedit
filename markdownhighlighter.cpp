@@ -66,6 +66,13 @@ void MarkdownHighlighter::reHighlightDirtyBlocks() {
 }
 
 /**
+ * Clears the dirty blocks vector
+ */
+void MarkdownHighlighter::clearDirtyBlocks() {
+    _dirtyTextBlocks.clear();
+}
+
+/**
  * Adds a dirty block to the list if it doesn't already exist
  *
  * @param block
