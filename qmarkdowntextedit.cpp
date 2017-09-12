@@ -31,10 +31,10 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent)
     installEventFilter(this);
     viewport()->installEventFilter(this);
     _autoTextOptions = AutoTextOption::None;
-    _openingCharacters =
-            QStringList() << "(" << "[" << "{" << "<" << "*" << "\"" << "'" << "_" << "~";
-    _closingCharacters =
-            QStringList() << ")" << "]" << "}" << ">" << "*" << "\"" << "'" << "_" << "~";
+    _openingCharacters = QStringList() << "(" << "[" << "{" << "<" << "*"
+                                       << "\"" << "'" << "_" << "~";
+    _closingCharacters = QStringList() << ")" << "]" << "}" << ">" << "*"
+                                       << "\"" << "'" << "_" << "~";
 
     // markdown highlighting is enabled by default
     _highlightingEnabled = true;
@@ -148,8 +148,10 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             return handleBracketClosing("*");
         } else if (keyEvent->key() == Qt::Key_QuoteDbl) {
             return handleBracketClosing("\"");
-        } else if (keyEvent->key() == Qt::Key_Apostrophe) {
-            return handleBracketClosing("'");
+            // apostrophe bracket closing is temporary disabled because
+            // apostrophes are used in different contexts
+//        } else if (keyEvent->key() == Qt::Key_Apostrophe) {
+//            return handleBracketClosing("'");
         } else if (keyEvent->key() == Qt::Key_Underscore) {
             return handleBracketClosing("_");
         } else if (keyEvent->key() == Qt::Key_AsciiTilde) {
