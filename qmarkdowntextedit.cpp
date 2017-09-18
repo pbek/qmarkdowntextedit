@@ -268,8 +268,31 @@ bool QMarkdownTextEdit::handleBracketClosing(QString openingCharacter,
         closingCharacter = openingCharacter;
     }
 
-    // Get the current text from the block (NOTE: inserted character not included).
     QTextCursor c = textCursor();
+    QString selectedText = c.selectedText();
+
+    // When user currently has text selected, we prepend the openingCharacter
+    // and append the closingCharacter. E.g. 'text' -> '(text)'. We keep the
+    // current selectedText selected.
+    //
+    // TODO: how to make ctrl-z keep the selectedText selected?
+    if (selectedText != "") {
+        // Insert. The selectedText is overwritten.
+        c.insertText(openingCharacter);
+        c.insertText(selectedText);
+        c.insertText(closingCharacter);
+
+        // Re-select the selectedText.
+        int selectionEnd = c.position() - 1;
+        int selectionStart = selectionEnd - selectedText.length();
+        c.setPosition(selectionStart);
+        c.setPosition(selectionEnd, QTextCursor::KeepAnchor);
+        this->setTextCursor(c);
+
+        return true;
+    }
+
+    // Get the current text from the block (NOTE: inserted character not included).
     QString text = c.block().text();
 
     // Remove whitespace at start of string (e.g. in multilevel-lists).
