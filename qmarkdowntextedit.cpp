@@ -152,8 +152,10 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             // apostrophes are used in different contexts
 //        } else if (keyEvent->key() == Qt::Key_Apostrophe) {
 //            return handleBracketClosing("'");
-        } else if (keyEvent->key() == Qt::Key_Underscore) {
-            return handleBracketClosing("_");
+            // underline bracket closing is temporary disabled because
+            // underlines are used in different contexts
+//        } else if (keyEvent->key() == Qt::Key_Underscore) {
+//            return handleBracketClosing("_");
         } else if (keyEvent->key() == Qt::Key_AsciiTilde) {
             return handleBracketClosing("~");
         } else if (keyEvent->key() == Qt::Key_ParenLeft) {
