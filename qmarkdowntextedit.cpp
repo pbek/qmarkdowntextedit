@@ -24,6 +24,7 @@
 #include <QTimer>
 #include <QSettings>
 #include <QTextBlock>
+#include <QPainter>
 
 
 QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent)
@@ -886,4 +887,31 @@ bool QMarkdownTextEdit::handleTabEntered(bool reverse) {
  */
 void QMarkdownTextEdit::setAutoTextOptions(AutoTextOptions options) {
     _autoTextOptions = options;
+}
+
+/**
+ * Overrides QPlainTextEdit::paintEvent to fix the RTL bug of QPlainTextEdit
+ *
+ * @param e
+ */
+void QMarkdownTextEdit::paintEvent(QPaintEvent *e) {
+    QTextBlock block = firstVisibleBlock();
+
+    while (block.isValid()) {
+        QTextLayout *layout = block.layout();
+
+        // this fixes the RTL bug of QPlainTextEdit
+        // https://bugreports.qt.io/browse/QTBUG-7516
+        if (block.text().isRightToLeft())
+        {
+            QTextOption opt = document()->defaultTextOption();
+            opt = QTextOption(Qt::AlignRight);
+            opt.setTextDirection(Qt::RightToLeft);
+            layout->setTextOption(opt);
+        }
+
+        block = block.next();
+    }
+
+    QPlainTextEdit::paintEvent(e);
 }

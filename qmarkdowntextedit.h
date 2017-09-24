@@ -78,6 +78,7 @@ protected:
     bool bracketClosingCheck(QString openingCharacter,
                              QString closingCharacter);
     void focusOutEvent(QFocusEvent *event);
+    void paintEvent(QPaintEvent *e);
 
 signals:
     void urlClicked(QString url);
