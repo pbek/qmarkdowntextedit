@@ -109,7 +109,7 @@ void MarkdownHighlighter::initHighlightingRules() {
     _highlightingRulesPre.append(rule);
 
     // highlight ordered lists
-    rule.pattern = QRegularExpression("^\\s*\\d\\.\\s");
+    rule.pattern = QRegularExpression("^\\s*\\d+\\.\\s");
     _highlightingRulesPre.append(rule);
 
     // highlight block quotes
