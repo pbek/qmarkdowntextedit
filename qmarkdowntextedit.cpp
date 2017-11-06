@@ -820,7 +820,7 @@ bool QMarkdownTextEdit::handleReturnEntered() {
 
     // if return is pressed and there is just a list symbol then we want to
     // remove the list symbol
-    QRegularExpression re("^\\s*[+\\-\\*]\\s*$");
+    QRegularExpression re("^\\s*[+\\-\\*]\\s+$");
     QRegularExpressionMatchIterator i = re.globalMatch(currentLineText);
     if (i.hasNext()) {
         c.removeSelectedText();
