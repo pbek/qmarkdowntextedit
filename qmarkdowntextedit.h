@@ -43,7 +43,7 @@ public:
     void setIgnoredClickUrlSchemata(QStringList ignoredUrlSchemata);
     virtual void openUrl(QString urlString);
     QString getMarkdownUrlAtPosition(QString text, int position);
-    void initSearchFrame(QWidget *searchFrame);
+    void initSearchFrame(QWidget *searchFrame, bool darkMode = false);
     void setAutoTextOptions(AutoTextOptions options);
     void setHighlightingEnabled(bool enabled);
     static bool isValidUrl(QString urlString);

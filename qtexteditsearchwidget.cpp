@@ -24,6 +24,7 @@ QTextEditSearchWidget::QTextEditSearchWidget(QPlainTextEdit *parent) :
 {
     ui->setupUi(this);
     _textEdit = parent;
+    _darkMode = false;
     hide();
 
     QObject::connect(ui->closeButton, SIGNAL(clicked()),
@@ -205,7 +206,7 @@ bool QTextEditSearchWidget::doSearch(bool searchDown, bool allowRestartAtTop) {
     QString text = ui->searchLineEdit->text();
 
     if (text == "") {
-        ui->searchLineEdit->setStyleSheet("* { background: none; }");
+        ui->searchLineEdit->setStyleSheet("");
         return false;
     }
 
@@ -250,8 +251,16 @@ bool QTextEditSearchWidget::doSearch(bool searchDown, bool allowRestartAtTop) {
 
     // add a background color according if we found the text or not
     QString colorCode = found ? "#D5FAE2" : "#FAE9EB";
+
+    if (_darkMode) {
+        colorCode = found ? "#135a13" : "#8d2b36";
+    }
+
     ui->searchLineEdit->setStyleSheet("* { background: " + colorCode + "; }");
 
     return found;
 }
 
+void QTextEditSearchWidget::setDarkMode(bool enabled) {
+    _darkMode = enabled;
+}

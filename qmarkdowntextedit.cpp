@@ -781,7 +781,7 @@ void QMarkdownTextEdit::setPlainText(const QString & text) {
 /**
  * Uses an other widget as parent for the search widget
  */
-void QMarkdownTextEdit::initSearchFrame(QWidget *searchFrame) {
+void QMarkdownTextEdit::initSearchFrame(QWidget *searchFrame, bool darkMode) {
     _searchFrame = searchFrame;
 
     // remove the search widget from our layout
@@ -796,6 +796,7 @@ void QMarkdownTextEdit::initSearchFrame(QWidget *searchFrame) {
         layout->setContentsMargins(0, 0, 0, 0);
     }
 
+    _searchWidget->setDarkMode(darkMode);
     layout->addWidget(_searchWidget);
     _searchFrame->setLayout(layout);
 }
