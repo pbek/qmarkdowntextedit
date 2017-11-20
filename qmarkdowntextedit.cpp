@@ -829,12 +829,12 @@ bool QMarkdownTextEdit::handleReturnEntered() {
     }
 
     // Check if we are in a list.
-    // We are in a list when we have '* ' or '- ', possibly with preceding
+    // We are in a list when we have '* ', '- ' or '+ ', possibly with preceding
     // whitespace. If e.g. user has entered '**text**' and pressed enter - we
     // don't want do anymore list-stuff.
     QChar char0 = currentLineText.trimmed()[0];
     QChar char1 = currentLineText.trimmed()[1];
-    bool inList = ((char0 == '*' || char0 == '-') && char1 == ' ');
+    bool inList = ((char0 == '*' || char0 == '-' || char0 == '+') && char1 == ' ');
 
     if (inList) {
         // if the current line starts with a list character (possibly after
