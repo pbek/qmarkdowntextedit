@@ -26,9 +26,7 @@
     <message>
         <location filename="../qtexteditsearchwidget.ui" line="86"/>
         <source>search forward</source>
-        <translation>vorwärts suchen
-rückwärts suchen
-vorwärts suchen</translation>
+        <translation>vorwärts suchen</translation>
     </message>
     <message>
         <location filename="../qtexteditsearchwidget.ui" line="103"/>
