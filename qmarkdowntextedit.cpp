@@ -821,7 +821,8 @@ bool QMarkdownTextEdit::handleReturnEntered() {
 
     // if return is pressed and there is just a list symbol then we want to
     // remove the list symbol
-    QRegularExpression re("^\\s*[+\\-\\*]\\s+$");
+    // Valid listCharacters: '+ ', '-' , '* ', '+ [ ] ', '+ [x] ', '- [ ] ', '- [x] ', '* [ ] ', '* [x] '.
+    QRegularExpression re("^(\\s*)([+|\\-|\\*] \\[(x| )\\]|[+\\-\\*])(\\s+)$");
     QRegularExpressionMatchIterator i = re.globalMatch(currentLineText);
     if (i.hasNext()) {
         c.removeSelectedText();
@@ -839,13 +840,14 @@ bool QMarkdownTextEdit::handleReturnEntered() {
     if (inList) {
         // if the current line starts with a list character (possibly after
         // whitespaces) add the whitespaces at the next line too
-        re = QRegularExpression("^(\\s*)([+\\-\\*])(\\s?)");
+        // Valid listCharacters: '+ ', '-' , '* ', '+ [ ] ', '+ [x] ', '- [ ] ', '- [x] ', '* [ ] ', '* [x] '.
+        re = QRegularExpression("^(\\s*)([+|\\-|\\*] \\[(x| )\\]|[+\\-\\*])(\\s+)");
         i = re.globalMatch(currentLineText);
         if (i.hasNext()) {
             QRegularExpressionMatch match = i.next();
             QString whitespaces = match.captured(1);
             QString listCharacter = match.captured(2);
-            QString whitespaceCharacter = match.captured(3);
+            QString whitespaceCharacter = match.captured(4);
 
             c.setPosition(position);
             c.insertText("\n" + whitespaces + listCharacter + whitespaceCharacter);
@@ -871,14 +873,15 @@ bool QMarkdownTextEdit::handleTabEntered(bool reverse) {
         QString currentLineText = c.selectedText();
 
         // check if we want to indent or un-indent a list
-        QRegularExpression re("^(\\s*)([+\\-\\*])(\\s?)$");
+        // Valid listCharacters: '+ ', '-' , '* ', '+ [ ] ', '+ [x] ', '- [ ] ', '- [x] ', '* [ ] ', '* [x] '.
+        QRegularExpression re("^(\\s*)([+|\\-|\\*] \\[(x| )\\]|[+\\-\\*])(\\s+)$");
         QRegularExpressionMatchIterator i = re.globalMatch(currentLineText);
 
         if (i.hasNext()) {
             QRegularExpressionMatch match = i.next();
             QString whitespaces = match.captured(1);
             QString listCharacter = match.captured(2);
-            QString whitespaceCharacter = match.captured(3);
+            QString whitespaceCharacter = match.captured(4);
 
             // add or remove one tabulator key
             if (reverse) {
