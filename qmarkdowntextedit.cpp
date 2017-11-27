@@ -816,7 +816,7 @@ bool QMarkdownTextEdit::handleReturnEntered() {
     QTextCursor c = this->textCursor();
     int position = c.position();
 
-    c.movePosition(QTextCursor::StartOfLine, QTextCursor::KeepAnchor);
+    c.movePosition(QTextCursor::StartOfBlock, QTextCursor::KeepAnchor);
     QString currentLineText = c.selectedText();
 
     // if return is pressed and there is just a list symbol then we want to
