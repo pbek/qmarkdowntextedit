@@ -393,7 +393,7 @@ void MarkdownHighlighter::highlightMarkdown(QString text) {
  * @param text
  */
 void MarkdownHighlighter::highlightHeadline(QString text) {
-    QRegularExpression re("^(#+)\\s*(.+?)$");
+    QRegularExpression re("^(#+)\\s+(.+?)$");
     QRegularExpressionMatch match = re.match(text);
     QTextCharFormat &maskedFormat = _formats[HighlighterState::MaskedSyntax];
 
