@@ -12,7 +12,7 @@ find_package( Qt5Core REQUIRED )
 find_package( Qt5Widgets REQUIRED )
 find_package( Qt5Gui REQUIRED )
 
-qt5_wrap_ui(ui_qtexteditsearchwidget.h qtexteditsearchwidget.ui)
+qt5_wrap_ui(ui_qplaintexteditsearchwidget.h qplaintexteditsearchwidget.ui)
 
 set(RESOURCE_FILES
         media.qrc
@@ -29,9 +29,9 @@ set(SOURCE_FILES
     mainwindow.ui
     qmarkdowntextedit.cpp
     qmarkdowntextedit.h
-    qtexteditsearchwidget.ui
-    qtexteditsearchwidget.cpp
-    qtexteditsearchwidget.h)
+    qplaintexteditsearchwidget.ui
+    qplaintexteditsearchwidget.cpp
+    qplaintexteditsearchwidget.h)
 
 add_executable(qmarkdowntextedit ${SOURCE_FILES} ${RESOURCE_ADDED})
 

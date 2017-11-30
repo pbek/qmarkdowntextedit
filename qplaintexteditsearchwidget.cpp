@@ -12,15 +12,15 @@
  *
  */
 
-#include "qtexteditsearchwidget.h"
-#include "ui_qtexteditsearchwidget.h"
+#include "qplaintexteditsearchwidget.h"
+#include "ui_qplaintexteditsearchwidget.h"
 #include <QEvent>
 #include <QKeyEvent>
 #include <QDebug>
 
-QTextEditSearchWidget::QTextEditSearchWidget(QPlainTextEdit *parent) :
+QPlainTextEditSearchWidget::QPlainTextEditSearchWidget(QPlainTextEdit *parent) :
     QWidget(parent),
-    ui(new Ui::QTextEditSearchWidget)
+    ui(new Ui::QPlainTextEditSearchWidget)
 {
     ui->setupUi(this);
     _textEdit = parent;
@@ -61,11 +61,11 @@ QTextEditSearchWidget::QTextEditSearchWidget(QPlainTextEdit *parent) :
 #endif
 }
 
-QTextEditSearchWidget::~QTextEditSearchWidget() {
+QPlainTextEditSearchWidget::~QPlainTextEditSearchWidget() {
     delete ui;
 }
 
-void QTextEditSearchWidget::activate() {
+void QPlainTextEditSearchWidget::activate() {
     setReplaceMode(false);
     show();
 
@@ -81,7 +81,7 @@ void QTextEditSearchWidget::activate() {
     doSearchDown();
 }
 
-void QTextEditSearchWidget::activateReplace() {
+void QPlainTextEditSearchWidget::activateReplace() {
     // replacing is prohibited if the text edit is readonly
     if (_textEdit->isReadOnly()) {
         return;
@@ -93,12 +93,12 @@ void QTextEditSearchWidget::activateReplace() {
     setReplaceMode(true);
 }
 
-void QTextEditSearchWidget::deactivate() {
+void QPlainTextEditSearchWidget::deactivate() {
     hide();
     _textEdit->setFocus();
 }
 
-void QTextEditSearchWidget::setReplaceMode(bool enabled) {
+void QPlainTextEditSearchWidget::setReplaceMode(bool enabled) {
     ui->replaceToggleButton->setChecked(enabled);
     ui->replaceLabel->setVisible(enabled);
     ui->replaceLineEdit->setVisible(enabled);
@@ -107,7 +107,7 @@ void QTextEditSearchWidget::setReplaceMode(bool enabled) {
     ui->matchCaseSensitiveButton->setVisible(enabled);
 }
 
-bool QTextEditSearchWidget::eventFilter(QObject *obj, QEvent *event) {
+bool QPlainTextEditSearchWidget::eventFilter(QObject *obj, QEvent *event) {
     if (event->type() == QEvent::KeyPress) {
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
 
@@ -139,20 +139,20 @@ bool QTextEditSearchWidget::eventFilter(QObject *obj, QEvent *event) {
     return QWidget::eventFilter(obj, event);
 }
 
-void QTextEditSearchWidget::searchLineEditTextChanged(const QString &arg1) {
+void QPlainTextEditSearchWidget::searchLineEditTextChanged(const QString &arg1) {
     Q_UNUSED(arg1);
     doSearchDown();
 }
 
-void QTextEditSearchWidget::doSearchUp() {
+void QPlainTextEditSearchWidget::doSearchUp() {
     doSearch(false);
 }
 
-void QTextEditSearchWidget::doSearchDown() {
+void QPlainTextEditSearchWidget::doSearchDown() {
     doSearch(true);
 }
 
-bool QTextEditSearchWidget::doReplace(bool forAll) {
+bool QPlainTextEditSearchWidget::doReplace(bool forAll) {
     if (_textEdit->isReadOnly()) {
         return false;
     }
@@ -186,7 +186,7 @@ bool QTextEditSearchWidget::doReplace(bool forAll) {
     return true;
 }
 
-void QTextEditSearchWidget::doReplaceAll() {
+void QPlainTextEditSearchWidget::doReplaceAll() {
     if (_textEdit->isReadOnly()) {
         return;
     }
@@ -202,7 +202,7 @@ void QTextEditSearchWidget::doReplaceAll() {
  * @brief Searches for text in the text edit
  * @returns true if found
  */
-bool QTextEditSearchWidget::doSearch(bool searchDown, bool allowRestartAtTop) {
+bool QPlainTextEditSearchWidget::doSearch(bool searchDown, bool allowRestartAtTop) {
     QString text = ui->searchLineEdit->text();
 
     if (text == "") {
@@ -261,6 +261,6 @@ bool QTextEditSearchWidget::doSearch(bool searchDown, bool allowRestartAtTop) {
     return found;
 }
 
-void QTextEditSearchWidget::setDarkMode(bool enabled) {
+void QPlainTextEditSearchWidget::setDarkMode(bool enabled) {
     _darkMode = enabled;
 }

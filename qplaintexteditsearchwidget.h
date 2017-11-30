@@ -18,10 +18,10 @@
 #include <QPlainTextEdit>
 
 namespace Ui {
-class QTextEditSearchWidget;
+class QPlainTextEditSearchWidget;
 }
 
-class QTextEditSearchWidget : public QWidget
+class QPlainTextEditSearchWidget : public QWidget
 {
     Q_OBJECT
 
@@ -32,13 +32,13 @@ public:
         RegularExpressionMode
     };
 
-    explicit QTextEditSearchWidget(QPlainTextEdit *parent = 0);
+    explicit QPlainTextEditSearchWidget(QPlainTextEdit *parent = 0);
     bool doSearch(bool searchDown = true, bool allowRestartAtTop = true);
     void setDarkMode(bool enabled);
-    ~QTextEditSearchWidget();
+    ~QPlainTextEditSearchWidget();
 
 private:
-    Ui::QTextEditSearchWidget *ui;
+    Ui::QPlainTextEditSearchWidget *ui;
 
 protected:
     QPlainTextEdit *_textEdit;

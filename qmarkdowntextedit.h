@@ -17,7 +17,7 @@
 #include <QPlainTextEdit>
 #include <QEvent>
 #include "markdownhighlighter.h"
-#include "qtexteditsearchwidget.h"
+#include "qplaintexteditsearchwidget.h"
 
 
 class QMarkdownTextEdit : public QPlainTextEdit
@@ -39,7 +39,7 @@ public:
 
     explicit QMarkdownTextEdit(QWidget *parent = 0);
     MarkdownHighlighter *highlighter();
-    QTextEditSearchWidget *searchWidget();
+    QPlainTextEditSearchWidget *searchWidget();
     void setIgnoredClickUrlSchemata(QStringList ignoredUrlSchemata);
     virtual void openUrl(QString urlString);
     QString getMarkdownUrlAtPosition(QString text, int position);
@@ -62,7 +62,7 @@ protected:
     MarkdownHighlighter *_highlighter;
     bool _highlightingEnabled;
     QStringList _ignoredClickUrlSchemata;
-    QTextEditSearchWidget *_searchWidget;
+    QPlainTextEditSearchWidget *_searchWidget;
     QWidget *_searchFrame;
     AutoTextOptions _autoTextOptions;
     QStringList _openingCharacters;

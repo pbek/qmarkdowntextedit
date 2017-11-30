@@ -6,9 +6,9 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 SOURCES += \
     $$PWD/markdownhighlighter.cpp \
     $$PWD/qmarkdowntextedit.cpp \
-    $$PWD/qtexteditsearchwidget.cpp
+    $$PWD/qplaintexteditsearchwidget.cpp
 
 RESOURCES += \
     $$PWD/media.qrc
 
-FORMS += $$PWD/qtexteditsearchwidget.ui
+FORMS += $$PWD/qplaintexteditsearchwidget.ui

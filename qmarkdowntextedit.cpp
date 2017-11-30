@@ -61,7 +61,7 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent)
     this->setLayout(layout);
 
     // add the hidden search widget
-    _searchWidget = new QTextEditSearchWidget(this);
+    _searchWidget = new QPlainTextEditSearchWidget(this);
     this->layout()->addWidget(_searchWidget);
 
     QObject::connect(this, SIGNAL(textChanged()),
@@ -606,7 +606,7 @@ MarkdownHighlighter *QMarkdownTextEdit::highlighter() {
  * @brief Returns the searchWidget instance
  * @return
  */
-QTextEditSearchWidget *QMarkdownTextEdit::searchWidget() {
+QPlainTextEditSearchWidget *QMarkdownTextEdit::searchWidget() {
     return _searchWidget;
 }
 
