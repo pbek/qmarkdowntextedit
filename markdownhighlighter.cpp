@@ -26,8 +26,10 @@
  * @param parent
  * @return
  */
-MarkdownHighlighter::MarkdownHighlighter(QTextDocument *parent)
+MarkdownHighlighter::MarkdownHighlighter(
+        QTextDocument *parent, HighlightingOptions highlightingOptions)
         : QSyntaxHighlighter(parent) {
+    _highlightingOptions = highlightingOptions;
     _timer = new QTimer(this);
     QObject::connect(_timer, SIGNAL(timeout()),
                      this, SLOT(timerTick()));
@@ -114,7 +116,10 @@ void MarkdownHighlighter::initHighlightingRules() {
 
     // highlight block quotes
     rule = HighlightingRule();
-    rule.pattern = QRegularExpression("^\\s*(>\\s*)+");
+    rule.pattern = QRegularExpression(
+            _highlightingOptions.testFlag(
+                    HighlightingOption::FullyHighlightedBlockQuote) ?
+                    "^\\s*(>\\s*.+)" : "^\\s*(>\\s*)+");
     rule.state = HighlighterState::BlockQuote;
     _highlightingRulesPre.append(rule);
 

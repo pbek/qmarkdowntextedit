@@ -30,7 +30,15 @@ class MarkdownHighlighter : public QSyntaxHighlighter
 Q_OBJECT
 
 public:
-    MarkdownHighlighter(QTextDocument *parent = 0);
+    enum HighlightingOption{
+        None = 0,
+        FullyHighlightedBlockQuote = 0x01
+    };
+    Q_DECLARE_FLAGS(HighlightingOptions, HighlightingOption);
+
+    MarkdownHighlighter(QTextDocument *parent = 0,
+                        HighlightingOptions highlightingOptions =
+                        HighlightingOption::None);
 
     // we use some predefined numbers here to be compatible with
     // the peg-markdown parser
@@ -119,6 +127,7 @@ private:
     QHash<HighlighterState, QTextCharFormat> _formats;
     QTimer *_timer;
     bool _highlightingFinished;
+    HighlightingOptions _highlightingOptions;
 
     void setCurrentBlockMargin(HighlighterState state);
 };
