@@ -82,6 +82,8 @@ public:
     void setTextFormats(QHash<HighlighterState, QTextCharFormat> formats);
     void setTextFormat(HighlighterState state, QTextCharFormat format);
     void clearDirtyBlocks();
+    void setHighlightingOptions(HighlightingOptions options);
+    void initHighlightingRules();
 
 signals:
     void highlightingFinished();
@@ -113,8 +115,6 @@ protected:
     void highlightCodeBlock(QString text);
 
     void highlightCommentBlock(QString text);
-
-    void initHighlightingRules();
 
     void addDirtyBlock(QTextBlock block);
 

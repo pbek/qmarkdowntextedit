@@ -663,3 +663,7 @@ void MarkdownHighlighter::highlightAdditionalRules(
             }
         }
 }
+
+void MarkdownHighlighter::setHighlightingOptions(HighlightingOptions options) {
+    _highlightingOptions = options;
+}
