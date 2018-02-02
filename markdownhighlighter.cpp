@@ -398,8 +398,8 @@ void MarkdownHighlighter::highlightMarkdown(QString text) {
  * @param text
  */
 void MarkdownHighlighter::highlightHeadline(QString text) {
-	QRegularExpression regex("^(#+)\\s+(.+?)$");
-	QRegularExpressionMatch match = regex.match(text);
+    QRegularExpression regex("^(#+)\\s+(.+?)$");
+    QRegularExpressionMatch match = regex.match(text);
     QTextCharFormat &maskedFormat = _formats[HighlighterState::MaskedSyntax];
 
     // check for headline blocks with # in front of them
@@ -560,8 +560,8 @@ void MarkdownHighlighter::setCurrentBlockMargin(
  * @param text
  */
 void MarkdownHighlighter::highlightCodeBlock(QString text) {
-	QRegularExpression regex("^```\\w*?$");
-	QRegularExpressionMatch match = regex.match(text);
+    QRegularExpression regex("^```\\w*?$");
+    QRegularExpressionMatch match = regex.match(text);
 
     if (match.hasMatch()) {
         setCurrentBlockState(
@@ -629,20 +629,20 @@ void MarkdownHighlighter::highlightAdditionalRules(
             }
 
             QRegularExpression expression(rule.pattern);
-			QRegularExpressionMatchIterator iterator = expression.globalMatch(text);
+            QRegularExpressionMatchIterator iterator = expression.globalMatch(text);
             int capturingGroup = rule.capturingGroup;
             int maskedGroup = rule.maskedGroup;
             QTextCharFormat &format = _formats[rule.state];
 
             // store the current block state if useStateAsCurrentBlockState
             // is set
-			if (iterator.hasNext() && rule.useStateAsCurrentBlockState) {
+            if (iterator.hasNext() && rule.useStateAsCurrentBlockState) {
                 setCurrentBlockState(rule.state);
             }
 
             // find and format all occurrences
-			while (iterator.hasNext()) {
-				QRegularExpressionMatch match = iterator.next();
+            while (iterator.hasNext()) {
+                QRegularExpressionMatch match = iterator.next();
 
                 // if there is a capturingGroup set then first highlight
                 // everything as MaskedSyntax and highlight capturingGroup

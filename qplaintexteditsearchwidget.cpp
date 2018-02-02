@@ -157,29 +157,29 @@ bool QPlainTextEditSearchWidget::doReplace(bool forAll) {
         return false;
     }
 
-	QTextCursor cursor = _textEdit->textCursor();
+    QTextCursor cursor = _textEdit->textCursor();
 
-	if (!forAll && cursor.selectedText().isEmpty()) {
+    if (!forAll && cursor.selectedText().isEmpty()) {
         return false;
     }
 
     int searchMode = ui->modeComboBox->currentIndex();
     if (searchMode == RegularExpressionMode) {
-		QString text = cursor.selectedText();
+        QString text = cursor.selectedText();
         text.replace(QRegExp(ui->searchLineEdit->text()),
                              ui->replaceLineEdit->text());
-		cursor.insertText(text);
+        cursor.insertText(text);
     } else {
-		cursor.insertText(ui->replaceLineEdit->text());
+        cursor.insertText(ui->replaceLineEdit->text());
     }
 
     if (!forAll) {
-		int position = cursor.position();
+        int position = cursor.position();
 
         if (!doSearch(true)) {
             // restore the last cursor position if text wasn't found any more
-			cursor.setPosition(position);
-			_textEdit->setTextCursor(cursor);
+            cursor.setPosition(position);
+            _textEdit->setTextCursor(cursor);
         }
     }
 
