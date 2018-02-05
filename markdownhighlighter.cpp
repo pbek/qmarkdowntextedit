@@ -282,7 +282,7 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize) {
     _formats[H5] = format;
     format.setFontPointSize(defaultFontSize * 1.1);
     _formats[H6] = format;
-     format.setFontPointSize(defaultFontSize);
+    format.setFontPointSize(defaultFontSize);
 
     // set character format for horizontal rulers
     format = QTextCharFormat();
