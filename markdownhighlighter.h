@@ -63,6 +63,7 @@ public:
         InlineCodeBlock,
         MaskedSyntax,
         CurrentLineBackgroundColor,
+        BrokenLink,
 
         // internal
         CodeBlockEnd = 100,
@@ -120,7 +121,6 @@ protected:
 
     void reHighlightDirtyBlocks();
 
-private:
     QVector<HighlightingRule> _highlightingRulesPre;
     QVector<HighlightingRule> _highlightingRulesAfter;
     QVector<QTextBlock> _dirtyTextBlocks;
