@@ -14,6 +14,7 @@
  */
 
 #include <QTimer>
+#include <QDebug>
 #include "markdownhighlighter.h"
 
 
@@ -46,6 +47,8 @@ MarkdownHighlighter::MarkdownHighlighter(
  * Does jobs every second
  */
 void MarkdownHighlighter::timerTick() {
+    // qDebug() << "timerTick: " << this << ", " << this->parent()->parent()->parent()->objectName();
+
     // re-highlight all dirty blocks
     reHighlightDirtyBlocks();
 

@@ -27,7 +27,7 @@
 #include <QPainter>
 
 
-QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent)
+QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
         : QPlainTextEdit(parent) {
     installEventFilter(this);
     viewport()->installEventFilter(this);
@@ -39,7 +39,9 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent)
 
     // markdown highlighting is enabled by default
     _highlightingEnabled = true;
-    _highlighter = new MarkdownHighlighter(document());
+    if (initHighlighter) {
+        _highlighter = new MarkdownHighlighter(document());
+    }
 //    setHighlightingEnabled(true);
 
     QFont font = this->font();
