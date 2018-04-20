@@ -503,8 +503,11 @@ bool QMarkdownTextEdit::increaseSelectedTextIndention(bool reverse) {
         // if nothing was selected but we want to reverse the indention check
         // if there is a \t in front or after the cursor and remove it if so
         int position = cursor.position();
-        // get character in front of cursor
-        cursor.setPosition(position - 1, QTextCursor::KeepAnchor);
+
+        if (!cursor.atStart()) {
+            // get character in front of cursor
+            cursor.setPosition(position - 1, QTextCursor::KeepAnchor);
+        }
 
         // check for \t or space in front of cursor
         QRegularExpression re("[\\t ]");
@@ -513,7 +516,10 @@ bool QMarkdownTextEdit::increaseSelectedTextIndention(bool reverse) {
         if (!match.hasMatch()) {
             // (select to) check for \t or space after the cursor
             cursor.setPosition(position);
-            cursor.setPosition(position + 1, QTextCursor::KeepAnchor);
+
+            if (!cursor.atEnd()) {
+                cursor.setPosition(position + 1, QTextCursor::KeepAnchor);
+            }
         }
 
         match = re.match(cursor.selectedText());
