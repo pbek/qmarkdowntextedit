@@ -25,6 +25,7 @@
 #include <QSettings>
 #include <QTextBlock>
 #include <QPainter>
+#include <QScrollBar>
 
 
 QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
@@ -180,6 +181,18 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
                  keyEvent->modifiers().testFlag(Qt::AltModifier)) {
             // duplicate text with `Ctrl + Alt + Down`
             duplicateText();
+            return true;
+        } else if ((keyEvent->key() == Qt::Key_Down) &&
+                 keyEvent->modifiers().testFlag(Qt::ControlModifier)) {
+            // scroll the page down
+            auto *scrollBar = verticalScrollBar();
+            scrollBar->setSliderPosition(scrollBar->sliderPosition() + 1);
+            return true;
+        } else if ((keyEvent->key() == Qt::Key_Up) &&
+                 keyEvent->modifiers().testFlag(Qt::ControlModifier)) {
+            // scroll the page up
+            auto *scrollBar = verticalScrollBar();
+            scrollBar->setSliderPosition(scrollBar->sliderPosition() - 1);
             return true;
         } else if ((keyEvent->key() == Qt::Key_Down) &&
                 keyEvent->modifiers().testFlag(Qt::NoModifier)) {
