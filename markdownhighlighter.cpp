@@ -16,6 +16,9 @@
 #include <QTimer>
 #include <QDebug>
 #include "markdownhighlighter.h"
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
+#include <QRegularExpressionMatchIterator>
 
 
 /**

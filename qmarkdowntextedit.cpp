@@ -18,6 +18,8 @@
 #include <QGuiApplication>
 #include <QDebug>
 #include <QRegularExpression>
+#include <QRegularExpressionMatch>
+#include <QRegularExpressionMatchIterator>
 #include <QDir>
 #include <QDesktopServices>
 #include <QLayout>
