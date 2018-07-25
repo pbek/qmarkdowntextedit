@@ -48,6 +48,7 @@ public:
     void setHighlightingEnabled(bool enabled);
     static bool isValidUrl(QString urlString);
     void resetMouseCursor() const;
+    void setReadOnly(bool ro);
 
 public slots:
     void duplicateText();

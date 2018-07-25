@@ -955,3 +955,17 @@ void QMarkdownTextEdit::paintEvent(QPaintEvent *e) {
 
     QPlainTextEdit::paintEvent(e);
 }
+
+/**
+ * Overrides QPlainTextEdit::setReadOnly to fix a problem with Chinese and
+ * Japanese input methods
+ *
+ * @param ro
+ */
+void QMarkdownTextEdit::setReadOnly(bool ro) {
+    QPlainTextEdit::setReadOnly(ro);
+
+    // attempted to fix a problem with Chinese and Japanese input methods
+    // @see https://github.com/pbek/QOwnNotes/issues/976
+    setAttribute(Qt::WA_InputMethodEnabled, !isReadOnly());
+}
