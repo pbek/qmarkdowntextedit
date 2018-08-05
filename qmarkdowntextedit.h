@@ -78,6 +78,7 @@ protected:
                               QString closingCharacter = "");
     bool bracketClosingCheck(QString openingCharacter,
                              QString closingCharacter);
+    bool quotationMarkCheck(QString quotationCharacter);
     void focusOutEvent(QFocusEvent *event);
     void paintEvent(QPaintEvent *e);
 

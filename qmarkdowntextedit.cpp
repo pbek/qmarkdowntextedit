@@ -153,7 +153,7 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
         } else if (keyEvent->key() == Qt::Key_Asterisk) {
             return handleBracketClosing("*");
         } else if (keyEvent->key() == Qt::Key_QuoteDbl) {
-            return handleBracketClosing("\"");
+            return quotationMarkCheck("\"");
             // apostrophe bracket closing is temporary disabled because
             // apostrophes are used in different contexts
 //        } else if (keyEvent->key() == Qt::Key_Apostrophe) {
@@ -378,6 +378,10 @@ bool QMarkdownTextEdit::bracketClosingCheck(QString openingCharacter,
         return false;
     }
 
+    if (closingCharacter.isEmpty()) {
+        closingCharacter = openingCharacter;
+    }
+
     QTextCursor cursor = textCursor();
     int positionInBlock = cursor.position() - cursor.block().position();
 
@@ -392,6 +396,13 @@ bool QMarkdownTextEdit::bracketClosingCheck(QString openingCharacter,
 
     QString currentChar = text.at(positionInBlock);
 
+    if (closingCharacter == openingCharacter) {
+
+    }
+
+    qDebug() << __func__ << " - 'currentChar': " << currentChar;
+
+
     // if the current character is not the closing character we just want to
     // enter the character
     if (currentChar != closingCharacter) {
@@ -405,6 +416,45 @@ bool QMarkdownTextEdit::bracketClosingCheck(QString openingCharacter,
     // if there were enough opening characters just enter the character
     if (openingCharacterCount < (closingCharacterCount + 1)) {
         return false;
+    }
+
+    // move the cursor to the right and don't enter the character
+    cursor.movePosition(QTextCursor::Right);
+    setTextCursor(cursor);
+    return true;
+}
+
+/**
+ * Checks if the closing character should be output or not or if a closing
+ * character after an opening character if needed
+ *
+ * @param quotationCharacter
+ * @return
+ */
+bool QMarkdownTextEdit::quotationMarkCheck(QString quotationCharacter) {
+    // check if bracket closing is enabled
+    if (!(_autoTextOptions & AutoTextOption::BracketClosing)) {
+        return false;
+    }
+
+    QTextCursor cursor = textCursor();
+    int positionInBlock = cursor.position() - cursor.block().position();
+
+    // get the current text from the block
+    QString text = cursor.block().text();
+    int textLength = text.length();
+
+    // if we are at the end of the line we just want to enter the character
+    if (positionInBlock >= textLength) {
+        return handleBracketClosing(quotationCharacter);
+    }
+
+    QString currentChar = text.at(positionInBlock);
+
+    // if the current character is not the quotation character we just want to
+    // enter the character
+    if (currentChar != quotationCharacter) {
+        return handleBracketClosing(quotationCharacter);
     }
 
     // move the cursor to the right and don't enter the character
