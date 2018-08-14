@@ -596,7 +596,7 @@ void MarkdownHighlighter::highlightCodeBlock(QString text) {
  */
 void MarkdownHighlighter::highlightCommentBlock(QString text) {
     bool highlight = false;
-	text = text.trimmed();
+    text = text.trimmed();
     QString startText = "<!--";
     QString endText = "-->";
 
