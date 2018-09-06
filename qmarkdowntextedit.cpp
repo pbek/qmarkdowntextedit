@@ -790,6 +790,7 @@ QString QMarkdownTextEdit::getMarkdownUrlAtPosition(
             if ((position >= foundPositionStart) &&
                 (position <= foundPositionEnd)) {
                 url = urlString;
+                break;
             }
         }
     }
