@@ -655,7 +655,7 @@ bool QMarkdownTextEdit::isValidUrl(QString urlString) {
  * Handles clicked urls
  *
  * examples:
- * - <http://www.qownnotes.org> opens the webpage
+ * - <https://www.qownnotes.org> opens the webpage
  * - <file:///path/to/my/file/QOwnNotes.pdf> opens the file
  *   "/path/to/my/file/QOwnNotes.pdf" if the operating system supports that
  *  handler
