@@ -178,6 +178,11 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             return bracketClosingCheck("{", "}");
         } else if (keyEvent->key() == Qt::Key_BracketRight) {
             return bracketClosingCheck("[", "]");
+        } else if (keyEvent->key() == Qt::Key_Return &&
+        keyEvent->modifiers().testFlag(Qt::ShiftModifier)) {
+            QTextCursor cursor = this->textCursor();
+            cursor.insertText("  \n");
+            return true;
         } else if ((keyEvent->key() == Qt::Key_Down) &&
                  keyEvent->modifiers().testFlag(Qt::ControlModifier) &&
                  keyEvent->modifiers().testFlag(Qt::AltModifier)) {
