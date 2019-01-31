@@ -189,6 +189,7 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             // duplicate text with `Ctrl + Alt + Down`
             duplicateText();
             return true;
+#ifndef Q_OS_MAC
         } else if ((keyEvent->key() == Qt::Key_Down) &&
                  keyEvent->modifiers().testFlag(Qt::ControlModifier)) {
             // scroll the page down
@@ -201,6 +202,7 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             auto *scrollBar = verticalScrollBar();
             scrollBar->setSliderPosition(scrollBar->sliderPosition() - 1);
             return true;
+#endif
         } else if ((keyEvent->key() == Qt::Key_Down) &&
                 keyEvent->modifiers().testFlag(Qt::NoModifier)) {
             // if you are in the last line and press cursor down the cursor will
