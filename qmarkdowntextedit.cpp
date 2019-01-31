@@ -164,6 +164,12 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
 //            return handleBracketClosing("_");
         } else if (keyEvent->key() == Qt::Key_AsciiTilde) {
             return handleBracketClosing("~");
+#ifdef Q_OS_MAC
+        } else if (keyEvent->modifiers().testFlag(Qt::AltModifier) &&
+                    keyEvent->key() == Qt::Key_ParenLeft) {
+            // bracket closing for US keyboard on macOS
+            return handleBracketClosing("{", "}");
+#endif
         } else if (keyEvent->key() == Qt::Key_ParenLeft) {
             return handleBracketClosing("(", ")");
         } else if (keyEvent->key() == Qt::Key_BraceLeft) {
@@ -172,6 +178,12 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             return handleBracketClosing("[", "]");
         } else if (keyEvent->key() == Qt::Key_Less) {
             return handleBracketClosing("<", ">");
+#ifdef Q_OS_MAC
+        } else if (keyEvent->modifiers().testFlag(Qt::AltModifier) &&
+                   keyEvent->key() == Qt::Key_ParenRight) {
+            // bracket closing for US keyboard on macOS
+            return bracketClosingCheck("{", "}");
+#endif
         } else if (keyEvent->key() == Qt::Key_ParenRight) {
             return bracketClosingCheck("(", ")");
         } else if (keyEvent->key() == Qt::Key_BraceRight) {
