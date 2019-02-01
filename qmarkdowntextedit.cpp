@@ -222,11 +222,14 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
                         // this is the paragraph separator
                         cursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor, 1);
                     }
-                    if (keyEvent == QKeySequence::Cut) {
+                }
+                if (keyEvent == QKeySequence::Cut) {
+                    if (!cursor.atEnd() && text == "\n")
+                        cursor.deletePreviousChar();
+                    else
                         cursor.removeSelectedText();
-                        cursor.movePosition(QTextCursor::StartOfLine);
-                        setTextCursor(cursor);
-                    }
+                    cursor.movePosition(QTextCursor::StartOfLine);
+                    setTextCursor(cursor);
                 }
                 qApp->clipboard()->setText(text);
                 return true;
