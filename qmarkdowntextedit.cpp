@@ -28,6 +28,7 @@
 #include <QTextBlock>
 #include <QPainter>
 #include <QScrollBar>
+#include <QClipboard>
 
 
 QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
@@ -202,6 +203,38 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             cursor.insertText("\n");
             setTextCursor(cursor);
             return true;
+        } else if (keyEvent == QKeySequence::Copy || keyEvent == QKeySequence::Cut) {
+            QTextCursor cursor = this->textCursor();
+            if (!cursor.hasSelection()) {
+                QString text;
+                if (cursor.block().length() <= 1) // no content
+                    text = "\n";
+                else {
+                    //cursor.select(QTextCursor::BlockUnderCursor); // negative, it will include the previous paragraph separator
+                    cursor.movePosition(QTextCursor::StartOfBlock);
+                    cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
+                    text = cursor.selectedText();
+                    if (!cursor.atEnd()) {
+                        text += "\n";
+                        // this is the paragraph separator
+                        cursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor, 1);
+                    }
+                    if (keyEvent == QKeySequence::Cut) {
+                        cursor.removeSelectedText();
+                        cursor.movePosition(QTextCursor::StartOfLine);
+                        setTextCursor(cursor);
+                    }
+                }
+                qApp->clipboard()->setText(text);
+                return true;
+            }
+        }
+        else if (keyEvent == QKeySequence::Paste) {
+            if (QRegExp("[^\n]*\n$").exactMatch(qApp->clipboard()->text())) {
+                QTextCursor cursor = this->textCursor();
+                cursor.movePosition(QTextCursor::StartOfLine);
+                setTextCursor(cursor);
+            }
         } else if ((keyEvent->key() == Qt::Key_Down) &&
                  keyEvent->modifiers().testFlag(Qt::ControlModifier) &&
                  keyEvent->modifiers().testFlag(Qt::AltModifier)) {
