@@ -195,6 +195,13 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             QTextCursor cursor = this->textCursor();
             cursor.insertText("  \n");
             return true;
+        } else if (keyEvent->key() == Qt::Key_Return &&
+                   keyEvent->modifiers().testFlag(Qt::ControlModifier)) {
+            QTextCursor cursor = this->textCursor();
+            cursor.movePosition(QTextCursor::EndOfLine);
+            cursor.insertText("\n");
+            setTextCursor(cursor);
+            return true;
         } else if ((keyEvent->key() == Qt::Key_Down) &&
                  keyEvent->modifiers().testFlag(Qt::ControlModifier) &&
                  keyEvent->modifiers().testFlag(Qt::AltModifier)) {
