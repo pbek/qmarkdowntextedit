@@ -162,6 +162,9 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             // underlines are used in different contexts
 //        } else if (keyEvent->key() == Qt::Key_Underscore) {
 //            return handleBracketClosing("_");
+        }
+        else if (keyEvent->key() == Qt::Key_QuoteLeft || keyEvent->nativeVirtualKey() == Qt::Key_QuoteLeft) {
+            return quotationMarkCheck("`");
         } else if (keyEvent->key() == Qt::Key_AsciiTilde) {
             return handleBracketClosing("~");
 #ifdef Q_OS_MAC
@@ -380,6 +383,15 @@ bool QMarkdownTextEdit::handleBracketClosing(QString openingCharacter,
         // We are in a list already, proceed as normal (autocomplete).
         else if (text == "* ") {
             // no-op.
+        }
+    }
+
+    // Auto completion for ``` pair
+    if (openingCharacter == "`") {
+        if (QRegExp("[^`]*``").exactMatch(text)) {
+            cursor.insertText(openingCharacter);
+            cursor.insertText(openingCharacter);
+            cursorSubtract = 3;
         }
     }
 
