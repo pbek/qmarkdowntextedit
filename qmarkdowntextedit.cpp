@@ -236,7 +236,8 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             }
         }
         else if (keyEvent == QKeySequence::Paste) {
-            if (QRegExp("[^\n]*\n$").exactMatch(qApp->clipboard()->text())) {
+            if (qApp->clipboard()->ownsClipboard() &&
+                QRegExp("[^\n]*\n$").exactMatch(qApp->clipboard()->text())) {
                 QTextCursor cursor = this->textCursor();
                 cursor.movePosition(QTextCursor::StartOfLine);
                 setTextCursor(cursor);
