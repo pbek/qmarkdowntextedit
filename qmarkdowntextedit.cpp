@@ -239,8 +239,10 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             if (qApp->clipboard()->ownsClipboard() &&
                 QRegExp("[^\n]*\n$").exactMatch(qApp->clipboard()->text())) {
                 QTextCursor cursor = this->textCursor();
-                cursor.movePosition(QTextCursor::StartOfLine);
-                setTextCursor(cursor);
+                if (!cursor.hasSelection()) {
+                    cursor.movePosition(QTextCursor::StartOfLine);
+                    setTextCursor(cursor);
+                }
             }
         } else if ((keyEvent->key() == Qt::Key_Down) &&
                  keyEvent->modifiers().testFlag(Qt::ControlModifier) &&
