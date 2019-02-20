@@ -164,7 +164,7 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
 //        } else if (keyEvent->key() == Qt::Key_Underscore) {
 //            return handleBracketClosing("_");
         }
-        else if (keyEvent->key() == Qt::Key_QuoteLeft || keyEvent->nativeVirtualKey() == Qt::Key_QuoteLeft) {
+        else if (keyEvent->key() == Qt::Key_QuoteLeft) {
             return quotationMarkCheck("`");
         } else if (keyEvent->key() == Qt::Key_AsciiTilde) {
             return handleBracketClosing("~");
