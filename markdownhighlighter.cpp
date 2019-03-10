@@ -159,13 +159,10 @@ void MarkdownHighlighter::initHighlightingRules() {
         // we don't allow a space after the starting * to prevent problems with
         // unordered lists starting with a *
         rule.pattern = QRegularExpression(
-                    "(^|[^\\*\\b])(\\*([^\\* ][^\\*]*?)\\*)([^\\*\\b]|$)");
-        rule.maskedGroup = 2;
-        rule.capturingGroup = 3;
+                    "(?:^|[^\\*\\b])(?:\\*([^\\* ][^\\*]*?)\\*)(?:[^\\*\\b]|$)");
+        rule.capturingGroup = 1;
         _highlightingRulesAfter.append(rule);
 
-        rule.maskedGroup = 0;
-        rule.capturingGroup = 1;
         rule.pattern = QRegularExpression("\\b_([^_]+)_\\b");
         _highlightingRulesAfter.append(rule);
     }
