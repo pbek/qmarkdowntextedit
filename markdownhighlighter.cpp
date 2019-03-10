@@ -290,7 +290,6 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize) {
     // set character formats for headlines
     format = QTextCharFormat();
     format.setForeground(QBrush(QColor(0, 49, 110)));
-    format.setBackground(QBrush(QColor(230, 230, 240)));
     format.setFontWeight(QFont::Bold);
     format.setFontPointSize(defaultFontSize * 1.6);
     _formats[H1] = format;
@@ -319,8 +318,8 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize) {
 
     // set character format for links
     format = QTextCharFormat();
-    format.setForeground(QBrush(QColor(255, 128, 0)));
-    format.setBackground(QBrush(QColor(255, 233, 211)));
+    format.setForeground(QBrush(QColor(0, 128, 255)));
+    format.setFontUnderline(true);
     _formats[Link] = format;
 
     // set character format for images
@@ -332,8 +331,7 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize) {
     // set character format for code blocks
     format = QTextCharFormat();
     format.setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-    format.setForeground(QBrush(Qt::darkGreen));
-    format.setBackground(QBrush(QColor(217, 231, 217)));
+    format.setBackground(QColor(220, 220, 220));
     _formats[CodeBlock] = format;
     _formats[InlineCodeBlock] = format;
 
@@ -341,13 +339,11 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize) {
     format = QTextCharFormat();
     format.setFontWeight(QFont::StyleItalic);
     format.setFontItalic(true);
-    format.setForeground(QBrush(QColor(0, 87, 174)));
     _formats[Italic] = format;
 
     // set character format for bold
     format = QTextCharFormat();
     format.setFontWeight(QFont::Bold);
-    format.setForeground(QBrush(QColor(0, 66, 138)));
     _formats[Bold] = format;
 
     // set character format for comments
