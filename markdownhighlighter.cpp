@@ -340,6 +340,7 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize) {
     // set character format for italic
     format = QTextCharFormat();
     format.setFontWeight(QFont::StyleItalic);
+    format.setFontItalic(true);
     format.setForeground(QBrush(QColor(0, 87, 174)));
     _formats[Italic] = format;
 
