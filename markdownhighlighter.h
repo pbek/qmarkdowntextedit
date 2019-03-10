@@ -34,9 +34,9 @@ public:
         None = 0,
         FullyHighlightedBlockQuote = 0x01
     };
-    Q_DECLARE_FLAGS(HighlightingOptions, HighlightingOption);
+    Q_DECLARE_FLAGS(HighlightingOptions, HighlightingOption)
 
-    MarkdownHighlighter(QTextDocument *parent = 0,
+    MarkdownHighlighter(QTextDocument *parent = nullptr,
                         HighlightingOptions highlightingOptions =
                         HighlightingOption::None);
 
@@ -69,6 +69,7 @@ public:
         CodeBlockEnd = 100,
         HeadlineEnd
     };
+    Q_ENUM(HighlighterState)
 
 //    enum BlockState {
 //        NoBlockState = 0,
@@ -94,12 +95,15 @@ protected slots:
 
 protected:
     struct HighlightingRule {
+        HighlightingRule(const HighlighterState state_) : state(state_) {}
+        HighlightingRule() = default;
+
         QRegularExpression pattern;
-        HighlighterState state;
-        int capturingGroup;
-        int maskedGroup;
-        bool useStateAsCurrentBlockState;
-        bool disableIfCurrentStateIsSet;
+        HighlighterState state = NoState;
+        int capturingGroup = 0;
+        int maskedGroup = 0;
+        bool useStateAsCurrentBlockState = false;
+        bool disableIfCurrentStateIsSet = false;
     };
 
     void highlightBlock(const QString &text) Q_DECL_OVERRIDE;
