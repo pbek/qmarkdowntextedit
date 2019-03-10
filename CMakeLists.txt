@@ -3,7 +3,7 @@ project(qmarkdowntextedit)
 
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-#set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -21,8 +21,8 @@ set(RESOURCE_FILES
 qt5_add_resources(RESOURCE_ADDED ${RESOURCE_FILES})
 
 set(SOURCE_FILES
-    highlighter.cpp
-    highlighter.h
+    markdownhighlighter.cpp
+    markdownhighlighter.h
     main.cpp
     mainwindow.cpp
     mainwindow.h
@@ -31,7 +31,8 @@ set(SOURCE_FILES
     qmarkdowntextedit.h
     qplaintexteditsearchwidget.ui
     qplaintexteditsearchwidget.cpp
-    qplaintexteditsearchwidget.h)
+    qplaintexteditsearchwidget.h
+    )
 
 add_executable(qmarkdowntextedit ${SOURCE_FILES} ${RESOURCE_ADDED})
 
@@ -45,4 +46,4 @@ add_definitions(${Qt5Widgets_DEFINITIONS})
 set(CMAKE_CXX_FLAGS "${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
 
 # The Qt5Widgets_LIBRARIES variable also includes QtGui and QtCore
-target_link_libraries(qmarkdowntextedit ${Qt5Widgets_LIBRARIES})
+target_link_libraries(qmarkdowntextedit Qt5::Widgets)
