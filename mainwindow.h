@@ -25,9 +25,20 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
+    explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+
+    void loadFile(const QString &filename);
+    void saveToFile(const QString &filename);
+
+private slots:
+    void open();
+    void save();
+    void saveAs();
+    void onQuit();
 
 private:
     Ui::MainWindow *ui;
+    QString m_loadedContent;
+    QString m_filename;
 };
