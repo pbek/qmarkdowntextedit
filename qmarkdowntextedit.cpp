@@ -1,5 +1,3 @@
-#include <utility>
-
 /*
  * Copyright (c) 2014-2019 Patrizio Bekerle -- http://www.bekerle.com
  *
@@ -31,6 +29,7 @@
 #include <QPainter>
 #include <QScrollBar>
 #include <QClipboard>
+#include <utility>
 
 
 QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)

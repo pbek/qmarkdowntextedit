@@ -1,4 +1,3 @@
-#include <utility>
 
 /*
  * Copyright (c) 2014-2019 Patrizio Bekerle -- http://www.bekerle.com
@@ -21,6 +20,7 @@
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
 #include <QRegularExpressionMatchIterator>
+#include <utility>
 
 
 /**
