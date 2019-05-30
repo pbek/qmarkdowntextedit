@@ -42,11 +42,11 @@ public:
     QPlainTextEditSearchWidget *searchWidget();
     void setIgnoredClickUrlSchemata(QStringList ignoredUrlSchemata);
     virtual void openUrl(QString urlString);
-    QString getMarkdownUrlAtPosition(QString text, int position);
+    QString getMarkdownUrlAtPosition(const QString& text, int position);
     void initSearchFrame(QWidget *searchFrame, bool darkMode = false);
     void setAutoTextOptions(AutoTextOptions options);
     void setHighlightingEnabled(bool enabled);
-    static bool isValidUrl(QString urlString);
+    static bool isValidUrl(const QString& urlString);
     void resetMouseCursor() const;
     void setReadOnly(bool ro);
 
@@ -72,13 +72,13 @@ protected:
     bool eventFilter(QObject *obj, QEvent *event);
     bool increaseSelectedTextIndention(bool reverse);
     bool handleTabEntered(bool reverse);
-    QMap<QString, QString> parseMarkdownUrlsFromText(QString text);
+    QMap<QString, QString> parseMarkdownUrlsFromText(const QString& text);
     bool handleReturnEntered();
-    bool handleBracketClosing(QString openingCharacter,
+    bool handleBracketClosing(const QString& openingCharacter,
                               QString closingCharacter = "");
-    bool bracketClosingCheck(QString openingCharacter,
+    bool bracketClosingCheck(const QString& openingCharacter,
                              QString closingCharacter);
-    bool quotationMarkCheck(QString quotationCharacter);
+    bool quotationMarkCheck(const QString& quotationCharacter);
     void focusOutEvent(QFocusEvent *event);
     void paintEvent(QPaintEvent *e);
 

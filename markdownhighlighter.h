@@ -110,18 +110,18 @@ protected:
 
     void initTextFormats(int defaultFontSize = 12);
 
-    void highlightMarkdown(QString text);
+    void highlightMarkdown(const QString& text);
 
-    void highlightHeadline(QString text);
+    void highlightHeadline(const QString& text);
 
     void highlightAdditionalRules(QVector<HighlightingRule> &rules,
-                                  QString text);
+                                  const QString& text);
 
-    void highlightCodeBlock(QString text);
+    void highlightCodeBlock(const QString& text);
 
     void highlightCommentBlock(QString text);
 
-    void addDirtyBlock(QTextBlock block);
+    void addDirtyBlock(const QTextBlock& block);
 
     void reHighlightDirtyBlocks();
 
