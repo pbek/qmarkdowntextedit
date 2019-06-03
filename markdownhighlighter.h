@@ -69,7 +69,7 @@ public:
         CodeBlockEnd = 100,
         HeadlineEnd
     };
-    Q_ENUM(HighlighterState)
+    Q_ENUMS(HighlighterState)
 
 //    enum BlockState {
 //        NoBlockState = 0,
