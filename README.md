@@ -25,7 +25,7 @@ QMarkdownTextEdit is a C++ Qt [QPlainTextEdit](http://doc.qt.io/qt-5/qtextplaine
 - add a normal `QPlainTextEdit` to your UI and promote it to `QMarkdownTextEdit` (base class `QPlainTextEdit`)
 
 ## References
-- [QOwnNotes - cross-platform open source plain-text file notepad](http://www.qownnotes.org)
+- [QOwnNotes - cross-platform open source plain-text file markdown note taking](http://www.qownnotes.org)
 
 ## Disclaimer
 This SOFTWARE PRODUCT is provided by THE PROVIDER "as is" and "with all faults." THE PROVIDER makes no representations or warranties of any kind concerning the safety, suitability, lack of viruses, inaccuracies, typographical errors, or other harmful components of this SOFTWARE PRODUCT. 
