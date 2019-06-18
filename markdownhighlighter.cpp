@@ -185,7 +185,7 @@ void MarkdownHighlighter::initHighlightingRules() {
 
         // highlight urls without any other markup
         rule.pattern = QRegularExpression(R"(\b\w+?:\/\/[^\s]+)");
-        rule.capturingGroup = 1;
+        rule.capturingGroup = 0;
         _highlightingRulesAfter.append(rule);
 
         //    rule.pattern = QRegularExpression("<(.+?:\\/\\/.+?)>");
