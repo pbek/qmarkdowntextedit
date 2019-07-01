@@ -61,7 +61,7 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
 //    new QShortcut( QKeySequence( "Ctrl+Alt+Down" ), this, SLOT( duplicateText() ) );
 
     // add a layout to the widget
-    auto *layout = new QVBoxLayout;
+    auto *layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setMargin(0);
     layout->addStretch();
@@ -943,7 +943,7 @@ void QMarkdownTextEdit::initSearchFrame(QWidget *searchFrame, bool darkMode) {
 
     // create a grid layout for the frame and add the search widget to it
     if (layout == nullptr) {
-        layout = new QVBoxLayout();
+        layout = new QVBoxLayout(_searchFrame);
         layout->setSpacing(0);
         layout->setContentsMargins(0, 0, 0, 0);
     }
