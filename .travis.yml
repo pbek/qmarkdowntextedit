@@ -49,9 +49,9 @@ script:
   - make
 
 notifications:
-  recipients:
-    - developer@bekerle.com
   email:
+    recipients:
+      - developer@bekerle.com
     on_success: change
     on_failure: change
 #  irc:
