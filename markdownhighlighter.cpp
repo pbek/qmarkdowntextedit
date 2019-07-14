@@ -179,6 +179,14 @@ void MarkdownHighlighter::initHighlightingRules() {
         _highlightingRulesAfter.append(rule);
     }
 
+    {
+        HighlightingRule rule(HighlighterState::MaskedSyntax);
+        // highlight strike through
+        rule.pattern = QRegularExpression(R"(\~{2}(.+?)\~{2})");
+        rule.capturingGroup = 1;
+        _highlightingRulesAfter.append(rule);
+    }
+
     // highlight urls
     {
         HighlightingRule rule(HighlighterState::Link);
