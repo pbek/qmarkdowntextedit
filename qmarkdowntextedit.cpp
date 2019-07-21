@@ -348,8 +348,8 @@ void QMarkdownTextEdit::focusOutEvent(QFocusEvent *event) {
  */
 bool QMarkdownTextEdit::handleBracketClosing(const QString& openingCharacter,
                                              QString closingCharacter) {
-    // check if bracket closing is enabled
-    if (!(_autoTextOptions & AutoTextOption::BracketClosing)) {
+    // check if bracket closing or read-only are enabled
+    if (!(_autoTextOptions & AutoTextOption::BracketClosing) || isReadOnly()) {
         return false;
     }
 
@@ -451,8 +451,8 @@ bool QMarkdownTextEdit::handleBracketClosing(const QString& openingCharacter,
  */
 bool QMarkdownTextEdit::bracketClosingCheck(const QString& openingCharacter,
                                             QString closingCharacter) {
-    // check if bracket closing is enabled
-    if (!(_autoTextOptions & AutoTextOption::BracketClosing)) {
+    // check if bracket closing or read-only are enabled
+    if (!(_autoTextOptions & AutoTextOption::BracketClosing) || isReadOnly()) {
         return false;
     }
 
@@ -510,8 +510,8 @@ bool QMarkdownTextEdit::bracketClosingCheck(const QString& openingCharacter,
  * @return
  */
 bool QMarkdownTextEdit::quotationMarkCheck(const QString& quotationCharacter) {
-    // check if bracket closing is enabled
-    if (!(_autoTextOptions & AutoTextOption::BracketClosing)) {
+    // check if bracket closing or read-only are enabled
+    if (!(_autoTextOptions & AutoTextOption::BracketClosing) || isReadOnly()) {
         return false;
     }
 
@@ -548,8 +548,8 @@ bool QMarkdownTextEdit::quotationMarkCheck(const QString& quotationCharacter) {
  * @return
  */
 bool QMarkdownTextEdit::handleBracketRemoval() {
-    // check if bracket removal is enabled
-    if (!(_autoTextOptions & AutoTextOption::BracketRemoval)) {
+    // check if bracket removal or read-only are enabled
+    if (!(_autoTextOptions & AutoTextOption::BracketRemoval) || isReadOnly()) {
         return false;
     }
 
@@ -965,6 +965,10 @@ void QMarkdownTextEdit::hide() {
  * Handles an entered return key
  */
 bool QMarkdownTextEdit::handleReturnEntered() {
+    if (isReadOnly()) {
+        return true;
+    }
+
     QTextCursor cursor = this->textCursor();
     int position = cursor.position();
 
@@ -1017,6 +1021,10 @@ bool QMarkdownTextEdit::handleReturnEntered() {
  * Handles entered tab or reverse tab keys
  */
 bool QMarkdownTextEdit::handleTabEntered(bool reverse) {
+    if (isReadOnly()) {
+        return true;
+    }
+
     QTextCursor cursor = this->textCursor();
 
     // only check for lists if we haven't a text selected
