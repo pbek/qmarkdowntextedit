@@ -20,7 +20,7 @@ install:
          lsb_release -a
       && sudo apt-add-repository -y ppa:ubuntu-toolchain-r/test
       && sudo apt-get -qq update
-      && sudo apt-get -qq install g++ libc6 qt5-default qt5-qmake qtbase5-dev libqt5svg5-dev, qtdeclarative5-dev libqt5xmlpatterns5-dev
+      && sudo apt-get -qq install g++ libc6 qt5-default qt5-qmake
       && export CXX="g++"
       && export CC="gcc"
       ;
