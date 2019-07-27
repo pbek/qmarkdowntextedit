@@ -14,28 +14,12 @@
 
 #include "mainwindow.h"
 #include <QApplication>
-#include <QFileInfo>
-#include <QDebug>
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    QString filename;
-    if (argc > 1) {
-        filename = argv[1];
-    }
-    if (!filename.isEmpty() && !QFileInfo(filename).isReadable()) {
-        qWarning() << filename << "is not a readable file";
-        return 1;
-    }
-
     MainWindow w;
     w.show();
-
-    if (!filename.isEmpty()) {
-        w.loadFile(filename);
-    }
-
 
     return a.exec();
 }
