@@ -19,11 +19,10 @@ install:
   - if [ "${TRAVIS_OS_NAME}" = "linux" ]; then
          lsb_release -a
       && sudo apt-add-repository -y ppa:ubuntu-toolchain-r/test
-      && sudo apt-add-repository -y ppa:beineri/opt-qt591-trusty
       && sudo apt-get -qq update
-      && sudo apt-get -qq install g++-4.8 libc6-i386 qt59tools qt59svg qt59quickcontrols qt59quickcontrols2 qt59webengine qt59script
-      && export CXX="g++-4.8"
-      && export CC="gcc-4.8"
+      && sudo apt-get -qq install g++ libc6 qt5-default qt5-qmake qtbase5-dev libqt5svg5-dev, qtdeclarative5-dev libqt5xmlpatterns5-dev
+      && export CXX="g++"
+      && export CC="gcc"
       ;
     else
          brew update > /dev/null
@@ -33,12 +32,7 @@ install:
     fi
 
 script:
-  - if [ "${TRAVIS_OS_NAME}" = "linux" ]; then
-         QTDIR="/opt/qt59"
-      && PATH="$QTDIR/bin:$PATH"
-      && qt59-env.sh
-      ;
-    else
+  - if [ "${TRAVIS_OS_NAME}" != "linux" ]; then
          QTDIR="/usr/local/opt/qt5"
       && PATH="$QTDIR/bin:$PATH"
       && LDFLAGS=-L$QTDIR/lib
