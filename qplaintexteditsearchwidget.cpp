@@ -66,19 +66,7 @@ QPlainTextEditSearchWidget::~QPlainTextEditSearchWidget() {
 }
 
 void QPlainTextEditSearchWidget::activate() {
-    setReplaceMode(false);
-    show();
-
-    // preset the selected text as search text if there is any and there is no
-    // other search text
-    QString selectedText = _textEdit->textCursor().selectedText();
-    if (!selectedText.isEmpty() && ui->searchLineEdit->text().isEmpty()) {
-        ui->searchLineEdit->setText(selectedText);
-    }
-
-    ui->searchLineEdit->setFocus();
-    ui->searchLineEdit->selectAll();
-    doSearchDown();
+    activate(true);
 }
 
 void QPlainTextEditSearchWidget::activateReplace() {
@@ -263,4 +251,31 @@ bool QPlainTextEditSearchWidget::doSearch(bool searchDown, bool allowRestartAtTo
 
 void QPlainTextEditSearchWidget::setDarkMode(bool enabled) {
     _darkMode = enabled;
+}
+
+void QPlainTextEditSearchWidget::setSearchText(QString &searchText) {
+    ui->searchLineEdit->setText(searchText);
+}
+
+void QPlainTextEditSearchWidget::setSearchMode(SearchMode searchMode) {
+    ui->modeComboBox->setCurrentIndex(searchMode);
+}
+
+void QPlainTextEditSearchWidget::activate(bool focus) {
+    setReplaceMode(ui->modeComboBox->currentIndex() != SearchMode::PlainTextMode);
+    show();
+
+    // preset the selected text as search text if there is any and there is no
+    // other search text
+    QString selectedText = _textEdit->textCursor().selectedText();
+    if (!selectedText.isEmpty() && ui->searchLineEdit->text().isEmpty()) {
+        ui->searchLineEdit->setText(selectedText);
+    }
+
+    if (focus) {
+        ui->searchLineEdit->setFocus();
+    }
+
+    ui->searchLineEdit->selectAll();
+    doSearchDown();
 }

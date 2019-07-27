@@ -49,6 +49,8 @@ public:
     static bool isValidUrl(const QString& urlString);
     void resetMouseCursor() const;
     void setReadOnly(bool ro);
+    void doSearch(QString &searchText,
+                  QPlainTextEditSearchWidget::SearchMode searchMode = QPlainTextEditSearchWidget::SearchMode::PlainTextMode);
 
 public slots:
     void duplicateText();

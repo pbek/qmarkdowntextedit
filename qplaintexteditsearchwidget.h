@@ -36,6 +36,9 @@ public:
     bool doSearch(bool searchDown = true, bool allowRestartAtTop = true);
     void setDarkMode(bool enabled);
     ~QPlainTextEditSearchWidget();
+    void setSearchText(QString &searchText);
+    void setSearchMode(SearchMode searchMode);
+    void activate(bool focus);
 
 private:
     Ui::QPlainTextEditSearchWidget *ui;

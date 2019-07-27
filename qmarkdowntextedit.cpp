@@ -1106,3 +1106,11 @@ void QMarkdownTextEdit::setReadOnly(bool ro) {
     // @see https://github.com/pbek/QOwnNotes/issues/976
     setAttribute(Qt::WA_InputMethodEnabled, !isReadOnly());
 }
+
+void QMarkdownTextEdit::doSearch(
+        QString &searchText,
+        QPlainTextEditSearchWidget::SearchMode searchMode) {
+    _searchWidget->setSearchText(searchText);
+    _searchWidget->setSearchMode(searchMode);
+    _searchWidget->activate(false);
+}
