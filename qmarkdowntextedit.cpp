@@ -1014,6 +1014,21 @@ bool QMarkdownTextEdit::handleReturnEntered() {
         }
     }
 
+    // intent next line with same whitespaces as in current line
+    regex = QRegularExpression(R"(^(\s+))");
+    iterator = regex.globalMatch(currentLineText);
+    if (iterator.hasNext()) {
+        QRegularExpressionMatch match = iterator.next();
+        QString whitespaces = match.captured(1);
+
+        cursor.setPosition(position);
+        cursor.insertText("\n" + whitespaces);
+
+        // scroll to the cursor if we are at the bottom of the document
+        ensureCursorVisible();
+        return true;
+    }
+
     return false;
 }
 
