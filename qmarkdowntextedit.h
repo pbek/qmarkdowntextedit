@@ -51,6 +51,7 @@ public:
     void setReadOnly(bool ro);
     void doSearch(QString &searchText,
                   QPlainTextEditSearchWidget::SearchMode searchMode = QPlainTextEditSearchWidget::SearchMode::PlainTextMode);
+    void hideSearchWidget(bool reset);
 
 public slots:
     void duplicateText();
