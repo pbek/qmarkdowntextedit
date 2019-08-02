@@ -26,23 +26,24 @@
    <property name="bottomMargin">
     <number>0</number>
    </property>
-   <item row="0" column="6">
-    <widget class="QPushButton" name="replaceToggleButton">
-     <property name="toolTip">
-      <string>Advanced search / replace text</string>
+   <item row="0" column="3">
+    <widget class="QLineEdit" name="searchLineEdit">
+     <property name="placeholderText">
+      <string>Find in text</string>
      </property>
+    </widget>
+   </item>
+   <item row="1" column="3" colspan="2">
+    <widget class="QLineEdit" name="replaceLineEdit">
+     <property name="placeholderText">
+      <string>Replace with</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="4">
+    <widget class="QLabel" name="searchCountLabel">
      <property name="text">
-      <string/>
-     </property>
-     <property name="icon">
-      <iconset theme="edit-find-replace" resource="media.qrc">
-       <normaloff>:/media/edit-find-replace.svg</normaloff>:/media/edit-find-replace.svg</iconset>
-     </property>
-     <property name="checkable">
-      <bool>true</bool>
-     </property>
-     <property name="flat">
-      <bool>true</bool>
+      <string notr="true">0/0</string>
      </property>
     </widget>
    </item>
@@ -50,6 +51,33 @@
     <widget class="QLabel" name="searchLabel">
      <property name="text">
       <string>Find:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="6">
+    <widget class="QPushButton" name="searchUpButton">
+     <property name="toolTip">
+      <string>Search backward</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset theme="go-top" resource="media.qrc">
+       <normaloff>:/media/go-top.svg</normaloff>:/media/go-top.svg</iconset>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0" colspan="2">
+    <widget class="QLabel" name="replaceLabel">
+     <property name="text">
+      <string>Replace:</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -73,14 +101,27 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="3">
-    <widget class="QLineEdit" name="searchLineEdit">
-     <property name="placeholderText">
-      <string>Find in text</string>
+   <item row="0" column="7">
+    <widget class="QPushButton" name="replaceToggleButton">
+     <property name="toolTip">
+      <string>Advanced search / replace text</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset theme="edit-find-replace" resource="media.qrc">
+       <normaloff>:/media/edit-find-replace.svg</normaloff>:/media/edit-find-replace.svg</iconset>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
      </property>
     </widget>
    </item>
-   <item row="0" column="4">
+   <item row="0" column="5">
     <widget class="QPushButton" name="searchDownButton">
      <property name="toolTip">
       <string>Search forward</string>
@@ -97,41 +138,37 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="5">
-    <widget class="QPushButton" name="searchUpButton">
+   <item row="1" column="5">
+    <widget class="QPushButton" name="matchCaseSensitiveButton">
      <property name="toolTip">
-      <string>Search backward</string>
+      <string>Match case sensitive</string>
      </property>
      <property name="text">
       <string/>
      </property>
      <property name="icon">
-      <iconset theme="go-top" resource="media.qrc">
-       <normaloff>:/media/go-top.svg</normaloff>:/media/go-top.svg</iconset>
+      <iconset theme="format-text-superscript" resource="media.qrc">
+       <normaloff>:/media/format-text-superscript.svg</normaloff>:/media/format-text-superscript.svg</iconset>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
      </property>
      <property name="flat">
       <bool>true</bool>
      </property>
     </widget>
    </item>
-   <item row="1" column="3">
-    <widget class="QLineEdit" name="replaceLineEdit">
-     <property name="placeholderText">
-      <string>Replace with</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0" colspan="2">
-    <widget class="QLabel" name="replaceLabel">
+   <item row="2" column="0" colspan="2">
+    <widget class="QLabel" name="modeLabel">
      <property name="text">
-      <string>Replace:</string>
+      <string>Mode:</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
    </item>
-   <item row="2" column="3">
+   <item row="2" column="3" colspan="2">
     <widget class="QFrame" name="buttonFrame">
      <property name="frameShape">
       <enum>QFrame::NoFrame</enum>
@@ -147,7 +184,7 @@
        <number>0</number>
       </property>
       <property name="bottomMargin">
-       <number>9</number>
+       <number>0</number>
       </property>
       <item>
        <widget class="QComboBox" name="modeComboBox">
@@ -208,36 +245,6 @@
        </widget>
       </item>
      </layout>
-    </widget>
-   </item>
-   <item row="2" column="0" colspan="2">
-    <widget class="QLabel" name="modeLabel">
-     <property name="text">
-      <string>Mode:</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="4">
-    <widget class="QPushButton" name="matchCaseSensitiveButton">
-     <property name="toolTip">
-      <string>Match case sensitive</string>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-     <property name="icon">
-      <iconset theme="format-text-superscript" resource="media.qrc">
-       <normaloff>:/media/format-text-superscript.svg</normaloff>:/media/format-text-superscript.svg</iconset>
-     </property>
-     <property name="checkable">
-      <bool>true</bool>
-     </property>
-     <property name="flat">
-      <bool>true</bool>
-     </property>
     </widget>
    </item>
   </layout>
