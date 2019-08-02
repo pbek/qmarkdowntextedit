@@ -57,6 +57,7 @@ public slots:
     void activateReplace();
     bool doReplace(bool forAll = false);
     void doReplaceAll();
+    void reset();
 
 protected slots:
     void searchLineEditTextChanged(const QString &arg1);

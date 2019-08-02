@@ -279,3 +279,9 @@ void QPlainTextEditSearchWidget::activate(bool focus) {
     ui->searchLineEdit->selectAll();
     doSearchDown();
 }
+
+void QPlainTextEditSearchWidget::reset() {
+    ui->searchLineEdit->clear();
+    setSearchMode(SearchMode::PlainTextMode);
+    setReplaceMode(false);
+}
