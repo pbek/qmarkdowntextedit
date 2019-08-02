@@ -1128,6 +1128,7 @@ void QMarkdownTextEdit::doSearch(
     _searchWidget->setSearchText(searchText);
     _searchWidget->setSearchMode(searchMode);
     _searchWidget->activate(false);
+    _searchWidget->doSearchCount();
 }
 
 void QMarkdownTextEdit::hideSearchWidget(bool reset) {
