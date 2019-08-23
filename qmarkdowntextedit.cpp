@@ -396,7 +396,6 @@ bool QMarkdownTextEdit::handleBracketClosing(const QString& openingCharacter,
         }
     }
 
-
     // Remove whitespace at start of string (e.g. in multilevel-lists).
     text = text.remove(QRegExp("^\\s+"));
 
@@ -975,7 +974,7 @@ bool QMarkdownTextEdit::handleReturnEntered() {
     cursor.movePosition(QTextCursor::StartOfBlock, QTextCursor::KeepAnchor);
     QString currentLineText = cursor.selectedText();
 
-    // if return is pressed and there is just a list symbol then we want to
+    // if return is pressed and there is just an unordered list symbol then we want to
     // remove the list symbol
     // Valid listCharacters: '+ ', '-' , '* ', '+ [ ] ', '+ [x] ', '- [ ] ', '- [x] ', '* [ ] ', '* [x] '.
     QRegularExpression regex(R"(^(\s*)([+|\-|\*] \[(x| )\]|[+\-\*])(\s+)$)");
@@ -985,7 +984,16 @@ bool QMarkdownTextEdit::handleReturnEntered() {
         return true;
     }
 
-    // Check if we are in a list.
+    // if return is pressed and there is just an ordered list symbol then we want to
+    // remove the list symbol
+    regex = QRegularExpression(R"(^(\s*)(\d+\.)(\s+)$)");
+    iterator = regex.globalMatch(currentLineText);
+    if (iterator.hasNext()) {
+        cursor.removeSelectedText();
+        return true;
+    }
+
+    // Check if we are in an unordered list.
     // We are in a list when we have '* ', '- ' or '+ ', possibly with preceding
     // whitespace. If e.g. user has entered '**text**' and pressed enter - we
     // don't want do anymore list-stuff.
@@ -1012,6 +1020,24 @@ bool QMarkdownTextEdit::handleReturnEntered() {
             ensureCursorVisible();
             return true;
         }
+    }
+
+    // check for ordered lists and increment the list number in the next line
+    regex = QRegularExpression(R"(^(\s*)(\d+)\.(\s+))");
+    iterator = regex.globalMatch(currentLineText);
+    if (iterator.hasNext()) {
+        QRegularExpressionMatch match = iterator.next();
+        QString whitespaces = match.captured(1);
+        uint listNumber = match.captured(2).toUInt();
+        QString whitespaceCharacter = match.captured(3);
+
+        cursor.setPosition(position);
+        cursor.insertText("\n" + whitespaces + QString::number(listNumber + 1) +
+        "." + whitespaceCharacter);
+
+        // scroll to the cursor if we are at the bottom of the document
+        ensureCursorVisible();
+        return true;
     }
 
     // intent next line with same whitespaces as in current line
@@ -1047,7 +1073,7 @@ bool QMarkdownTextEdit::handleTabEntered(bool reverse) {
         cursor.movePosition(QTextCursor::StartOfLine, QTextCursor::KeepAnchor);
         QString currentLineText = cursor.selectedText();
 
-        // check if we want to indent or un-indent a list
+        // check if we want to indent or un-indent an ordered list
         // Valid listCharacters: '+ ', '-' , '* ', '+ [ ] ', '+ [x] ', '- [ ] ', '- [x] ', '* [ ] ', '* [x] '.
         QRegularExpression re(R"(^(\s*)([+|\-|\*] \[(x| )\]|[+\-\*])(\s+)$)");
         QRegularExpressionMatchIterator i = re.globalMatch(currentLineText);
@@ -1066,6 +1092,28 @@ bool QMarkdownTextEdit::handleTabEntered(bool reverse) {
             }
 
             cursor.insertText(whitespaces + listCharacter + whitespaceCharacter);
+            return true;
+        }
+
+        // check if we want to indent or un-indent an ordered list
+        re = QRegularExpression(R"(^(\s*)(\d+)\.(\s+)$)");
+        i = re.globalMatch(currentLineText);
+
+        if (i.hasNext()) {
+            QRegularExpressionMatch match = i.next();
+            QString whitespaces = match.captured(1);
+            QString listCharacter = match.captured(2);
+            QString whitespaceCharacter = match.captured(3);
+
+            // add or remove one tabulator key
+            if (reverse) {
+                whitespaces.chop(1);
+            } else {
+                whitespaces += "\t";
+            }
+
+            cursor.insertText(whitespaces + listCharacter + "." +
+            whitespaceCharacter);
             return true;
         }
     }
