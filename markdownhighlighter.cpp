@@ -196,8 +196,14 @@ void MarkdownHighlighter::initHighlightingRules() {
         rule.capturingGroup = 0;
         _highlightingRulesAfter.append(rule);
 
+        // highlight note urls with <> but without any . in it
+        rule.pattern = QRegularExpression(R"(<(note:\/\/[^\s]+)>)");
+        rule.capturingGroup = 1;
+        _highlightingRulesAfter.append(rule);
+
+        // highlight links with <> that have a .in it
         //    rule.pattern = QRegularExpression("<(.+?:\\/\\/.+?)>");
-        rule.pattern = QRegularExpression("<([^\\s`][^`]*?[^\\s`])>");
+        rule.pattern = QRegularExpression("<([^\\s`][^`]*?\\.[^`]*?[^\\s`])>");
         rule.capturingGroup = 1;
         _highlightingRulesAfter.append(rule);
 
