@@ -930,7 +930,7 @@ void QMarkdownTextEdit::setPlainText(const QString & text) {
 }
 
 /**
- * Uses an other widget as parent for the search widget
+ * Uses another widget as parent for the search widget
  */
 void QMarkdownTextEdit::initSearchFrame(QWidget *searchFrame, bool darkMode) {
     _searchFrame = searchFrame;

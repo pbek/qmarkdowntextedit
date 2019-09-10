@@ -663,7 +663,7 @@ void MarkdownHighlighter::highlightAdditionalRules(
     QTextCharFormat &maskedFormat = _formats[HighlighterState::MaskedSyntax];
 
     for(const HighlightingRule &rule : rules) {
-            // continue if an other current block state was already set if
+            // continue if another current block state was already set if
             // disableIfCurrentStateIsSet is set
             if (rule.disableIfCurrentStateIsSet &&
                     (currentBlockState() != HighlighterState::NoState)) {
