@@ -73,6 +73,8 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
 
     QObject::connect(this, SIGNAL(textChanged()),
                      this, SLOT(adjustRightMargin()));
+    QObject::connect(this, SIGNAL(cursorPositionChanged()),
+                     this, SLOT(centerTheCursor()));
 
     // workaround for disabled signals up initialization
     QTimer::singleShot(300, this, SLOT(adjustRightMargin()));
@@ -307,6 +309,7 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
 
         return false;
     } else if (event->type() == QEvent::MouseButtonRelease) {
+        _mouseButtonDown = false;
         auto *mouseEvent = static_cast<QMouseEvent *>(event);
 
         // track `Ctrl + Click` in the text edit
@@ -318,9 +321,32 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             openLinkAtCursorPosition();
             return true;
         }
+    } else if (event->type() == QEvent::MouseButtonPress) {
+        _mouseButtonDown = true;
+    } else if (event->type() == QEvent::MouseButtonDblClick) {
+        _mouseButtonDown = true;
     }
 
     return QPlainTextEdit::eventFilter(obj, event);
+}
+
+void QMarkdownTextEdit::centerTheCursor() {
+    if (_mouseButtonDown || !_centerCursor) {
+        return;
+    }
+
+    centerCursor();
+
+/*
+    QRect cursor = cursorRect();
+    QRect vp = viewport()->rect();
+
+    if ((cursor.bottom() >= vp.bottom()) || (cursor.top() <= vp.top())) {
+        QPoint offset = vp.center() - cursor.center();
+        QScrollBar* scrollbar = verticalScrollBar();
+        scrollbar->setValue(scrollbar->value() - offset.y());
+    }
+*/
 }
 
 /**

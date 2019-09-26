@@ -61,6 +61,7 @@ public slots:
     void hide();
     bool openLinkAtCursorPosition();
     bool handleBracketRemoval();
+    void centerTheCursor();
 
 protected:
     MarkdownHighlighter *_highlighter;
@@ -71,6 +72,8 @@ protected:
     AutoTextOptions _autoTextOptions;
     QStringList _openingCharacters;
     QStringList _closingCharacters;
+    bool _mouseButtonDown = false;
+    bool _centerCursor = false;
 
     bool eventFilter(QObject *obj, QEvent *event);
     bool increaseSelectedTextIndention(bool reverse);
