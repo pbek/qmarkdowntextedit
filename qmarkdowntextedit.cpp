@@ -336,17 +336,6 @@ void QMarkdownTextEdit::centerTheCursor() {
     }
 
     centerCursor();
-
-/*
-    QRect cursor = cursorRect();
-    QRect vp = viewport()->rect();
-
-    if ((cursor.bottom() >= vp.bottom()) || (cursor.top() <= vp.top())) {
-        QPoint offset = vp.center() - cursor.center();
-        QScrollBar* scrollbar = verticalScrollBar();
-        scrollbar->setValue(scrollbar->value() - offset.y());
-    }
-*/
 }
 
 /**
