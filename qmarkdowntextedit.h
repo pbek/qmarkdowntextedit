@@ -52,6 +52,7 @@ public:
     void doSearch(QString &searchText,
                   QPlainTextEditSearchWidget::SearchMode searchMode = QPlainTextEditSearchWidget::SearchMode::PlainTextMode);
     void hideSearchWidget(bool reset);
+    void updateSettings();
 
 public slots:
     void duplicateText();

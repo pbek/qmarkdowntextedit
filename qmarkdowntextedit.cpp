@@ -76,6 +76,8 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
     QObject::connect(this, SIGNAL(cursorPositionChanged()),
                      this, SLOT(centerTheCursor()));
 
+    updateSettings();
+
     // workaround for disabled signals up initialization
     QTimer::singleShot(300, this, SLOT(adjustRightMargin()));
 }
@@ -335,7 +337,67 @@ void QMarkdownTextEdit::centerTheCursor() {
         return;
     }
 
+    // centers the cursor every time, but not on the top and bottom
+    // bottom is done by setCenterOnScroll() in updateSettings()
     centerCursor();
+
+/*
+    QRect cursor = cursorRect();
+    QRect vp = viewport()->rect();
+
+    qDebug() << __func__ << " - 'cursor.top': " << cursor.top();
+    qDebug() << __func__ << " - 'cursor.bottom': " << cursor.bottom();
+    qDebug() << __func__ << " - 'vp': " << vp.bottom();
+
+    int bottom = 0;
+    int top = 0;
+
+    qDebug() << __func__ << " - 'viewportMargins().top()': "
+             << viewportMargins().top();
+
+    qDebug() << __func__ << " - 'viewportMargins().bottom()': "
+             << viewportMargins().bottom();
+
+    int vpBottom = viewportMargins().top() + viewportMargins().bottom() + vp.bottom();
+    int vpCenter = vpBottom / 2;
+    int cBottom = cursor.bottom() + viewportMargins().top();
+
+    qDebug() << __func__ << " - 'vpBottom': " << vpBottom;
+    qDebug() << __func__ << " - 'vpCenter': " << vpCenter;
+    qDebug() << __func__ << " - 'cBottom': " << cBottom;
+
+
+    if (cBottom >= vpCenter) {
+        bottom = cBottom + viewportMargins().top() / 2 + viewportMargins().bottom() / 2 - (vp.bottom() / 2);
+//        bottom = cBottom - (vp.bottom() / 2);
+//        bottom *= 1.5;
+    }
+
+//    setStyleSheet(QString("QPlainTextEdit {padding-bottom: %1px;}").arg(QString::number(bottom)));
+
+//    if (cursor.top() < (vp.bottom() / 2)) {
+//        top = (vp.bottom() / 2) - cursor.top() + viewportMargins().top() / 2 + viewportMargins().bottom() / 2;
+////        top *= -1;
+////        bottom *= 1.5;
+//    }
+    qDebug() << __func__ << " - 'top': " << top;
+    qDebug() << __func__ << " - 'bottom': " << bottom;
+    setViewportMargins(0,top,0, bottom);
+
+
+//    QScrollBar* scrollbar = verticalScrollBar();
+//
+//    qDebug() << __func__ << " - 'scrollbar->value();': " << scrollbar->value();;
+//    qDebug() << __func__ << " - 'scrollbar->maximum();': "
+//             << scrollbar->maximum();;
+
+
+//    scrollbar->setValue(scrollbar->value() - offset.y());
+//
+//    setViewportMargins
+
+//    setViewportMargins(0, 0, 0, bottom);
+*/
 }
 
 /**
@@ -1200,4 +1262,9 @@ void QMarkdownTextEdit::hideSearchWidget(bool reset) {
     if (reset) {
         _searchWidget->reset();
     }
+}
+
+void QMarkdownTextEdit::updateSettings() {
+    // if true: centers the screen if cursor reaches bottom (but not top)
+    setCenterOnScroll(_centerCursor);
 }
