@@ -54,7 +54,12 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
     // set the tab stop to the width of 4 spaces in the editor
     const int tabStop = 4;
     QFontMetrics metrics(font);
+
+#if QT_VERSION < QT_VERSION_CHECK(5,10,0)
+    setTabStopWidth(tabStop * metrics.width(' '));
+#else
     setTabStopDistance(tabStop * metrics.horizontalAdvance(' '));
+#endif
 
     // add shortcuts for duplicating text
 //    new QShortcut( QKeySequence( "Ctrl+D" ), this, SLOT( duplicateText() ) );
