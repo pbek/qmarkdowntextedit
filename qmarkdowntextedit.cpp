@@ -55,7 +55,7 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
     const int tabStop = 4;
     QFontMetrics metrics(font);
 
-#if QT_VERSION < QT_VERSION_CHECK(5,10,0)
+#if QT_VERSION < QT_VERSION_CHECK(5,11,0)
     setTabStopWidth(tabStop * metrics.width(' '));
 #else
     setTabStopDistance(tabStop * metrics.horizontalAdvance(' '));
