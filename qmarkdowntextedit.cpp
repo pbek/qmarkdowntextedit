@@ -1087,13 +1087,21 @@ bool QMarkdownTextEdit::handleReturnEntered() {
         // if the current line starts with a list character (possibly after
         // whitespaces) add the whitespaces at the next line too
         // Valid listCharacters: '+ ', '-' , '* ', '+ [ ] ', '+ [x] ', '- [ ] ', '- [x] ', '* [ ] ', '* [x] '.
-        regex = QRegularExpression(R"(^(\s*)([+|\-|\*] \[(x| )\]|[+\-\*])(\s+))");
+        regex = QRegularExpression(R"(^(\s*)([+|\-|\*] \[(x| |)\]|[+\-\*])(\s+))");
         iterator = regex.globalMatch(currentLineText);
         if (iterator.hasNext()) {
             QRegularExpressionMatch match = iterator.next();
             QString whitespaces = match.captured(1);
             QString listCharacter = match.captured(2);
             QString whitespaceCharacter = match.captured(4);
+
+            // start new checkbox list item with an unchecked checkbox
+            iterator = QRegularExpression(R"(^([+|\-|\*]) \[(x| |)\])").globalMatch(listCharacter);
+            if (iterator.hasNext()) {
+                QRegularExpressionMatch match = iterator.next();
+                QString realListCharacter = match.captured(1);
+                listCharacter = realListCharacter + " [ ]";
+            }
 
             cursor.setPosition(position);
             cursor.insertText("\n" + whitespaces + listCharacter + whitespaceCharacter);
