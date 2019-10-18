@@ -1059,7 +1059,7 @@ bool QMarkdownTextEdit::handleReturnEntered() {
     // if return is pressed and there is just an unordered list symbol then we want to
     // remove the list symbol
     // Valid listCharacters: '+ ', '-' , '* ', '+ [ ] ', '+ [x] ', '- [ ] ', '- [x] ', '* [ ] ', '* [x] '.
-    QRegularExpression regex(R"(^(\s*)([+|\-|\*] \[(x| )\]|[+\-\*])(\s+)$)");
+    QRegularExpression regex(R"(^(\s*)([+|\-|\*] \[(x| |)\]|[+\-\*])(\s+)$)");
     QRegularExpressionMatchIterator iterator = regex.globalMatch(currentLineText);
     if (iterator.hasNext()) {
         cursor.removeSelectedText();
