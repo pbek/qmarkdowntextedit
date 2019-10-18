@@ -16,6 +16,7 @@
 
 #include <QTimer>
 #include <QDebug>
+#include <QTextDocument>
 #include "markdownhighlighter.h"
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
@@ -431,6 +432,7 @@ void MarkdownHighlighter::highlightMarkdown(const QString& text) {
 
     highlightCommentBlock(text);
     highlightCodeBlock(text);
+    highlightFrontmatterBlock(text);
 }
 
 /**
@@ -619,6 +621,37 @@ void MarkdownHighlighter::highlightCodeBlock(const QString& text) {
     } else if (previousBlockState() == HighlighterState::CodeBlock) {
         setCurrentBlockState(HighlighterState::CodeBlock);
         setFormat(0, text.length(), _formats[HighlighterState::CodeBlock]);
+    }
+}
+
+/**
+ * Highlight multi-line frontmatter blocks
+ *
+ * @param text
+ */
+void MarkdownHighlighter::highlightFrontmatterBlock(const QString& text) {
+    // return if there is no frontmatter in this document
+    if (document()->firstBlock().text() != "---") {
+        return;
+    }
+
+    if (text == "---") {
+        bool foundEnd = previousBlockState() == HighlighterState::FrontmatterBlock;
+
+        // return if the frontmatter block was already highlighted in previous blocks,
+        // there just can be one frontmatter block
+        if (!foundEnd && document()->firstBlock() != currentBlock()) {
+            return;
+        }
+
+        setCurrentBlockState(foundEnd ? HighlighterState::FrontmatterBlockEnd : HighlighterState::FrontmatterBlock);
+
+        QTextCharFormat &maskedFormat =
+                _formats[HighlighterState::MaskedSyntax];
+        setFormat(0, text.length(), maskedFormat);
+    } else if (previousBlockState() == HighlighterState::FrontmatterBlock) {
+        setCurrentBlockState(HighlighterState::FrontmatterBlock);
+        setFormat(0, text.length(), _formats[HighlighterState::MaskedSyntax]);
     }
 }
 

@@ -64,10 +64,12 @@ public:
         MaskedSyntax,
         CurrentLineBackgroundColor,
         BrokenLink,
+        FrontmatterBlock,
 
         // internal
         CodeBlockEnd = 100,
-        HeadlineEnd
+        HeadlineEnd,
+        FrontmatterBlockEnd
     };
     Q_ENUMS(HighlighterState)
 
@@ -118,6 +120,8 @@ protected:
                                   const QString& text);
 
     void highlightCodeBlock(const QString& text);
+
+    void highlightFrontmatterBlock(const QString& text);
 
     void highlightCommentBlock(QString text);
 
