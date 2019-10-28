@@ -224,7 +224,7 @@ void MarkdownHighlighter::initHighlightingRules() {
         _highlightingRulesAfter.append(rule);
 
         // highlight reference links
-        rule.pattern = QRegularExpression(R"(\[(.+?)\]\s?\[.+?\])");
+        rule.pattern = QRegularExpression(R"(\[(.+?)\]\[.+?\])");
         _highlightingRulesAfter.append(rule);
     }
 

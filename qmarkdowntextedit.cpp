@@ -896,7 +896,7 @@ QMap<QString, QString> QMarkdownTextEdit::parseMarkdownUrlsFromText(
 
     // match reference urls like this: [this url][1] with this later:
     // [1]: http://domain
-    regex = QRegularExpression(R"(\[(.*?)\]\s?\[(.+?)\])");
+    regex = QRegularExpression(R"(\[(.*?)\]\[(.+?)\])");
     iterator = regex.globalMatch(text);
     while (iterator.hasNext()) {
         QRegularExpressionMatch match = iterator.next();
