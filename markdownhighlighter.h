@@ -86,7 +86,7 @@ public:
     void setTextFormats(QHash<HighlighterState, QTextCharFormat> formats);
     void setTextFormat(HighlighterState state, QTextCharFormat format);
     void clearDirtyBlocks();
-    void setHighlightingOptions(HighlightingOptions options);
+    void setHighlightingOptions(const HighlightingOptions options);
     void initHighlightingRules();
 
 signals:
@@ -97,7 +97,7 @@ protected slots:
 
 protected:
     struct HighlightingRule {
-        HighlightingRule(const HighlighterState state_) : state(state_) {}
+        explicit HighlightingRule(const HighlighterState state_) : state(state_) {}
         HighlightingRule() = default;
 
         QRegularExpression pattern;
@@ -116,7 +116,7 @@ protected:
 
     void highlightHeadline(const QString& text);
 
-    void highlightAdditionalRules(QVector<HighlightingRule> &rules,
+    void highlightAdditionalRules(const QVector<HighlightingRule> &rules,
                                   const QString& text);
 
     void highlightCodeBlock(const QString& text);
