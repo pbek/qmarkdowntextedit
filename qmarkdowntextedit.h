@@ -63,6 +63,7 @@ public slots:
     bool openLinkAtCursorPosition();
     bool handleBracketRemoval();
     void centerTheCursor();
+    void undo();
 
 protected:
     MarkdownHighlighter *_highlighter;
@@ -91,4 +92,7 @@ protected:
 
 signals:
     void urlClicked(QString url);
+
+private:
+    bool handleBracketClosingUsed;
 };
