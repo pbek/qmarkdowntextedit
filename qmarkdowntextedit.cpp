@@ -37,6 +37,7 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
     installEventFilter(this);
     viewport()->installEventFilter(this);
     _autoTextOptions = AutoTextOption::None;
+
     _openingCharacters = QStringList() << "(" << "[" << "{" << "<" << "*"
                                        << "\"" << "'" << "_" << "~";
     _closingCharacters = QStringList() << ")" << "]" << "}" << ">" << "*"
@@ -303,6 +304,10 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             _searchWidget->doSearch(
                     !keyEvent->modifiers().testFlag(Qt::ShiftModifier));
             return true;
+        } else if ((keyEvent->key() == Qt::Key_Z) &&
+                   (keyEvent->modifiers().testFlag(Qt::ControlModifier))) {
+            undo();
+            return true;
         }
 
         return false;
@@ -405,6 +410,44 @@ void QMarkdownTextEdit::centerTheCursor() {
 */
 }
 
+/*
+ * Handle the undo event ourselves
+ * Retains the selected text as selected after undo if
+ * bracket closing was used otherwise performs normal undo
+ */
+void QMarkdownTextEdit::undo()
+{
+    QTextCursor cursor = textCursor();
+    QString selectedText = cursor.selectedText();
+
+    //if no text selected, call undo
+    if(selectedText.isEmpty()) {
+       QPlainTextEdit::undo();
+       return;
+    }
+
+    //if text is selected and bracket closing was used
+    //we retain our selection
+    if (handleBracketClosingUsed) {
+        //get the selection
+        int selectionEnd = cursor.position();
+        int selectionStart = selectionEnd - selectedText.length();
+        //call undo
+        QPlainTextEdit::undo();
+        //select again
+        cursor.setPosition(selectionStart-1);
+        cursor.setPosition(selectionEnd-1, QTextCursor::KeepAnchor);
+        this->setTextCursor(cursor);
+        handleBracketClosingUsed = false;
+        return;
+    //else if text was selected but bracket closing wasn't used
+    //do normal undo
+    } else {
+        QPlainTextEdit::undo();
+        return;
+    }
+}
+
 /**
  * Resets the cursor to Qt::IBeamCursor
  */
@@ -449,8 +492,6 @@ bool QMarkdownTextEdit::handleBracketClosing(const QString& openingCharacter,
     // When user currently has text selected, we prepend the openingCharacter
     // and append the closingCharacter. E.g. 'text' -> '(text)'. We keep the
     // current selectedText selected.
-    //
-    // TODO(sanderboom): how to make ctrl-z keep the selectedText selected?
     if (selectedText != "") {
         // Insert. The selectedText is overwritten.
         cursor.insertText(openingCharacter);
@@ -463,7 +504,7 @@ bool QMarkdownTextEdit::handleBracketClosing(const QString& openingCharacter,
         cursor.setPosition(selectionStart);
         cursor.setPosition(selectionEnd, QTextCursor::KeepAnchor);
         this->setTextCursor(cursor);
-
+        handleBracketClosingUsed = true;
         return true;
     } else {
         // if not text was selected check if we are inside the text
