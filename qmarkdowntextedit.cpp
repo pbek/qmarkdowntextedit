@@ -36,7 +36,7 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
         : QPlainTextEdit(parent) {
     installEventFilter(this);
     viewport()->installEventFilter(this);
-    _autoTextOptions = AutoTextOption::None;
+    _autoTextOptions = AutoTextOption::BracketClosing;
 
     _openingCharacters = QStringList() << "(" << "[" << "{" << "<" << "*"
                                        << "\"" << "'" << "_" << "~";
@@ -418,10 +418,8 @@ void QMarkdownTextEdit::centerTheCursor() {
 void QMarkdownTextEdit::undo()
 {
     QTextCursor cursor = textCursor();
-    QString selectedText = cursor.selectedText();
-
     //if no text selected, call undo
-    if(selectedText.isEmpty()) {
+    if(!cursor.hasSelection()) {
        QPlainTextEdit::undo();
        return;
     }
@@ -430,8 +428,8 @@ void QMarkdownTextEdit::undo()
     //we retain our selection
     if (handleBracketClosingUsed) {
         //get the selection
-        int selectionEnd = cursor.position();
-        int selectionStart = selectionEnd - selectedText.length();
+        int selectionEnd = cursor.selectionEnd();
+        int selectionStart = cursor.selectionStart();
         //call undo
         QPlainTextEdit::undo();
         //select again
@@ -494,13 +492,13 @@ bool QMarkdownTextEdit::handleBracketClosing(const QString& openingCharacter,
     // current selectedText selected.
     if (selectedText != "") {
         // Insert. The selectedText is overwritten.
-        cursor.insertText(openingCharacter);
-        cursor.insertText(selectedText);
-        cursor.insertText(closingCharacter);
+        QString newText = openingCharacter + selectedText + closingCharacter;
+        cursor.insertText(newText);
 
         // Re-select the selectedText.
         int selectionEnd = cursor.position() - 1;
         int selectionStart = selectionEnd - selectedText.length();
+
         cursor.setPosition(selectionStart);
         cursor.setPosition(selectionEnd, QTextCursor::KeepAnchor);
         this->setTextCursor(cursor);
