@@ -65,6 +65,7 @@ public:
         CurrentLineBackgroundColor,
         BrokenLink,
         FrontmatterBlock,
+        TrailingSpace,
 
         // internal
         CodeBlockEnd = 100,

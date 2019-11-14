@@ -255,6 +255,14 @@ void MarkdownHighlighter::initHighlightingRules() {
         _highlightingRulesAfter.append(rule);
     }
 
+    // highlight trailing spaces
+    {
+        HighlightingRule rule(HighlighterState::TrailingSpace);
+        rule.pattern = QRegularExpression(QStringLiteral("( +)$"));
+        rule.capturingGroup = 1;
+        _highlightingRulesAfter.append(rule);
+    }
+
     // highlight inline code
     {
         HighlightingRule rule(HighlighterState::InlineCodeBlock);
