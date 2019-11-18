@@ -696,6 +696,63 @@ void MarkdownHighlighter::highlightCommentBlock(QString text) {
 }
 
 /**
+ * Format italics, bolds and links in headings(h1-h6)
+ *
+ * @param format The format that is being applied
+ * @param match The regex match
+ * @param capturedGroup The captured group
+*/
+void MarkdownHighlighter::setHeadingStyles(QTextCharFormat &format,
+                                           QRegularExpressionMatch &match,
+                                           int capturedGroup) {
+    QTextCharFormat f;
+    int state = currentBlockState();
+    if (state == HighlighterState::H1) f = _formats[H1];
+    else if (state == HighlighterState::H2) f = _formats[H2];
+    else if (state == HighlighterState::H3) f = _formats[H3];
+    else if (state == HighlighterState::H4) f = _formats[H4];
+    else if (state == HighlighterState::H5) f = _formats[H5];
+    else f = _formats[H6];
+
+    if (format == _formats[HighlighterState::Italic]) {
+        f.setForeground(QBrush(QColor(0, 49, 110)));
+        f.setFontItalic(true);
+        setFormat(match.capturedStart(capturedGroup),
+                  match.capturedEnd(capturedGroup),
+                  f);
+        return;
+    } else if (format == _formats[HighlighterState::Bold]) {
+        setFormat(match.capturedStart(capturedGroup),
+                  match.capturedEnd(capturedGroup),
+                  f);
+        return;
+    }  else if (format == _formats[HighlighterState::Link]) {
+        f.setForeground(QBrush(QColor(0, 128, 255)));
+        f.setFontUnderline(true);
+        setFormat(match.capturedStart(capturedGroup-1),
+                  match.capturedEnd(capturedGroup),
+                  f);
+        return;
+    }
+/**
+ * Waqar144
+ * TODO: Test this again and make it work correctly
+ * Q: Do we even need this in headings?
+ */
+//disabling these, as these work, but not as good I think.
+//    else if (format == _formats[HighlighterState::InlineCodeBlock]) {
+//        QTextCharFormat ff;
+//        f.setFontPointSize(1.6);
+//        f.setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+//        f.setBackground(QColor(220, 220, 220));
+//        setFormat(match.capturedStart(capturedGroup),
+//                  match.capturedEnd(capturedGroup) - 18,
+//                  f);
+//        return;
+//    }
+}
+
+/**
  * Highlights the rules from the _highlightingRules list
  *
  * @param text
@@ -738,14 +795,38 @@ void MarkdownHighlighter::highlightAdditionalRules(
                         currentMaskedFormat.setFontPointSize(format.fontPointSize());
                     }
 
-                    setFormat(match.capturedStart(maskedGroup),
+                    if ((currentBlockState() == HighlighterState::H1 ||
+                        currentBlockState() == HighlighterState::H2 ||
+                        currentBlockState() == HighlighterState::H3 ||
+                        currentBlockState() == HighlighterState::H4 ||
+                        currentBlockState() == HighlighterState::H5 ||
+                        currentBlockState() == HighlighterState::H6) &&
+                        format != _formats[HighlighterState::InlineCodeBlock]) {
+                       // setHeadingStyles(format, match, maskedGroup);
+
+                    } else {
+
+                        setFormat(match.capturedStart(maskedGroup),
                               match.capturedLength(maskedGroup),
                               currentMaskedFormat);
+                    }
                 }
+
+                if ((currentBlockState() == HighlighterState::H1 ||
+                    currentBlockState() == HighlighterState::H2 ||
+                    currentBlockState() == HighlighterState::H3 ||
+                    currentBlockState() == HighlighterState::H4 ||
+                    currentBlockState() == HighlighterState::H5 ||
+                    currentBlockState() == HighlighterState::H6) &&
+                    format != _formats[HighlighterState::InlineCodeBlock]) {
+                    setHeadingStyles(format, match, capturingGroup);
+
+                } else {
 
                 setFormat(match.capturedStart(capturingGroup),
                           match.capturedLength(capturingGroup),
                           format);
+                }
             }
         }
 }
