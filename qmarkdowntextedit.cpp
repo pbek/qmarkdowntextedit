@@ -305,6 +305,12 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
                     !keyEvent->modifiers().testFlag(Qt::ShiftModifier));
             return true;
         } else if ((keyEvent->key() == Qt::Key_Z) &&
+                   (keyEvent->modifiers().testFlag(Qt::ControlModifier)) &&
+                   (keyEvent->modifiers().testFlag(Qt::ShiftModifier))) {
+            //handle this before undo otherwise Ctrl+Shift+Z is caught by Ctrl+Z for some reason
+            QPlainTextEdit::redo();
+            return true;
+        } else if ((keyEvent->key() == Qt::Key_Z) &&
                    (keyEvent->modifiers().testFlag(Qt::ControlModifier))) {
             undo();
             return true;
