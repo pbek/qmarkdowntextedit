@@ -305,11 +305,8 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
                     !keyEvent->modifiers().testFlag(Qt::ShiftModifier));
             return true;
         } else if ((keyEvent->key() == Qt::Key_Z) &&
-                   (keyEvent->modifiers().testFlag(Qt::ControlModifier))) {
-            if (keyEvent->modifiers().testFlag(Qt::ShiftModifier)){
-                QPlainTextEdit::redo();
-                return true;
-            }
+                   (keyEvent->modifiers().testFlag(Qt::ControlModifier)) &&
+                   !(keyEvent->modifiers().testFlag(Qt::ShiftModifier))) {
             undo();
             return true;
         }
