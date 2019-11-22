@@ -198,8 +198,8 @@ void MarkdownHighlighter::initHighlightingRules() {
         rule.capturingGroup = 0;
         _highlightingRulesAfter.append(rule);
 
-        // highlight note urls with <> but without any . in it
-        rule.pattern = QRegularExpression(QStringLiteral(R"(<(note:\/\/[^\s]+)>)"));
+        // highlight urls with <> but without any . in it
+        rule.pattern = QRegularExpression(QStringLiteral(R"(<(\w+?:\/\/[^\s]+)>)"));
         rule.capturingGroup = 1;
         _highlightingRulesAfter.append(rule);
 
