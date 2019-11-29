@@ -703,7 +703,7 @@ void MarkdownHighlighter::highlightCommentBlock(QString text) {
  * @param capturedGroup The captured group
 */
 void MarkdownHighlighter::setHeadingStyles(QTextCharFormat &format,
-                                           QRegularExpressionMatch &match,
+                                           const QRegularExpressionMatch &match,
                                            int capturedGroup) {
     QTextCharFormat f;
     int state = currentBlockState();
@@ -718,20 +718,22 @@ void MarkdownHighlighter::setHeadingStyles(QTextCharFormat &format,
         f.setForeground(QBrush(QColor(0, 49, 110)));
         f.setFontItalic(true);
         setFormat(match.capturedStart(capturedGroup),
-                  match.capturedEnd(capturedGroup),
+                  match.capturedLength(capturedGroup),
                   f);
         return;
     } else if (format == _formats[HighlighterState::Bold]) {
         setFormat(match.capturedStart(capturedGroup),
-                  match.capturedEnd(capturedGroup),
+                  match.capturedLength(capturedGroup),
                   f);
         return;
     }  else if (format == _formats[HighlighterState::Link]) {
-        f.setForeground(QBrush(QColor(0, 128, 255)));
-        f.setFontUnderline(true);
-        setFormat(match.capturedStart(capturedGroup-1),
-                  match.capturedEnd(capturedGroup),
-                  f);
+        if (capturedGroup == 1) {
+            f.setForeground(QBrush(QColor(0, 128, 255)));
+            f.setFontUnderline(true);
+            setFormat(match.capturedStart(capturedGroup),
+                      match.capturedLength(capturedGroup),
+                      f);
+        }
         return;
     }
 /**
@@ -802,7 +804,7 @@ void MarkdownHighlighter::highlightAdditionalRules(
                         currentBlockState() == HighlighterState::H5 ||
                         currentBlockState() == HighlighterState::H6) &&
                         format != _formats[HighlighterState::InlineCodeBlock]) {
-                       // setHeadingStyles(format, match, maskedGroup);
+                        //setHeadingStyles(format, match, maskedGroup);
 
                     } else {
 
