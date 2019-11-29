@@ -450,18 +450,26 @@ void MarkdownHighlighter::highlightMarkdown(const QString& text) {
  * @param text
  */
 void MarkdownHighlighter::highlightHeadline(const QString& text) {
-    QRegularExpression regex(QStringLiteral("^(#+)\\s+(.+?)$"));
-    QRegularExpressionMatch match = regex.match(text);
-    QTextCharFormat &maskedFormat = _formats[HighlighterState::MaskedSyntax];
+    bool headingFound = text.startsWith(QLatin1String("# ")) ||
+                        text.startsWith(QLatin1String("## ")) ||
+                        text.startsWith(QLatin1String("### ")) ||
+                        text.startsWith(QLatin1String("#### ")) ||
+                        text.startsWith(QLatin1String("##### ")) ||
+                        text.startsWith(QLatin1String("###### "));
 
-    // check for headline blocks with # in front of them
-    if (match.hasMatch()) {
-        int count = match.captured(1).count();
+    const QTextCharFormat &maskedFormat = _formats[HighlighterState::MaskedSyntax];
 
-        // we just have H1 to H6
-        count = qMin(count, 6);
+    if (headingFound) {
+        int count = 0;
+        int len = text.length() > 6 ? 6 : text.length();
+        //check only first 6 chars of text
+        for (int i = 0; i < len; ++i) {
+            if (text.at(i) == QLatin1Char('#')) {
+                ++count;
+            }
+        }
 
-        auto state = HighlighterState(HighlighterState::H1 + count - 1);
+        const auto state = HighlighterState(HighlighterState::H1 + count - 1);
 
         QTextCharFormat &format = _formats[state];
         QTextCharFormat currentMaskedFormat = maskedFormat;
@@ -470,12 +478,11 @@ void MarkdownHighlighter::highlightHeadline(const QString& text) {
         currentMaskedFormat.setFontPointSize(format.fontPointSize());
 
         // first highlight everything as MaskedSyntax
-        setFormat(match.capturedStart(), match.capturedLength(),
-                  currentMaskedFormat);
+        setFormat(0, text.length(), currentMaskedFormat);
 
+        const int length = text.length() - count;
         // then highlight with the real format
-        setFormat(match.capturedStart(2), match.capturedLength(2),
-                  _formats[state]);
+        setFormat(count, length, _formats[state]);
 
         // set a margin for the current block
         setCurrentBlockMargin(state);
@@ -485,22 +492,30 @@ void MarkdownHighlighter::highlightHeadline(const QString& text) {
         return;
     }
 
-    // take care of ==== and ---- headlines
-    QRegularExpression patternH1 = QRegularExpression(QStringLiteral("^=+$"));
-    QRegularExpression patternH2 = QRegularExpression(QStringLiteral("^-+$"));
-    QTextBlock previousBlock = currentBlock().previous();
-    QString previousText = previousBlock.text();
-    previousText.trimmed().remove(QRegularExpression(QStringLiteral("[=-]")));
+    auto hasOnlyHeadChars = [](const QString &txt, const QChar c) -> bool {
+        if (txt.isEmpty()) return false;
+        for (int i = 0; i < txt.length(); ++i) {
+            if (txt.at(i) != c)
+                return false;
+        }
+        return true;
+    };
 
-    // check for ===== after a headline text and highlight as H1
-    if (patternH1.match(text).hasMatch()) {
-        if (((previousBlockState() == HighlighterState::H1) ||
-                (previousBlockState() == HighlighterState::NoState)) &&
-                (previousText.length() > 0)) {
-            // set the font size from the current rule's font format
+    // take care of ==== and ---- headlines
+
+    QTextBlock previousBlock = currentBlock().previous();
+    const QString &previousText = previousBlock.text();
+
+    const bool pattern1 = hasOnlyHeadChars(text, QLatin1Char('='));
+    if (pattern1) {
+
+        if (( (previousBlockState() == HighlighterState::H1) ||
+               previousBlockState() == HighlighterState::NoState) &&
+               previousText.length() > 0) {
             QTextCharFormat currentMaskedFormat = maskedFormat;
+            // set the font size from the current rule's font format
             currentMaskedFormat.setFontPointSize(
-                    _formats[HighlighterState::H1].fontPointSize());
+                        _formats[HighlighterState::H1].fontPointSize());
 
             setFormat(0, text.length(), currentMaskedFormat);
             setCurrentBlockState(HighlighterState::HeadlineEnd);
@@ -517,19 +532,19 @@ void MarkdownHighlighter::highlightHeadline(const QString& text) {
             // the text
             addDirtyBlock(previousBlock);
         }
-
         return;
     }
 
-    // check for ----- after a headline text and highlight as H2
-    if (patternH2.match(text).hasMatch()) {
-        if (((previousBlockState() == HighlighterState::H2) ||
-             (previousBlockState() == HighlighterState::NoState)) &&
-            (previousText.length() > 0)) {
+    const bool pattern2 = hasOnlyHeadChars(text, QLatin1Char('-'));
+    if (pattern2) {
+
+        if (( (previousBlockState() == HighlighterState::H2) ||
+               previousBlockState() == HighlighterState::NoState) &&
+               previousText.length() > 0) {
             // set the font size from the current rule's font format
             QTextCharFormat currentMaskedFormat = maskedFormat;
             currentMaskedFormat.setFontPointSize(
-                    _formats[HighlighterState::H2].fontPointSize());
+                        _formats[HighlighterState::H2].fontPointSize());
 
             setFormat(0, text.length(), currentMaskedFormat);
             setCurrentBlockState(HighlighterState::HeadlineEnd);
@@ -541,28 +556,27 @@ void MarkdownHighlighter::highlightHeadline(const QString& text) {
             // we want to re-highlight the previous block
             addDirtyBlock(previousBlock);
         }
-
         return;
     }
 
+    //check next block for ====
     QTextBlock nextBlock = currentBlock().next();
-    QString nextBlockText = nextBlock.text();
-
-    // highlight as H1 if next block is =====
-    if (patternH1.match(nextBlockText).hasMatch() ||
-            patternH2.match(nextBlockText).hasMatch()) {
+    const QString &nextBlockText = nextBlock.text();
+    const bool nextHasEqualChars = hasOnlyHeadChars(nextBlockText, QLatin1Char('='));
+    if (nextHasEqualChars) {
         setFormat(0, text.length(), _formats[HighlighterState::H1]);
         setCurrentBlockState(HighlighterState::H1);
         currentBlock().setUserState(HighlighterState::H1);
     }
-
-    // highlight as H2 if next block is -----
-    if (patternH2.match(nextBlockText).hasMatch()) {
+    //check next block for ----
+    const bool nextHasMinusChars = hasOnlyHeadChars(nextBlockText, QLatin1Char('-'));
+    if (nextHasMinusChars) {
         setFormat(0, text.length(), _formats[HighlighterState::H2]);
         setCurrentBlockState(HighlighterState::H2);
         currentBlock().setUserState(HighlighterState::H2);
     }
 }
+
 
 /**
  * Sets a margin for the current block
@@ -702,9 +716,9 @@ void MarkdownHighlighter::highlightCommentBlock(QString text) {
  * @param match The regex match
  * @param capturedGroup The captured group
 */
-void MarkdownHighlighter::setHeadingStyles(QTextCharFormat &format,
+void MarkdownHighlighter::setHeadingStyles(const QTextCharFormat &format,
                                            const QRegularExpressionMatch &match,
-                                           int capturedGroup) {
+                                           const int capturedGroup) {
     QTextCharFormat f;
     int state = currentBlockState();
     if (state == HighlighterState::H1) f = _formats[H1];
@@ -761,7 +775,7 @@ void MarkdownHighlighter::setHeadingStyles(QTextCharFormat &format,
  */
 void MarkdownHighlighter::highlightAdditionalRules(
         const QVector<HighlightingRule> &rules, const QString& text) {
-    QTextCharFormat &maskedFormat = _formats[HighlighterState::MaskedSyntax];
+    const QTextCharFormat &maskedFormat = _formats[HighlighterState::MaskedSyntax];
 
     for(const HighlightingRule &rule : rules) {
             // continue if another current block state was already set if
