@@ -130,9 +130,9 @@ protected:
 
     void reHighlightDirtyBlocks();
 
-    void setHeadingStyles(QTextCharFormat &format,
+    void setHeadingStyles(const QTextCharFormat &format,
                      const QRegularExpressionMatch &match,
-                     int capturedGroup);
+                     const int capturedGroup);
 
     QVector<HighlightingRule> _highlightingRulesPre;
     QVector<HighlightingRule> _highlightingRulesAfter;
