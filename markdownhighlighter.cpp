@@ -627,10 +627,7 @@ void MarkdownHighlighter::setCurrentBlockMargin(
  * @param text
  */
 void MarkdownHighlighter::highlightCodeBlock(const QString& text) {
-    QRegularExpression regex(QStringLiteral("^```\\w*?$"));
-    QRegularExpressionMatch match = regex.match(text);
-
-    if (match.hasMatch()) {
+    if (text.startsWith("```")) {
         setCurrentBlockState(
                 previousBlockState() == HighlighterState::CodeBlock ?
                 HighlighterState::CodeBlockEnd : HighlighterState::CodeBlock);
