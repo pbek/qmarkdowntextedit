@@ -729,7 +729,6 @@ void MarkdownHighlighter::setHeadingStyles(const QTextCharFormat &format,
     else f = _formats[H6];
 
     if (format == _formats[HighlighterState::Italic]) {
-        f.setForeground(QBrush(QColor(0, 49, 110)));
         f.setFontItalic(true);
         setFormat(match.capturedStart(capturedGroup),
                   match.capturedLength(capturedGroup),
@@ -741,12 +740,12 @@ void MarkdownHighlighter::setHeadingStyles(const QTextCharFormat &format,
                   f);
         return;
     }  else if (format == _formats[HighlighterState::Link]) {
+        QTextCharFormat link = _formats[Link];
+        link.setFontPointSize(f.fontPointSize());
         if (capturedGroup == 1) {
-            f.setForeground(QBrush(QColor(0, 128, 255)));
-            f.setFontUnderline(true);
             setFormat(match.capturedStart(capturedGroup),
-                      match.capturedLength(capturedGroup),
-                      f);
+                  match.capturedLength(capturedGroup),
+                  link);
         }
         return;
     }
