@@ -672,7 +672,9 @@ void MarkdownHighlighter::highlightCodeBlock(const QString& text) {
                 setCurrentBlockState(HighlighterState::CodeJs);
             } else if (lang == "c") {
                 setCurrentBlockState(HighlighterState::CodeC);
-            } else if (text == "```"){
+            } else if (lang == "bash" || lang == "sh") {
+                setCurrentBlockState(HighlighterState::CodeBash);
+            } else if (text == "```") {
                 setCurrentBlockState(HighlighterState::CodeBlock);
             } else {
                 setCurrentBlockState(HighlighterState::CodeBlock);
@@ -788,9 +790,12 @@ void loadShData(QStringList &types, QStringList &keywords, QStringList &preproc)
     };
 
     keywords = QStringList{
+       "if", "then", "else", "elif", "fi", "case", "esac", "for", "select",
+       "while", "until", "do", "done", "in", "function"
     };
 
     preproc = QStringList{
+       "time"
     };
 }
 
