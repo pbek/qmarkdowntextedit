@@ -793,17 +793,6 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                     }
                 }
                 return;
-            //multi comment
-            } else if (text[i] == QLatin1Char('/') && text[i+1] == QLatin1Char('*')) {
-                int next = text.indexOf(QLatin1String("*/"));
-                f.setForeground(Qt::darkGray);
-                if (next == -1) {
-                    setFormat(i, text.length(), formatComment);
-                } else {
-                    next += 2;
-                    setFormat(i, next - i, formatComment);
-                }
-                return;
             //integer literal
             } else if (text[i].isNumber()) {
                 if ( ((i+1) < text.length() && (i-1) > 0 ) &&
