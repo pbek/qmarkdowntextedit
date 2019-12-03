@@ -82,7 +82,7 @@ public:
 
         //languages
         CodeCpp = 200,
-        CodeJs
+        CodeJs = 201
     };
     Q_ENUMS(HighlighterState)
 

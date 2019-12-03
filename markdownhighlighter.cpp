@@ -688,7 +688,7 @@ void MarkdownHighlighter::highlightCodeBlock(const QString& text) {
 
         setFormat(0, text.length(), maskedFormat);
     } else if (previousBlockState() == HighlighterState::CodeBlock ||
-               previousBlockState() == HighlighterState::CodeCpp) {
+               previousBlockState() >= HighlighterState::CodeCpp) {
 
         if (previousBlockState() == HighlighterState::CodeCpp) {
             setCurrentBlockState(HighlighterState::CodeCpp);
@@ -732,6 +732,37 @@ void loadCppData(QStringList &types, QStringList &keywords, QStringList &preproc
     };
 }
 
+void loadJSData(QStringList &types, QStringList &keywords, QStringList &preproc) {
+    types = QStringList{
+            "byte", "class", "enum", "float", "short", "long", "int", "var", "void",
+             "boolean", "double"
+
+    };
+
+    keywords = QStringList{
+            "abstract", "arguments", "await",
+            "break", "case", "catch"
+            "char", "const", "continue"
+            "debugger", "default", "delete", "do"
+            "else", "eval"
+            "export", "extends","false", "final"
+            "finally",  "for", "function"
+            "goto", "if", "implements",
+            "in", "instanceof", "interface"
+            "let",  "native", "new"
+            "null", "package", "private", "protected"
+            "public", "return",  "static"
+            "super", "switch", "synchronized", "this"
+            "throw", "throws", "transient", "true"
+            "try", "typeof",
+            "volatile", "while", "with", "yield"
+    };
+
+    preproc = QStringList{
+            "import"
+    };
+}
+
 /**
  * @brief Does the code syntax highlighting
  * @param text
@@ -748,6 +779,11 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
         case HighlighterState::CodeCpp :
             loadCppData(types, keywords, preproc);
             break;
+        case HighlighterState::CodeJs :
+            loadJSData(types, keywords, preproc);
+        break;
+    default:
+        break;
     }
 
     // keep the default code block format
