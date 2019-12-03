@@ -670,8 +670,18 @@ void MarkdownHighlighter::highlightCodeBlock(const QString& text) {
                 setCurrentBlockState(HighlighterState::CodeCpp);
             } else if (lang == "js") {
                 setCurrentBlockState(HighlighterState::CodeJs);
-            } else if (text == "```"){
+            } else if (lang == "c") {
+                setCurrentBlockState(HighlighterState::CodeC);
+            } else if (lang == "bash" || lang == "sh") {
+                setCurrentBlockState(HighlighterState::CodeBash);
+            } else if (text == "```") {
                 setCurrentBlockState(HighlighterState::CodeBlock);
+            } else if (lang == "php") {
+                setCurrentBlockState(HighlighterState::CodePHP);
+            } else if (lang == "python" || lang == "py") {
+                setCurrentBlockState(HighlighterState::CodePython);
+            } else if (lang == "qml") {
+                setCurrentBlockState(HighlighterState::CodeQML);
             } else {
                 setCurrentBlockState(HighlighterState::CodeBlock);
             }
@@ -688,13 +698,10 @@ void MarkdownHighlighter::highlightCodeBlock(const QString& text) {
 
         setFormat(0, text.length(), maskedFormat);
     } else if (previousBlockState() == HighlighterState::CodeBlock ||
-               previousBlockState() == HighlighterState::CodeCpp) {
+               previousBlockState() >= HighlighterState::CodeCpp) {
 
-        if (previousBlockState() == HighlighterState::CodeCpp) {
-            setCurrentBlockState(HighlighterState::CodeCpp);
-            highlightSyntax(text);
-        } else if (previousBlockState() == HighlighterState::CodeJs){
-            setCurrentBlockState(HighlighterState::CodeJs);
+        if (previousBlockState() >= HighlighterState::CodeCpp) {
+            setCurrentBlockState(previousBlockState());
             highlightSyntax(text);
         } else {
             setFormat(0, text.length(), _formats[HighlighterState::CodeBlock]);
@@ -724,11 +731,127 @@ void loadCppData(QStringList &types, QStringList &keywords, QStringList &preproc
         "public", "private", "protected", "signal", "slot",
         "new", "delete", "operator", "template", "this",
         "false", "true", "explicit ", "sizeof",
-        "try", "catch", "throw"
+        "try", "catch", "throw", "goto",
+        "signed", "typedef", "register", "default"
     };
 
     preproc = QStringList{
         "ifndef", "ifdef", "include", "define", "endif"
+    };
+}
+
+void loadCData(QStringList &types, QStringList &keywords, QStringList &preproc) {
+    types = QStringList{
+        "int", "float", "string", "double", "long", "vector",
+        "short", "char", "void", "bool", "wchar_t",
+        "class", "struct", "union", "enum"
+    };
+
+    keywords = QStringList{
+        "while", "if", "for", "do", "return", "else", "switch",
+        "case", "break", "continue", "auto", "sizeof", "extern"
+        "unsigned", "const", "static", "signed", "typedef",
+        "asm ", "volatile", "false", "true", "register", "default",
+        "goto"
+    };
+
+    preproc = QStringList{
+        "ifndef", "ifdef", "include", "define", "endif", "NULL"
+    };
+}
+
+void loadJSData(QStringList &types, QStringList &keywords, QStringList &preproc) {
+    types = QStringList{
+            "byte", "class", "enum", "float", "short", "long", "int", "var", "void",
+             "boolean", "double"
+
+    };
+
+    keywords = QStringList{
+            "abstract", "arguments", "await", "break", "case", "catch",
+            "char", "const", "continue", "debugger", "default", "delete", "do",
+            "else", "eval", "export", "extends","false", "final", "finally",  "for",
+            "function", "goto", "if", "implements", "in", "instanceof", "interface",
+            "let",  "native", "new", "null", "package", "private", "protected",
+            "public", "return", "static", "super", "switch", "synchronized", "this",
+            "throw", "throws", "transient", "true", "try", "typeof", "volatile", "while",
+            "with", "yield"
+    };
+
+    preproc = QStringList{
+            "import"
+    };
+}
+
+void loadShData(QStringList &types, QStringList &keywords, QStringList &preproc) {
+    types = QStringList{
+    };
+
+    keywords = QStringList{
+       "if", "then", "else", "elif", "fi", "case", "esac", "for", "select",
+       "while", "until", "do", "done", "in", "function"
+    };
+
+    preproc = QStringList{
+       "time"
+    };
+}
+
+void loadPHPData(QStringList &types, QStringList &keywords, QStringList &preproc) {
+    types = QStringList{
+            "array", "var", "class"
+    };
+
+    keywords = QStringList{
+       "__halt_compiler", "abstract", "and", "as", "break", "callable", "case",
+       "catch", "clone", "const", "continue", "declare", "default",
+       "die", "do", "echo", "else", "elseif", "empty", "enddeclare", "endfor", "endforeach",
+       "endif", "endswitch", "endwhile", "eval", "exit", "extends", "final", "finally", "for",
+       "foreach", "function", "global", "goto", "if", "implements", "instanceof", "insteadof",
+       "interface", "isset", "list", "namespace", "new", "or", "print", "private", "protected",
+       "public", "return", "static", "switch", "throw", "trait", "try", "unset", "use", "while",
+       "xor", "yield", "from"
+    };
+
+    preproc = QStringList{
+       "include", "include_once", "require", "require_once", "__CLASS__", "__DIR__",
+       "__FILE__", "__FUNCTION__", "__LINE__", "__METHOD__", "__NAMESPACE__", "__TRAIT__"
+
+    };
+}
+
+//in accordance with https://doc.qt.io/qt-5/qtqml-syntax-objectattributes.html
+void loadQMLData(QStringList &types, QStringList &keywords, QStringList &preproc) {
+    types = QStringList{
+        "Rectangle", "Text", "color", "Item", "url", "Component", "Button", "TextInput",
+        "ListView", "",
+    };
+
+    keywords = QStringList{
+        "default", "property", "int", "string", "var", "true", "false",
+        "function", "readonly", "MouseArea", "delegate", "enum", "if", "else"
+    };
+
+    preproc = QStringList{
+        "import"
+    };
+}
+
+
+void loadPythonData(QStringList &types, QStringList &keywords, QStringList &preproc) {
+    types = QStringList{
+            "class",
+    };
+
+    keywords = QStringList{
+       "False", "None", "True", "and", "as", "assert", "break", "continue",
+       "def", "del", "elif", "else", "except", "finally", "for", "from", "global",
+       "if", "in", "is", "lambda", "nonlocal", "not", "or", "pass", "raise",
+       "return", "try", "while", "with", "yield"
+    };
+
+    preproc = QStringList{
+            "import"
     };
 }
 
@@ -748,6 +871,26 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
         case HighlighterState::CodeCpp :
             loadCppData(types, keywords, preproc);
             break;
+        case HighlighterState::CodeJs :
+            loadJSData(types, keywords, preproc);
+            break;
+        case HighlighterState::CodeC :
+            loadCData(types, keywords, preproc);
+            break;
+        case HighlighterState::CodeBash :
+            loadShData(types, keywords, preproc);
+            break;
+        case HighlighterState::CodePHP :
+            loadPHPData(types, keywords, preproc);
+            break;
+        case HighlighterState::CodeQML :
+            loadQMLData(types, keywords, preproc);
+            break;
+        case HighlighterState::CodePython :
+            loadPythonData(types, keywords, preproc);
+            break;
+    default:
+        break;
     }
 
     // keep the default code block format
