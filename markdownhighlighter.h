@@ -67,11 +67,20 @@ public:
         FrontmatterBlock,
         TrailingSpace,
 
+        //code highlighting
+        CodeKeyWord = 1000,
+        CodeString = 1001,
+        CodeComment = 1002,
+        CodeType = 1003,
+        CodeOther = 1004,
+        CodeNumLiteral = 1005,
+
         // internal
         CodeBlockEnd = 100,
         HeadlineEnd,
         FrontmatterBlockEnd,
 
+        //languages
         CodeCpp = 200,
         CodeJs
     };
