@@ -480,9 +480,9 @@ void MarkdownHighlighter::highlightHeadline(const QString& text) {
         // first highlight everything as MaskedSyntax
         setFormat(0, text.length(), currentMaskedFormat);
 
-        const int length = text.length() - count;
+        //const int length = text.length() - count;
         // then highlight with the real format
-        setFormat(count, length, _formats[state]);
+        setFormat(0, text.length(), _formats[state]);
 
         // set a margin for the current block
         setCurrentBlockMargin(state);
