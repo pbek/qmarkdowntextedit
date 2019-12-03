@@ -395,6 +395,40 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize) {
 
     format = QTextCharFormat();
     _formats[NoState] = format;
+
+    /****************************************
+     * Formats for syntax highlighting
+     ***************************************/
+
+    format = QTextCharFormat();
+    format.setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+    format.setForeground(QColor("#F92672"));
+    _formats[CodeKeyWord] = format;
+
+    format = QTextCharFormat();
+    format.setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+    format.setForeground(QColor("#E6DB74"));
+    _formats[CodeString] = format;
+
+    format = QTextCharFormat();
+    format.setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+    format.setForeground(QColor("#75715E"));
+    _formats[CodeComment] = format;
+
+    format = QTextCharFormat();
+    format.setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+    format.setForeground(QColor("#66D9EF"));
+    _formats[CodeType] = format;
+
+    format = QTextCharFormat();
+    format.setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+    format.setForeground(QColor("#E69F66"));
+    _formats[CodeOther] = format;
+
+    format = QTextCharFormat();
+    format.setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+    format.setForeground(QColor("#AE81FF"));
+    _formats[CodeNumLiteral] = format;
 }
 
 /**
@@ -720,6 +754,20 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
     QTextCharFormat f = _formats[CodeBlock];
     setFormat(0, text.length(), f);
 
+    //prepare formats
+    QTextCharFormat formatType = _formats[CodeType];
+    QTextCharFormat formatKeyword = _formats[CodeKeyWord];
+    QTextCharFormat formatComment = _formats[CodeComment];
+    QTextCharFormat formatString = _formats[CodeString];
+    QTextCharFormat formatNumLit = _formats[CodeNumLiteral];
+    QTextCharFormat formatOther = _formats[CodeOther];
+    formatType.setBackground(f.background());
+    formatKeyword.setBackground(f.background());
+    formatComment.setBackground(f.background());
+    formatString.setBackground(f.background());
+    formatNumLit.setBackground(f.background());
+    formatOther.setBackground(f.background());
+
     for (int i=0; i< text.length(); i++) {
 
         while (!text[i].isLetter()) {
@@ -728,17 +776,17 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                 if((i+1) < text.length()){
                     if(text[i+1] == QLatin1Char('/')) {
                         f.setForeground(Qt::darkGray);
-                        setFormat(i, text.length(), f);
+                        setFormat(i, text.length(), formatComment);
                         return;
                     } else if(text[i+1] == QLatin1Char('*')) {
                         int next = text.indexOf(QLatin1String("*/"));
                         f.setForeground(Qt::darkGray);
                         if (next == -1) {
-                            setFormat(i, text.length(), f);
+                            setFormat(i, text.length(),  formatComment);
                             return;
                         } else {
                             next += 2;
-                            setFormat(i, next - i, f);
+                            setFormat(i, next - i,  formatComment);
                             i = next;
                             if (i >= text.length()) return;
                         }
@@ -750,10 +798,10 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                 int next = text.indexOf(QLatin1String("*/"));
                 f.setForeground(Qt::darkGray);
                 if (next == -1) {
-                    setFormat(i, text.length(), f);
+                    setFormat(i, text.length(), formatComment);
                 } else {
                     next += 2;
-                    setFormat(i, next - i, f);
+                    setFormat(i, next - i, formatComment);
                 }
                 return;
             //integer literal
@@ -763,13 +811,11 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                     i++;
                     continue;
                 }
-                f.setForeground(Qt::darkYellow);
-                setFormat(i, 1, f);
+                setFormat(i, 1, formatNumLit);
             //string literal
             } else if (text[i] == QLatin1Char('\"')) {
                 int pos = i;
                 int cnt = 1;
-                f.setForeground(Qt::darkGreen);
                 i++;
                 //bound check
                 if ( (i+1) >= text.length()) return;
@@ -786,11 +832,10 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                         break;
                     }
                 }
-                setFormat(pos, cnt, f);
+                setFormat(pos, cnt, formatString);
             }  else if (text[i] == QLatin1Char('\'')) {
                 int pos = i;
                 int cnt = 1;
-                f.setForeground(Qt::darkGreen);
                 i++;
                 //bound check
                 if ( (i+1) >= text.length()) return;
@@ -807,7 +852,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                     }
                     i++; cnt++;
                 }
-                setFormat(pos, cnt, f);
+                setFormat(pos, cnt, formatString);
             }
             if (i+1 >= text.length()) return;
             i++;
@@ -821,8 +866,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                         continue;
                     }
                 }
-                f.setForeground(Qt::darkBlue);
-                setFormat(i, types[j].length(), f);
+                setFormat(i, types[j].length(), formatType);
                 i += types[j].length();
             }
         }
@@ -834,8 +878,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                         continue;
                     }
                 }
-                f.setForeground(Qt::cyan);
-                setFormat(i, keywords[j].length(), f);
+                setFormat(i, keywords[j].length(), formatKeyword);
                 i += keywords[j].length();
             }
         }
@@ -847,8 +890,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                         continue;
                     }
                 }
-                f.setForeground(Qt::magenta);
-                setFormat(i, preproc[j].length(), f);
+                setFormat(i, preproc[j].length(), formatOther);
                 i += preproc[j].length();
             }
         }
