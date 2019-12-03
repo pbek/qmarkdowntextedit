@@ -731,7 +731,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                         setFormat(i, text.length(), f);
                         return;
                     } else if(text[i+1] == QLatin1Char('*')) {
-                        int next = text.indexOf("*/");
+                        int next = text.indexOf(QLatin1String("*/"));
                         f.setForeground(Qt::darkGray);
                         if (next == -1) {
                             setFormat(i, text.length(), f);
@@ -747,7 +747,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                 return;
             //multi comment
             } else if (text[i] == QLatin1Char('/') && text[i+1] == QLatin1Char('*')) {
-                int next = text.indexOf("*/");
+                int next = text.indexOf(QLatin1String("*/"));
                 f.setForeground(Qt::darkGray);
                 if (next == -1) {
                     setFormat(i, text.length(), f);
@@ -766,7 +766,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                 f.setForeground(Qt::darkYellow);
                 setFormat(i, 1, f);
             //string literal
-            } else if (text[i] == "\"") {
+            } else if (text[i] == QLatin1Char('\"')) {
                 int pos = i;
                 int cnt = 1;
                 f.setForeground(Qt::darkGreen);
@@ -774,7 +774,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                 //bound check
                 if ( (i+1) >= text.length()) return;
                 while (i < text.length()) {
-                    if (text[i] == "\"") {
+                    if (text[i] == QLatin1Char('\"')) {
                         cnt++;
                         i++;
                         break;
@@ -787,7 +787,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                     }
                 }
                 setFormat(pos, cnt, f);
-            }  else if (text[i] == "\'") {
+            }  else if (text[i] == QLatin1Char('\'')) {
                 int pos = i;
                 int cnt = 1;
                 f.setForeground(Qt::darkGreen);
@@ -795,7 +795,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                 //bound check
                 if ( (i+1) >= text.length()) return;
                 while (i < text.length()) {
-                    if (text[i] == "\'") {
+                    if (text[i] == QLatin1Char('\'')) {
                         cnt++;
                         i++;
                         break;
