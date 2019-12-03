@@ -670,6 +670,8 @@ void MarkdownHighlighter::highlightCodeBlock(const QString& text) {
                 setCurrentBlockState(HighlighterState::CodeCpp);
             } else if (lang == "js") {
                 setCurrentBlockState(HighlighterState::CodeJs);
+            } else if (lang == "c") {
+                setCurrentBlockState(HighlighterState::CodeC);
             } else if (text == "```"){
                 setCurrentBlockState(HighlighterState::CodeBlock);
             } else {
@@ -690,11 +692,8 @@ void MarkdownHighlighter::highlightCodeBlock(const QString& text) {
     } else if (previousBlockState() == HighlighterState::CodeBlock ||
                previousBlockState() >= HighlighterState::CodeCpp) {
 
-        if (previousBlockState() == HighlighterState::CodeCpp) {
-            setCurrentBlockState(HighlighterState::CodeCpp);
-            highlightSyntax(text);
-        } else if (previousBlockState() == HighlighterState::CodeJs){
-            setCurrentBlockState(HighlighterState::CodeJs);
+        if (previousBlockState() >= HighlighterState::CodeCpp) {
+            setCurrentBlockState(previousBlockState());
             highlightSyntax(text);
         } else {
             setFormat(0, text.length(), _formats[HighlighterState::CodeBlock]);
@@ -724,11 +723,32 @@ void loadCppData(QStringList &types, QStringList &keywords, QStringList &preproc
         "public", "private", "protected", "signal", "slot",
         "new", "delete", "operator", "template", "this",
         "false", "true", "explicit ", "sizeof",
-        "try", "catch", "throw"
+        "try", "catch", "throw", "goto",
+        "signed", "typedef", "register", "default"
     };
 
     preproc = QStringList{
         "ifndef", "ifdef", "include", "define", "endif"
+    };
+}
+
+void loadCData(QStringList &types, QStringList &keywords, QStringList &preproc) {
+    types = QStringList{
+        "int", "float", "string", "double", "long", "vector",
+        "short", "char", "void", "bool", "wchar_t",
+        "class", "struct", "union", "enum"
+    };
+
+    keywords = QStringList{
+        "while", "if", "for", "do", "return", "else", "switch",
+        "case", "break", "continue", "auto", "sizeof", "extern"
+        "unsigned", "const", "static", "signed", "typedef",
+        "asm ", "volatile", "false", "true", "register", "default",
+        "goto"
+    };
+
+    preproc = QStringList{
+        "ifndef", "ifdef", "include", "define", "endif", "NULL"
     };
 }
 
@@ -763,6 +783,17 @@ void loadJSData(QStringList &types, QStringList &keywords, QStringList &preproc)
     };
 }
 
+void loadShData(QStringList &types, QStringList &keywords, QStringList &preproc) {
+    types = QStringList{
+    };
+
+    keywords = QStringList{
+    };
+
+    preproc = QStringList{
+    };
+}
+
 /**
  * @brief Does the code syntax highlighting
  * @param text
@@ -781,7 +812,13 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
             break;
         case HighlighterState::CodeJs :
             loadJSData(types, keywords, preproc);
-        break;
+            break;
+        case HighlighterState::CodeC :
+            loadCData(types, keywords, preproc);
+            break;
+        case HighlighterState::CodeBash :
+            loadShData(types, keywords, preproc);
+            break;
     default:
         break;
     }

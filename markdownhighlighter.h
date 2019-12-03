@@ -82,7 +82,9 @@ public:
 
         //languages
         CodeCpp = 200,
-        CodeJs = 201
+        CodeJs = 201,
+        CodeC = 202,
+        CodeBash = 203
     };
     Q_ENUMS(HighlighterState)
 
