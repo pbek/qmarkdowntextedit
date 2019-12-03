@@ -678,7 +678,9 @@ void MarkdownHighlighter::highlightCodeBlock(const QString& text) {
                 setCurrentBlockState(HighlighterState::CodeBlock);
             } else if (lang == "php") {
                 setCurrentBlockState(HighlighterState::CodePHP);
-            }  else {
+            } else if (lang == "qml") {
+                setCurrentBlockState(HighlighterState::CodeQML);
+            } else {
                 setCurrentBlockState(HighlighterState::CodeBlock);
             }
         } else if (previousBlockState() == HighlighterState::CodeBlock ||
@@ -764,22 +766,14 @@ void loadJSData(QStringList &types, QStringList &keywords, QStringList &preproc)
     };
 
     keywords = QStringList{
-            "abstract", "arguments", "await",
-            "break", "case", "catch"
-            "char", "const", "continue"
-            "debugger", "default", "delete", "do"
-            "else", "eval"
-            "export", "extends","false", "final"
-            "finally",  "for", "function"
-            "goto", "if", "implements",
-            "in", "instanceof", "interface"
-            "let",  "native", "new"
-            "null", "package", "private", "protected"
-            "public", "return",  "static"
-            "super", "switch", "synchronized", "this"
-            "throw", "throws", "transient", "true"
-            "try", "typeof",
-            "volatile", "while", "with", "yield"
+            "abstract", "arguments", "await", "break", "case", "catch",
+            "char", "const", "continue", "debugger", "default", "delete", "do",
+            "else", "eval", "export", "extends","false", "final", "finally",  "for",
+            "function", "goto", "if", "implements", "in", "instanceof", "interface",
+            "let",  "native", "new", "null", "package", "private", "protected",
+            "public", "return", "static", "super", "switch", "synchronized", "this",
+            "throw", "throws", "transient", "true", "try", "typeof", "volatile", "while",
+            "with", "yield"
     };
 
     preproc = QStringList{
@@ -824,6 +818,23 @@ void loadPHPData(QStringList &types, QStringList &keywords, QStringList &preproc
     };
 }
 
+//in accordance with https://doc.qt.io/qt-5/qtqml-syntax-objectattributes.html
+void loadQMLData(QStringList &types, QStringList &keywords, QStringList &preproc) {
+    types = QStringList{
+        "Rectangle", "Text", "color", "Item", "url", "Component", "Button", "TextInput",
+        "ListView", "",
+    };
+
+    keywords = QStringList{
+        "default", "property", "int", "string", "var", "true", "false",
+        "function", "readonly", "MouseArea", "delegate", "enum", "if", "else"
+    };
+
+    preproc = QStringList{
+        "import"
+    };
+}
+
 /**
  * @brief Does the code syntax highlighting
  * @param text
@@ -851,6 +862,9 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
             break;
         case HighlighterState::CodePHP :
             loadPHPData(types, keywords, preproc);
+            break;
+        case HighlighterState::CodeQML :
+            loadQMLData(types, keywords, preproc);
             break;
     default:
         break;
