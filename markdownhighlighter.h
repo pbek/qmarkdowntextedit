@@ -70,7 +70,10 @@ public:
         // internal
         CodeBlockEnd = 100,
         HeadlineEnd,
-        FrontmatterBlockEnd
+        FrontmatterBlockEnd,
+
+        CodeCpp = 200,
+        CodeJs
     };
     Q_ENUMS(HighlighterState)
 
@@ -121,6 +124,8 @@ protected:
                                   const QString& text);
 
     void highlightCodeBlock(const QString& text);
+
+    void highlightSyntax(const QString &text);
 
     void highlightFrontmatterBlock(const QString& text);
 

@@ -627,20 +627,232 @@ void MarkdownHighlighter::setCurrentBlockMargin(
  * @param text
  */
 void MarkdownHighlighter::highlightCodeBlock(const QString& text) {
+
     if (text.startsWith("```")) {
-        setCurrentBlockState(
-                previousBlockState() == HighlighterState::CodeBlock ?
-                HighlighterState::CodeBlockEnd : HighlighterState::CodeBlock);
+        if (previousBlockState() != HighlighterState::CodeBlock &&
+                previousBlockState() < 200) {
+            QStringRef lang = text.midRef(3, text.length());
+            if (lang == "cpp") {
+                setCurrentBlockState(HighlighterState::CodeCpp);
+            } else if (lang == "js") {
+                setCurrentBlockState(HighlighterState::CodeJs);
+            } else if (text == "```"){
+                setCurrentBlockState(HighlighterState::CodeBlock);
+            } else {
+                setCurrentBlockState(HighlighterState::CodeBlock);
+            }
+        } else if (previousBlockState() == HighlighterState::CodeBlock ||
+                   previousBlockState() >= 200) {
+            setCurrentBlockState(HighlighterState::CodeBlockEnd);
+        }
+
         // set the font size from the current rule's font format
         QTextCharFormat &maskedFormat =
                 _formats[HighlighterState::MaskedSyntax];
         maskedFormat.setFontPointSize(
-                _formats[HighlighterState::CodeBlock].fontPointSize());
+                    _formats[HighlighterState::CodeBlock].fontPointSize());
 
         setFormat(0, text.length(), maskedFormat);
-    } else if (previousBlockState() == HighlighterState::CodeBlock) {
-        setCurrentBlockState(HighlighterState::CodeBlock);
-        setFormat(0, text.length(), _formats[HighlighterState::CodeBlock]);
+    } else if (previousBlockState() == HighlighterState::CodeBlock ||
+               previousBlockState() == HighlighterState::CodeCpp) {
+
+        if (previousBlockState() == HighlighterState::CodeCpp) {
+            setCurrentBlockState(HighlighterState::CodeCpp);
+            highlightSyntax(text);
+        } else if (previousBlockState() == HighlighterState::CodeJs){
+            setCurrentBlockState(HighlighterState::CodeJs);
+            highlightSyntax(text);
+        } else {
+            setFormat(0, text.length(), _formats[HighlighterState::CodeBlock]);
+            setCurrentBlockState(HighlighterState::CodeBlock);
+        }
+    }
+}
+
+void loadCppData(QStringList &types, QStringList &keywords, QStringList &preproc) {
+    types = QStringList{
+        /* Qt specific */
+        "QString", "QList", "QVector", "QHash", "QMap",
+        /*cpp */
+        "int", "float", "string", "double", "long", "vector",
+        "short", "char", "void", "bool", "wchar_t",
+        "class", "struct", "union", "enum"
+    };
+
+    keywords = QStringList{
+        "while", "if", "for", "do", "return", "else", "switch",
+        "case", "break", "continue",
+        "namespace", "using",
+        "unsigned", "const", "static", "mutable", "auto"
+        "asm ", "volatile",
+        "static_cast", "dynamic_cast", "reinterpret_cast", "const_cast",
+        "nullptr",
+        "public", "private", "protected", "signal", "slot",
+        "new", "delete", "operator", "template", "this",
+        "false", "true", "explicit ", "sizeof",
+        "try", "catch", "throw"
+    };
+
+    preproc = QStringList{
+        "ifndef", "ifdef", "include", "define", "endif"
+    };
+}
+
+/**
+ * @brief Does the code syntax highlighting
+ * @param text
+ */
+void MarkdownHighlighter::highlightSyntax(const QString &text)
+{
+    if (text.isEmpty()) return;
+
+    QStringList types,
+                keywords,
+                preproc;
+
+    switch (currentBlockState()) {
+        case HighlighterState::CodeCpp :
+            loadCppData(types, keywords, preproc);
+            break;
+    }
+
+    // keep the default code block format
+    QTextCharFormat f = _formats[CodeBlock];
+    setFormat(0, text.length(), f);
+
+    for (int i=0; i< text.length(); i++) {
+
+        while (!text[i].isLetter()) {
+            //inline comment
+            if (text[i] == QLatin1Char('/')) {
+                if((i+1) < text.length()){
+                    if(text[i+1] == QLatin1Char('/')) {
+                        f.setForeground(Qt::darkGray);
+                        setFormat(i, text.length(), f);
+                        return;
+                    } else if(text[i+1] == QLatin1Char('*')) {
+                        int next = text.indexOf("*/");
+                        f.setForeground(Qt::darkGray);
+                        if (next == -1) {
+                            setFormat(i, text.length(), f);
+                            return;
+                        } else {
+                            next += 2;
+                            setFormat(i, next - i, f);
+                            i = next;
+                            if (i >= text.length()) return;
+                        }
+                    }
+                }
+                return;
+            //multi comment
+            } else if (text[i] == QLatin1Char('/') && text[i+1] == QLatin1Char('*')) {
+                int next = text.indexOf("*/");
+                f.setForeground(Qt::darkGray);
+                if (next == -1) {
+                    setFormat(i, text.length(), f);
+                } else {
+                    next += 2;
+                    setFormat(i, next - i, f);
+                }
+                return;
+            //integer literal
+            } else if (text[i].isNumber()) {
+                if ( ((i+1) < text.length() && (i-1) > 0 ) &&
+                     (text[i+1].isLetter() || text[i-1].isLetter()) ) {
+                    i++;
+                    continue;
+                }
+                f.setForeground(Qt::darkYellow);
+                setFormat(i, 1, f);
+            //string literal
+            } else if (text[i] == "\"") {
+                int pos = i;
+                int cnt = 1;
+                f.setForeground(Qt::darkGreen);
+                i++;
+                //bound check
+                if ( (i+1) >= text.length()) return;
+                while (i < text.length()) {
+                    if (text[i] == "\"") {
+                        cnt++;
+                        i++;
+                        break;
+                    }
+                    i++; cnt++;
+                    //bound check
+                    if ( (i+1) >= text.length()) {
+                        cnt++;
+                        break;
+                    }
+                }
+                setFormat(pos, cnt, f);
+            }  else if (text[i] == "\'") {
+                int pos = i;
+                int cnt = 1;
+                f.setForeground(Qt::darkGreen);
+                i++;
+                //bound check
+                if ( (i+1) >= text.length()) return;
+                while (i < text.length()) {
+                    if (text[i] == "\'") {
+                        cnt++;
+                        i++;
+                        break;
+                    }
+                    //bound check
+                    if ( (i+1) >= text.length()) {
+                        cnt++;
+                        break;
+                    }
+                    i++; cnt++;
+                }
+                setFormat(pos, cnt, f);
+            }
+            if (i+1 >= text.length()) return;
+            i++;
+        }
+
+        for (int j = 0; j < types.length(); j++) {
+            if (types[j] == text.midRef(i, types[j].length())) {
+                //check if we are in the middle of a word
+                if ( (i+types[j].length()) < text.length() && i > 0) {
+                    if (text[i + types[j].length()].isLetter() || text[i-1].isLetter()) {
+                        continue;
+                    }
+                }
+                f.setForeground(Qt::darkBlue);
+                setFormat(i, types[j].length(), f);
+                i += types[j].length();
+            }
+        }
+
+        for (int j = 0; j < keywords.length(); j++) {
+            if (keywords[j] == text.midRef(i, keywords[j].length())) {
+                if ( (i+keywords[j].length()) < text.length() && i > 0) {
+                    if (text[i + keywords[j].length()].isLetter() || text[i-1].isLetter()) {
+                        continue;
+                    }
+                }
+                f.setForeground(Qt::cyan);
+                setFormat(i, keywords[j].length(), f);
+                i += keywords[j].length();
+            }
+        }
+
+        for (int j = 0; j < preproc.length(); j++) {
+            if (preproc[j] == text.midRef(i, preproc[j].length())) {
+                if ( (i+preproc[j].length()) < text.length() && i > 0) {
+                    if (text[i + preproc[j].length()].isLetter() || text[i-1].isLetter()) {
+                        continue;
+                    }
+                }
+                f.setForeground(Qt::magenta);
+                setFormat(i, preproc[j].length(), f);
+                i += preproc[j].length();
+            }
+        }
+
     }
 }
 
