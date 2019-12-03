@@ -676,7 +676,9 @@ void MarkdownHighlighter::highlightCodeBlock(const QString& text) {
                 setCurrentBlockState(HighlighterState::CodeBash);
             } else if (text == "```") {
                 setCurrentBlockState(HighlighterState::CodeBlock);
-            } else {
+            } else if (lang == "php") {
+                setCurrentBlockState(HighlighterState::CodePHP);
+            }  else {
                 setCurrentBlockState(HighlighterState::CodeBlock);
             }
         } else if (previousBlockState() == HighlighterState::CodeBlock ||
@@ -799,6 +801,29 @@ void loadShData(QStringList &types, QStringList &keywords, QStringList &preproc)
     };
 }
 
+void loadPHPData(QStringList &types, QStringList &keywords, QStringList &preproc) {
+    types = QStringList{
+            "array", "var", "class"
+    };
+
+    keywords = QStringList{
+       "__halt_compiler", "abstract", "and", "as", "break", "callable", "case",
+       "catch", "clone", "const", "continue", "declare", "default",
+       "die", "do", "echo", "else", "elseif", "empty", "enddeclare", "endfor", "endforeach",
+       "endif", "endswitch", "endwhile", "eval", "exit", "extends", "final", "finally", "for",
+       "foreach", "function", "global", "goto", "if", "implements", "instanceof", "insteadof",
+       "interface", "isset", "list", "namespace", "new", "or", "print", "private", "protected",
+       "public", "return", "static", "switch", "throw", "trait", "try", "unset", "use", "while",
+       "xor", "yield", "from"
+    };
+
+    preproc = QStringList{
+       "include", "include_once", "require", "require_once", "__CLASS__", "__DIR__",
+       "__FILE__", "__FUNCTION__", "__LINE__", "__METHOD__", "__NAMESPACE__", "__TRAIT__"
+
+    };
+}
+
 /**
  * @brief Does the code syntax highlighting
  * @param text
@@ -823,6 +848,9 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
             break;
         case HighlighterState::CodeBash :
             loadShData(types, keywords, preproc);
+            break;
+        case HighlighterState::CodePHP :
+            loadPHPData(types, keywords, preproc);
             break;
     default:
         break;

@@ -84,7 +84,8 @@ public:
         CodeCpp = 200,
         CodeJs = 201,
         CodeC = 202,
-        CodeBash = 203
+        CodeBash = 203,
+        CodePHP = 204
     };
     Q_ENUMS(HighlighterState)
 
