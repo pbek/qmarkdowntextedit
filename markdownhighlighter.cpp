@@ -678,6 +678,8 @@ void MarkdownHighlighter::highlightCodeBlock(const QString& text) {
                 setCurrentBlockState(HighlighterState::CodeBlock);
             } else if (lang == "php") {
                 setCurrentBlockState(HighlighterState::CodePHP);
+            } else if (lang == "python" || lang == "py") {
+                setCurrentBlockState(HighlighterState::CodePython);
             } else if (lang == "qml") {
                 setCurrentBlockState(HighlighterState::CodeQML);
             } else {
@@ -835,6 +837,24 @@ void loadQMLData(QStringList &types, QStringList &keywords, QStringList &preproc
     };
 }
 
+
+void loadPythonData(QStringList &types, QStringList &keywords, QStringList &preproc) {
+    types = QStringList{
+            "class",
+    };
+
+    keywords = QStringList{
+       "False", "None", "True", "and", "as", "assert", "break", "continue",
+       "def", "del", "elif", "else", "except", "finally", "for", "from", "global",
+       "if", "in", "is", "lambda", "nonlocal", "not", "or", "pass", "raise",
+       "return", "try", "while", "with", "yield"
+    };
+
+    preproc = QStringList{
+            "import"
+    };
+}
+
 /**
  * @brief Does the code syntax highlighting
  * @param text
@@ -865,6 +885,9 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
             break;
         case HighlighterState::CodeQML :
             loadQMLData(types, keywords, preproc);
+            break;
+        case HighlighterState::CodePython :
+            loadPythonData(types, keywords, preproc);
             break;
     default:
         break;

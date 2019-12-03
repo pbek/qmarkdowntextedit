@@ -86,7 +86,8 @@ public:
         CodeC = 202,
         CodeBash = 203,
         CodePHP = 204,
-        CodeQML = 205
+        CodeQML = 205,
+        CodePython = 206
     };
     Q_ENUMS(HighlighterState)
 
