@@ -907,12 +907,6 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
     QTextCharFormat formatString = _formats[CodeString];
     QTextCharFormat formatNumLit = _formats[CodeNumLiteral];
     QTextCharFormat formatOther = _formats[CodeOther];
-    formatType.setBackground(f.background());
-    formatKeyword.setBackground(f.background());
-    formatComment.setBackground(f.background());
-    formatString.setBackground(f.background());
-    formatNumLit.setBackground(f.background());
-    formatOther.setBackground(f.background());
 
     for (int i=0; i< text.length(); i++) {
 
@@ -921,12 +915,10 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
             if (text[i] == QLatin1Char('/')) {
                 if((i+1) < text.length()){
                     if(text[i+1] == QLatin1Char('/')) {
-                        f.setForeground(Qt::darkGray);
                         setFormat(i, text.length(), formatComment);
                         return;
                     } else if(text[i+1] == QLatin1Char('*')) {
                         int next = text.indexOf(QLatin1String("*/"));
-                        f.setForeground(Qt::darkGray);
                         if (next == -1) {
                             setFormat(i, text.length(),  formatComment);
                             return;
