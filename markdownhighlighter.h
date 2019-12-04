@@ -87,7 +87,13 @@ public:
         CodeBash = 203,
         CodePHP = 204,
         CodeQML = 205,
-        CodePython = 206
+        CodePython = 206,
+        CodeRust = 207,
+        CodeJava = 208,
+        CodeCSharp = 209,
+        CodeGo = 210,
+        CodeV = 211,
+        CodeSQL = 212
     };
     Q_ENUMS(HighlighterState)
 
