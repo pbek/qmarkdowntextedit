@@ -935,7 +935,6 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                         }
                     }
                 }
-                return;
             //integer literal
             } else if (text[i].isNumber()) {
                 if ( ((i+1) < text.length() && (i-1) > 0 ) &&
