@@ -682,7 +682,19 @@ void MarkdownHighlighter::highlightCodeBlock(const QString& text) {
                 setCurrentBlockState(HighlighterState::CodePython);
             } else if (lang == "qml") {
                 setCurrentBlockState(HighlighterState::CodeQML);
-            } else {
+            } else if (lang == "rust") {
+                setCurrentBlockState(HighlighterState::CodeRust);
+            } else if (lang == "java") {
+                setCurrentBlockState(HighlighterState::CodeJava);
+            } else if (lang == "csharp") {
+                setCurrentBlockState(HighlighterState::CodeCSharp);
+            } else if (lang == "go") {
+                setCurrentBlockState(HighlighterState::CodeGo);
+            } else if (lang == "v") {
+                setCurrentBlockState(HighlighterState::CodeV);
+            } else if (lang == "sql") {
+                setCurrentBlockState(HighlighterState::CodeSQL);
+            }  else {
                 setCurrentBlockState(HighlighterState::CodeBlock);
             }
         } else if (previousBlockState() == HighlighterState::CodeBlock ||
@@ -840,7 +852,7 @@ void loadQMLData(QStringList &types, QStringList &keywords, QStringList &preproc
 
 void loadPythonData(QStringList &types, QStringList &keywords, QStringList &preproc) {
     types = QStringList{
-            "class",
+            "class"
     };
 
     keywords = QStringList{
@@ -852,6 +864,199 @@ void loadPythonData(QStringList &types, QStringList &keywords, QStringList &prep
 
     preproc = QStringList{
             "import"
+    };
+}
+
+void loadRustData(QStringList &types, QStringList &keywords, QStringList &preproc) {
+    types = QStringList{
+            "enum", "struct", "union"
+    };
+
+    keywords = QStringList{
+            "as", "use", "extern", "crate", "break", "const", "continue", "crate",
+            "else", "if", "let", "extern", "false", "fn", "for", "impl", "in",
+            "loop", "match", "mod", "move", "mut", "pub", "ref", "return",
+            "self", "static", "super", "trait", "true", "type", "unsafe",
+            "where", "while", "abstract", "alignof", "become", "box",
+            "do", "final", "offsetof", "override", "priv", "proc", "pure",
+            "sizeof", "typeof", "unsized", "virtual", "yield", "dyn", "async",
+            "await", "try", "macro"
+    };
+
+    preproc = QStringList{
+    };
+}
+
+void loadJavaData(QStringList &types, QStringList &keywords, QStringList &preproc) {
+    types = QStringList{
+            "boolean", "byte", "enum", "int", "long", "short", "float", "void",
+            "char", "class", "double", "String"
+    };
+
+    keywords = QStringList{
+            "break", "case", "catch", "const", "for", "continue", "default",
+            "do", "else", "extends", "while", "true",	"false", "null", "assert", "abstract",
+            "final", "finally", "goto", "if", "implements",
+            "instanceof", "interface", "native", "new", "package", "private", "protected",
+            "public", "return", "static", "strictfp", "super", "switch", "synchronized",
+            "this",	"throw", "throws", "transient",	"try", "volatile"
+    };
+
+    preproc = QStringList{
+            "import"
+    };
+}
+
+void loadCSharpData(QStringList &types, QStringList &keywords, QStringList &preproc) {
+    types = QStringList{
+            "bool", "byte", "char", "decimal",
+            "double", "enum", "float", "int",
+            "long", "sbyte", "short", "struct",
+            "unit", "ulong", "ushort", "class"
+    };
+
+    keywords = QStringList{
+            "abstract", "as", "base", "break", "case", "catch", "checked",
+            "const", "continue", "default", "delegate", "do", "else",
+            "event", "explicit", "extern", "false", "finally", "fixed",
+            "for", "foreach", "goto", "if", "implicit", "in", "interface",
+            "internal", "is", "lock", "namespace", "new", "null", "object",
+            "operator", "out", "override", "params", "private", "protected",
+            "public", "readonly", "ref", "return", "sealed", "short",
+            "sizeof", "stackalloc", "static", "switch", "this", "throw",
+            "true", "try", "typeof", "unit", "unchecked", "unsafe",
+            "using", "static", "virtual", "volatile", "while"
+    };
+
+    preproc = QStringList{
+
+    };
+}
+
+void loadGoData(QStringList &types, QStringList &keywords, QStringList &preproc) {
+    types = QStringList{
+           "var", "struct", "map"
+    };
+
+    keywords = QStringList{
+            "break", "default", "func", "interface", "select",
+            "case", "defer", "go", "chan", "else", "goto", "package",
+            "switch", "const", "fallthrough", "if", "range", "type",
+            "continue", "for", "import", "return"
+    };
+
+    preproc = QStringList{
+
+    };
+}
+
+void loadVData(QStringList &types, QStringList &keywords, QStringList &preproc) {
+    types = QStringList{
+           "struct", "map",
+            "bool", "string", "i8", "i16",  "int",  "i64",  "i128",
+            "byte",  "u16",  "u32",  "u64", "u128",
+            "rune", "f32", "f64", "byteptr", "voidptr"
+    };
+
+    keywords = QStringList{
+            "break", "const", "continue", "defer", "else", "enum",
+            "fn", "for", "go", "goto", "if", "import", "in",
+            "interface", "match", "module", "mut", "none",
+            "or", "pub", "return", "type"
+    };
+
+    preproc = QStringList{
+
+    };
+}
+
+void loadSQLData(QStringList &types, QStringList &keywords, QStringList &preproc) {
+    types = QStringList{
+    };
+
+    keywords = QStringList{
+            "ABSOLUTE", "ACTION", "ADD", "ADMIN",
+            "AFTER", "AGGREGATE", "ALIAS", "ALL",
+            "ALLOCATE", "ALTER", "AND", "ANY",
+            "ARE", "ARRAY", "AS", "ASC",
+            "ASSERTION", "ASSERTION", "AT", "ATOMIC",
+            "AUTHORIZATION", "BEFORE", "BEGIN", "BIGINT",
+            "BINARY", "BIT", "BLOB", "BOOLEAN",
+            "BOTH", "BREADTH", "BY", "CALL",
+            "CASCADE", "CASCADED", "CASE", "CAST",
+            "CATALOG", "CHAR", "CHARACTER", "CHECK",
+            "CLASS", "CLOB", "CLOSE", "COLLATE",
+            "COLLATION", "COLLECT", "COLUMN", "COMMIT",
+            "COMPLETION", "CONDITION", "CONNECT", "CONNECTION",
+            "CONSTRAINT", "CONSTRAINTS", "CONSTRUCTOR", "CONTAINS",
+            "CONTINUE", "CORRESPONDING", "CREATE", "CROSS",
+            "CUBE", "CURRENT", "CURRENT_DATE", "CURRENT_PATH",
+            "CURRENT_ROLE", "CURRENT_TIME", "CURRENT_TIMESTAMP", "CURRENT_USER",
+            "CURSOR", "CYCLE", "DATA", "DATALINK",
+            "DATE", "DAY", "DEALLOCATE", "DEC",
+            "DECIMAL", "DECLARE", "DEFAULT", "DEFERRABLE",
+            "DELETE", "DEPTH", "DEREF", "DESC",
+            "DESCRIPTOR", "DESTRUCTOR", "DIAGNOSTICS", "DICTIONARY",
+            "DISCONNECT", "DO", "DOMAIN", "DOUBLE",
+            "DROP", "ELEMENT", "END", "EXEC", "EQUALS",
+            "ESCAPE", "EXCEPT", "EXCEPTION", "EXECUTE",
+            "EXIT", "EXPAND", "EXPANDING", "FALSE",
+            "FIRST", "FLOAT", "FOR", "FOREIGN",
+            "FREE", "FROM", "FUNCTION", "FUSION",
+            "GENERAL", "GET", "GLOBAL", "GOTO",
+            "GROUP", "GROUPING", "HANDLER", "HASH",
+            "HOUR", "IDENTITY", "IF", "IGNORE",
+            "IMMEDIATE", "IN", "INDICATOR", "INITIALIZE",
+            "INITIALLY", "INNER", "INOUT", "INPUT",
+            "INSERT", "INT", "INTEGER", "INTERSECT",
+            "INTERSECTION", "INTERVAL", "INTO", "IS",
+            "ISOLATION", "ITERATE", "JOIN", "KEY",
+            "LANGUAGE", "LARGE", "LAST", "LATERAL",
+            "LEADING", "LEAVE", "LEFT", "LESS",
+            "LEVEL", "LIKE", "LIMIT", "LOCAL",
+            "LOCALTIME", "LOCALTIMESTAMP", "LOCATOR", "LOOP",
+            "MATCH", "MEMBER", "MEETS", "MERGE",
+            "MINUTE", "MODIFIES", "MODIFY", "MODULE",
+            "MONTH", "MULTISET", "NAMES", "NATIONAL",
+            "NATURAL", "NCHAR", "NCLOB", "NEW",
+            "NEXT", "NO", "NONE", "NORMALIZE",
+            "NOT", "NULL", "NUMERIC", "OBJECT",
+            "OF", "OFF", "OLD", "ON",
+            "ONLY", "OPEN", "OPERATION", "OPTION",
+            "OR", "ORDER", "ORDINALITY", "OUT",
+            "OUTER", "OUTPUT", "PAD", "PARAMETER",
+            "PARAMETERS", "PARTIAL", "PATH", "PERIOD",
+            "POSTFIX", "PRECEDES", "PRECISION", "PREFIX",
+            "PREORDER", "PREPARE", "PRESERVE", "PRIMARY",
+            "PRIOR", "PRIVILEGES", "PROCEDURE", "PUBLIC",
+            "READ", "READS", "REAL", "RECURSIVE",
+            "REDO", "REF", "REFERENCES", "REFERENCING",
+            "RELATIVE", "REPEAT", "RESIGNAL", "RESTRICT",
+            "RESULT", "RETURN", "RETURNS", "REVOKE",
+            "RIGHT", "ROLE", "ROLLBACK", "ROLLUP",
+            "ROUTINE", "ROW", "ROWS", "SAVEPOINT",
+            "SCHEMA", "SCROLL", "SEARCH", "SECOND",
+            "SECTION", "SELECT", "SEQUENCE", "SESSION",
+            "SESSION_USER", "SET", "SETS", "SIGNAL",
+            "SIZE", "SMALLINT", "SPECIFIC", "SPECIFICTYPE",
+            "SQL", "SQLEXCEPTION", "SQLSTATE", "SQLWARNING",
+            "START", "STATE", "STATIC", "STRUCTURE",
+            "SUBMULTISET", "SUCCEEDS", "SUM", "SYSTEM_USER",
+            "TABLE", "TABLESAMPLE", "TEMPORARY", "TERMINATE",
+            "THAN", "THEN", "TIME", "TIMESTAMP",
+            "TIMEZONE_HOUR", "TIMEZONE_MINUTE", "TO", "TRAILING",
+            "TRANSACTION", "TRANSLATION", "TREAT", "TRIGGER",
+            "TRUE", "UESCAPE", "UNDER", "UNDO",
+            "UNION", "UNIQUE", "UNKNOWN", "UNTIL",
+            "UPDATE", "USAGE", "USER", "USING",
+            "VALUE", "VALUES", "VARCHAR", "VARIABLE",
+            "VARYING", "VIEW", "WHEN", "WHENEVER",
+            "WHERE", "WHILE", "WITH", "WRITE",
+            "YEAR", "ZONE"
+    };
+
+    preproc = QStringList{
+
     };
 }
 
@@ -891,6 +1096,24 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
         case HighlighterState::CodePython :
             loadPythonData(types, keywords, preproc);
             comment = QLatin1Char('#');
+            break;
+        case HighlighterState::CodeRust :
+            loadRustData(types, keywords, preproc);
+            break;
+        case HighlighterState::CodeJava :
+            loadJavaData(types, keywords, preproc);
+            break;
+        case HighlighterState::CodeCSharp :
+            loadCSharpData(types, keywords, preproc);
+            break;
+        case HighlighterState::CodeGo :
+            loadGoData(types, keywords, preproc);
+            break;
+        case HighlighterState::CodeV :
+            loadVData(types, keywords, preproc);
+            break;
+        case HighlighterState::CodeSQL :
+            loadSQLData(types, keywords, preproc);
             break;
     default:
         break;
