@@ -866,6 +866,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
     QStringList types,
                 keywords,
                 preproc;
+    QChar comment;
 
     switch (currentBlockState()) {
         case HighlighterState::CodeCpp :
@@ -879,6 +880,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
             break;
         case HighlighterState::CodeBash :
             loadShData(types, keywords, preproc);
+            comment = QLatin1Char('#');
             break;
         case HighlighterState::CodePHP :
             loadPHPData(types, keywords, preproc);
@@ -888,6 +890,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
             break;
         case HighlighterState::CodePython :
             loadPythonData(types, keywords, preproc);
+            comment = QLatin1Char('#');
             break;
     default:
         break;
@@ -935,6 +938,9 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                         }
                     }
                 }
+            } else if (text[i] == comment) {
+                setFormat(i, text.length(), formatComment);
+                return;
             //integer literal
             } else if (text[i].isNumber()) {
                 if ( ((i+1) < text.length() && (i-1) > 0 ) &&
