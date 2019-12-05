@@ -64,6 +64,7 @@ public slots:
     bool handleBracketRemoval();
     void centerTheCursor();
     void undo();
+    void moveTextUpDown(bool up);
 
 protected:
     MarkdownHighlighter *_highlighter;

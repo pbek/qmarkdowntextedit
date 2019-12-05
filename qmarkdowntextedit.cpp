@@ -263,13 +263,15 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             return true;
 #ifndef Q_OS_MAC
         } else if ((keyEvent->key() == Qt::Key_Down) &&
-                 keyEvent->modifiers().testFlag(Qt::ControlModifier)) {
+                 keyEvent->modifiers().testFlag(Qt::ControlModifier) &&
+                 !keyEvent->modifiers().testFlag(Qt::ShiftModifier)) {
             // scroll the page down
             auto *scrollBar = verticalScrollBar();
             scrollBar->setSliderPosition(scrollBar->sliderPosition() + 1);
             return true;
         } else if ((keyEvent->key() == Qt::Key_Up) &&
-                 keyEvent->modifiers().testFlag(Qt::ControlModifier)) {
+                 keyEvent->modifiers().testFlag(Qt::ControlModifier) &&
+                 !keyEvent->modifiers().testFlag(Qt::ShiftModifier)) {
             // scroll the page up
             auto *scrollBar = verticalScrollBar();
             scrollBar->setSliderPosition(scrollBar->sliderPosition() - 1);
@@ -308,6 +310,16 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
                    (keyEvent->modifiers().testFlag(Qt::ControlModifier)) &&
                    !(keyEvent->modifiers().testFlag(Qt::ShiftModifier))) {
             undo();
+            return true;
+        } else if ((keyEvent->key() == Qt::Key_Down) &&
+                   (keyEvent->modifiers().testFlag(Qt::ControlModifier)) &&
+                   (keyEvent->modifiers().testFlag(Qt::ShiftModifier))) {
+            moveTextUpDown(false);
+            return true;
+        } else if ((keyEvent->key() == Qt::Key_Up) &&
+                   (keyEvent->modifiers().testFlag(Qt::ControlModifier)) &&
+                   (keyEvent->modifiers().testFlag(Qt::ShiftModifier))) {
+            moveTextUpDown(true);
             return true;
         }
 
@@ -445,6 +457,67 @@ void QMarkdownTextEdit::undo()
         QPlainTextEdit::undo();
         return;
     }
+}
+
+void QMarkdownTextEdit::moveTextUpDown(bool up){
+
+    QTextCursor cursor = textCursor();
+    QTextCursor move = cursor;
+
+    move.setVisualNavigation(false);
+
+    move.beginEditBlock();     //open an edit block to keep undo operations sane
+    bool hasSelection = cursor.hasSelection();
+
+    if (hasSelection) {
+        //if there's a selection inside the block, we select the whole block
+        move.setPosition(cursor.selectionStart());
+        move.movePosition(QTextCursor::StartOfBlock);
+        move.setPosition(cursor.selectionEnd(), QTextCursor::KeepAnchor);
+        move.movePosition(move.atBlockStart() ? QTextCursor::Left: QTextCursor::EndOfBlock,
+                          QTextCursor::KeepAnchor);
+    } else {
+        move.movePosition(QTextCursor::StartOfBlock);
+        move.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
+    }
+
+    //get the text of the current block
+    QString text = move.selectedText();
+
+    move.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor);
+    move.removeSelectedText();
+
+    if (up) { // up key
+        move.movePosition(QTextCursor::PreviousBlock);
+        move.insertBlock();
+        move.movePosition(QTextCursor::Left);
+    } else { //down key
+        move.movePosition(QTextCursor::EndOfBlock);
+        if (move.atBlockStart()) { // empty block
+            move.movePosition(QTextCursor::NextBlock);
+            move.insertBlock();
+            move.movePosition(QTextCursor::Left);
+        } else {
+            move.insertBlock();
+        }
+    }
+
+    int start = move.position();
+    move.clearSelection();
+    move.insertText(text);
+    int end = move.position();
+
+    //reselect
+    if (hasSelection) {
+        move.setPosition(end);
+        move.setPosition(start, QTextCursor::KeepAnchor);
+    } else {
+        move.setPosition(start);
+    }
+
+    move.endEditBlock();
+
+    setTextCursor(move);
 }
 
 /**
