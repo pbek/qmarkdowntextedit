@@ -23,6 +23,7 @@
 #include <QRegularExpressionMatchIterator>
 #include <utility>
 
+QHash<QString, MarkdownHighlighter::HighlighterState> MarkdownHighlighter::langStringToEnum;
 
 /**
  * Markdown syntax highlighting
@@ -432,6 +433,36 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize) {
 }
 
 /**
+ * @brief initializes the langStringToEnum
+ */
+void MarkdownHighlighter::initCodeLangs()
+{
+    MarkdownHighlighter::langStringToEnum =
+            QHash<QString, MarkdownHighlighter::HighlighterState> {
+        {QLatin1String("bash"),        MarkdownHighlighter::CodeBash},
+        {QLatin1String("c"),           MarkdownHighlighter::CodeC},
+        {QLatin1String("cpp"),         MarkdownHighlighter::CodeCpp},
+        {QLatin1String("cxx"),         MarkdownHighlighter::CodeCpp},
+        {QLatin1String("c++"),         MarkdownHighlighter::CodeCpp},
+        {QLatin1String("c#"),          MarkdownHighlighter::CodeCSharp},
+        {QLatin1String("csharp"),      MarkdownHighlighter::CodeCSharp},
+        {QLatin1String("go"),          MarkdownHighlighter::CodeCSharp},
+        {QLatin1String("java"),        MarkdownHighlighter::CodeJava},
+        {QLatin1String("javascript"),  MarkdownHighlighter::CodeJava},
+        {QLatin1String("js"),          MarkdownHighlighter::CodeJs},
+        {QLatin1String("php"),         MarkdownHighlighter::CodePHP},
+        {QLatin1String("py"),          MarkdownHighlighter::CodePython},
+        {QLatin1String("python"),      MarkdownHighlighter::CodePython},
+        {QLatin1String("qml"),         MarkdownHighlighter::CodeQML},
+        {QLatin1String("rust"),        MarkdownHighlighter::CodeRust},
+        {QLatin1String("sh"),          MarkdownHighlighter::CodeBash},
+        {QLatin1String("sql"),         MarkdownHighlighter::CodeSQL},
+        {QLatin1String("v"),           MarkdownHighlighter::CodeV}
+    };
+
+}
+
+/**
  * Sets the text formats
  *
  * @param formats
@@ -665,37 +696,14 @@ void MarkdownHighlighter::highlightCodeBlock(const QString& text) {
     if (text.startsWith("```")) {
         if (previousBlockState() != HighlighterState::CodeBlock &&
                 previousBlockState() < 200) {
-            QStringRef lang = text.midRef(3, text.length());
-            if (lang == "cpp") {
-                setCurrentBlockState(HighlighterState::CodeCpp);
-            } else if (lang == "js") {
-                setCurrentBlockState(HighlighterState::CodeJs);
-            } else if (lang == "c") {
-                setCurrentBlockState(HighlighterState::CodeC);
-            } else if (lang == "bash" || lang == "sh") {
-                setCurrentBlockState(HighlighterState::CodeBash);
-            } else if (text == "```") {
-                setCurrentBlockState(HighlighterState::CodeBlock);
-            } else if (lang == "php") {
-                setCurrentBlockState(HighlighterState::CodePHP);
-            } else if (lang == "python" || lang == "py") {
-                setCurrentBlockState(HighlighterState::CodePython);
-            } else if (lang == "qml") {
-                setCurrentBlockState(HighlighterState::CodeQML);
-            } else if (lang == "rust") {
-                setCurrentBlockState(HighlighterState::CodeRust);
-            } else if (lang == "java") {
-                setCurrentBlockState(HighlighterState::CodeJava);
-            } else if (lang == "csharp") {
-                setCurrentBlockState(HighlighterState::CodeCSharp);
-            } else if (lang == "go") {
-                setCurrentBlockState(HighlighterState::CodeGo);
-            } else if (lang == "v") {
-                setCurrentBlockState(HighlighterState::CodeV);
-            } else if (lang == "sql") {
-                setCurrentBlockState(HighlighterState::CodeSQL);
-            }  else {
-                setCurrentBlockState(HighlighterState::CodeBlock);
+            QString lang = text.mid(3, text.length());
+            MarkdownHighlighter::HighlighterState progLang = langStringToEnum.value(lang);
+
+            if (progLang >= HighlighterState::CodeCpp) {
+                setCurrentBlockState(progLang);
+            } else {
+                previousBlockState() == HighlighterState::CodeBlock ?
+                            setCurrentBlockState(CodeBlockEnd) : setCurrentBlockState(CodeBlock);
             }
         } else if (previousBlockState() == HighlighterState::CodeBlock ||
                    previousBlockState() >= 200) {
