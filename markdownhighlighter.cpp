@@ -946,7 +946,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                 if (word == text.midRef(i, word.length())) {
                     if ( i + word.length() == text.length() ||
                          !text.at(i + word.length()).isLetter()) {
-                        setFormat(i-1, word.length()+1, formatBuiltIn);
+                        setFormat(i, word.length(), formatBuiltIn);
                         i += word.length();
                     }
                 }
