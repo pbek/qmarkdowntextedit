@@ -13,8 +13,8 @@
 
 void loadXXXData(QMultiHash<QChar, QString> &types,
              QMultiHash<QChar, QString> &keywords,
-             QMultiHash<QChar, QString> &literals,
              QMultiHash<QChar, QString> &builtin,
+             QMultiHash<QChar, QString> &literals,
              QMultiHash<QChar, QString> &other){
     keywords = {
     };
@@ -36,8 +36,8 @@ void loadXXXData(QMultiHash<QChar, QString> &types,
 
 void loadCppData(QMultiHash<QChar, QString> &types,
              QMultiHash<QChar, QString> &keywords,
-             QMultiHash<QChar, QString> &literals,
              QMultiHash<QChar, QString> &builtin,
+             QMultiHash<QChar, QString> &literals,
              QMultiHash<QChar, QString> &other){
     keywords = {
         {QLatin1Char('a'), QLatin1String("asm")},
@@ -187,6 +187,7 @@ void loadCppData(QMultiHash<QChar, QString> &types,
         {QLatin1Char('l'), QLatin1String("log")},
         {QLatin1Char('m'), QLatin1String("malloc")},
         {QLatin1Char('r'), QLatin1String("realloc")},
+        {QLatin1Char('m'), QLatin1String("main")},
         {QLatin1Char('m'), QLatin1String("memchr")},
         {QLatin1Char('m'), QLatin1String("memcmp")},
         {QLatin1Char('m'), QLatin1String("memcpy")},
@@ -248,8 +249,8 @@ void loadCppData(QMultiHash<QChar, QString> &types,
 
 void loadShellData(QMultiHash<QChar, QString> &types,
              QMultiHash<QChar, QString> &keywords,
-             QMultiHash<QChar, QString> &literals,
              QMultiHash<QChar, QString> &builtin,
+             QMultiHash<QChar, QString> &literals,
              QMultiHash<QChar, QString> &other){
     keywords = {
         {QLatin1Char('i'), QLatin1String("if")},
@@ -389,8 +390,8 @@ void loadShellData(QMultiHash<QChar, QString> &types,
 
 void loadJSData(QMultiHash<QChar, QString> &types,
              QMultiHash<QChar, QString> &keywords,
-             QMultiHash<QChar, QString> &literals,
              QMultiHash<QChar, QString> &builtin,
+             QMultiHash<QChar, QString> &literals,
              QMultiHash<QChar, QString> &other){
     keywords = {
         {QLatin1Char('i'), QLatin1String("in")},
@@ -522,8 +523,8 @@ void loadJSData(QMultiHash<QChar, QString> &types,
 
 void loadPHPData(QMultiHash<QChar, QString> &types,
              QMultiHash<QChar, QString> &keywords,
-             QMultiHash<QChar, QString> &literals,
              QMultiHash<QChar, QString> &builtin,
+             QMultiHash<QChar, QString> &literals,
              QMultiHash<QChar, QString> &other){
     keywords = {
         {QLatin1Char('a'), QLatin1String("and")},
@@ -636,8 +637,8 @@ void loadPHPData(QMultiHash<QChar, QString> &types,
 
 void loadQMLData(QMultiHash<QChar, QString> &types,
              QMultiHash<QChar, QString> &keywords,
-             QMultiHash<QChar, QString> &literals,
              QMultiHash<QChar, QString> &builtin,
+             QMultiHash<QChar, QString> &literals,
              QMultiHash<QChar, QString> &other){
     keywords = {
         {QLatin1Char('d'), QLatin1String("default")},
@@ -759,8 +760,8 @@ void loadQMLData(QMultiHash<QChar, QString> &types,
 
 void loadPythonData(QMultiHash<QChar, QString> &types,
              QMultiHash<QChar, QString> &keywords,
-             QMultiHash<QChar, QString> &literals,
              QMultiHash<QChar, QString> &builtin,
+             QMultiHash<QChar, QString> &literals,
              QMultiHash<QChar, QString> &other){
     keywords = {
         {QLatin1Char('a'), QLatin1String("and")},
@@ -900,8 +901,8 @@ void loadPythonData(QMultiHash<QChar, QString> &types,
 
 void loadRustData(QMultiHash<QChar, QString> &types,
              QMultiHash<QChar, QString> &keywords,
-             QMultiHash<QChar, QString> &literals,
              QMultiHash<QChar, QString> &builtin,
+             QMultiHash<QChar, QString> &literals,
              QMultiHash<QChar, QString> &other){
     keywords = {
         {QLatin1Char('a'), QLatin1String("abstract")},
@@ -1035,8 +1036,8 @@ void loadRustData(QMultiHash<QChar, QString> &types,
 
 void loadJavaData(QMultiHash<QChar, QString> &types,
              QMultiHash<QChar, QString> &keywords,
-             QMultiHash<QChar, QString> &literals,
              QMultiHash<QChar, QString> &builtin,
+             QMultiHash<QChar, QString> &literals,
              QMultiHash<QChar, QString> &other){
     keywords = {
         {QLatin1Char('a'), QLatin1String("abstract")},
@@ -1125,8 +1126,8 @@ void loadJavaData(QMultiHash<QChar, QString> &types,
 
 void loadCSharpData(QMultiHash<QChar, QString> &types,
              QMultiHash<QChar, QString> &keywords,
-             QMultiHash<QChar, QString> &literals,
              QMultiHash<QChar, QString> &builtin,
+             QMultiHash<QChar, QString> &literals,
              QMultiHash<QChar, QString> &other){
     keywords = {
         {QLatin1Char('a'), QLatin1String("abstract")},
@@ -1260,8 +1261,8 @@ void loadCSharpData(QMultiHash<QChar, QString> &types,
 
 void loadGoData(QMultiHash<QChar, QString> &types,
              QMultiHash<QChar, QString> &keywords,
-             QMultiHash<QChar, QString> &literals,
              QMultiHash<QChar, QString> &builtin,
+             QMultiHash<QChar, QString> &literals,
              QMultiHash<QChar, QString> &other){
     keywords = {
         {QLatin1Char('b'), QLatin1String("break")},
@@ -1347,8 +1348,8 @@ void loadGoData(QMultiHash<QChar, QString> &types,
 
 void loadVData(QMultiHash<QChar, QString> &types,
              QMultiHash<QChar, QString> &keywords,
-             QMultiHash<QChar, QString> &literals,
              QMultiHash<QChar, QString> &builtin,
+             QMultiHash<QChar, QString> &literals,
              QMultiHash<QChar, QString> &other){
     keywords = {
         {QLatin1Char('b'), QLatin1String("break")},
@@ -1410,8 +1411,8 @@ void loadVData(QMultiHash<QChar, QString> &types,
 
 void loadSQLData(QMultiHash<QChar, QString> &types,
              QMultiHash<QChar, QString> &keywords,
-             QMultiHash<QChar, QString> &literals,
              QMultiHash<QChar, QString> &builtin,
+             QMultiHash<QChar, QString> &literals,
              QMultiHash<QChar, QString> &other){
     keywords = {
         {QLatin1Char('A'), QLatin1String("ACTION")},
