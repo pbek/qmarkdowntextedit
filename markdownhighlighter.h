@@ -74,6 +74,7 @@ public:
         CodeType = 1003,
         CodeOther = 1004,
         CodeNumLiteral = 1005,
+        CodeBuiltIn = 1006,
 
         // internal
         CodeBlockEnd = 100,

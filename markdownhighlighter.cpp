@@ -434,6 +434,11 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize) {
     format.setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
     format.setForeground(QColor("#AE81FF"));
     _formats[CodeNumLiteral] = format;
+
+    format = QTextCharFormat();
+    format.setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+    format.setForeground(Qt::green);
+    _formats[CodeBuiltIn] = format;
 }
 
 /**
@@ -810,6 +815,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
     QTextCharFormat formatComment = _formats[CodeComment];
     QTextCharFormat formatString = _formats[CodeString];
     QTextCharFormat formatNumLit = _formats[CodeNumLiteral];
+    QTextCharFormat formatBuiltIn = _formats[CodeBuiltIn];
     QTextCharFormat formatOther = _formats[CodeOther];
 
     for (int i=0; i< text.length(); i++) {
@@ -940,7 +946,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                 if (word == text.midRef(i, word.length())) {
                     if ( i + word.length() == text.length() ||
                          !text.at(i + word.length()).isLetter()) {
-                        setFormat(i-1, word.length()+1, formatOther);
+                        setFormat(i-1, word.length()+1, formatBuiltIn);
                         i += word.length();
                     }
                 }
