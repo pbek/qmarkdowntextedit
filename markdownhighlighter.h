@@ -74,6 +74,7 @@ public:
         CodeType = 1003,
         CodeOther = 1004,
         CodeNumLiteral = 1005,
+        CodeBuiltIn = 1006,
 
         // internal
         CodeBlockEnd = 100,
@@ -159,8 +160,11 @@ protected:
                      const QRegularExpressionMatch &match,
                      const int capturedGroup);
 
+    static void initCodeLangs();
+
     QVector<HighlightingRule> _highlightingRulesPre;
     QVector<HighlightingRule> _highlightingRulesAfter;
+    static QHash<QString, HighlighterState> langStringToEnum;
     QVector<QTextBlock> _dirtyTextBlocks;
     QHash<HighlighterState, QTextCharFormat> _formats;
     QTimer *_timer;
