@@ -49,6 +49,9 @@ MarkdownHighlighter::MarkdownHighlighter(QTextDocument *parent,
 
     // initialize the text formats
     initTextFormats();
+
+    //initialize code langs
+    initCodeLangs();
 }
 
 /**
@@ -695,7 +698,7 @@ void MarkdownHighlighter::highlightCodeBlock(const QString& text) {
 
     if (text.startsWith(QLatin1String("```"))) {
         if (previousBlockState() != HighlighterState::CodeBlock &&
-            previousBlockState() < MarkdownHighlighter::CodeCpp) {
+            previousBlockState() < HighlighterState::CodeCpp) {
             QString lang = text.mid(3, text.length());
             MarkdownHighlighter::HighlighterState progLang = langStringToEnum.value(lang);
 
@@ -706,7 +709,7 @@ void MarkdownHighlighter::highlightCodeBlock(const QString& text) {
                             setCurrentBlockState(CodeBlockEnd) : setCurrentBlockState(CodeBlock);
             }
         } else if (previousBlockState() == HighlighterState::CodeBlock ||
-                   previousBlockState() >= 200) {
+                   previousBlockState() >= HighlighterState::CodeCpp) {
             setCurrentBlockState(HighlighterState::CodeBlockEnd);
         }
 
