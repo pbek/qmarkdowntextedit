@@ -810,13 +810,13 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
     setFormat(0, text.length(), f);
 
     //prepare formats
-    QTextCharFormat formatType = _formats[CodeType];
-    QTextCharFormat formatKeyword = _formats[CodeKeyWord];
-    QTextCharFormat formatComment = _formats[CodeComment];
-    QTextCharFormat formatString = _formats[CodeString];
-    QTextCharFormat formatNumLit = _formats[CodeNumLiteral];
-    QTextCharFormat formatBuiltIn = _formats[CodeBuiltIn];
-    QTextCharFormat formatOther = _formats[CodeOther];
+    const QTextCharFormat &formatType = _formats[CodeType];
+    const QTextCharFormat &formatKeyword = _formats[CodeKeyWord];
+    const QTextCharFormat &formatComment = _formats[CodeComment];
+    const QTextCharFormat &formatString = _formats[CodeString];
+    const QTextCharFormat &formatNumLit = _formats[CodeNumLiteral];
+    const QTextCharFormat &formatBuiltIn = _formats[CodeBuiltIn];
+    const QTextCharFormat &formatOther = _formats[CodeOther];
 
     for (int i=0; i< text.length(); i++) {
 
@@ -901,7 +901,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
         // AND the current char is present in the data structure
         if ( ( i == 0 || !text[i-1].isLetter()) && types.contains(text[i])) {
             wordList = types.values(text[i]);
-            Q_FOREACH(QString word, wordList) {
+            Q_FOREACH(const QString &word, wordList) {
                 if (word == text.midRef(i, word.length())) {
                     //check if we are at the end of text OR if we have a complete word
                     if ( i + word.length() == text.length() ||
@@ -915,7 +915,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
 
         if (( i == 0 || !text[i-1].isLetter()) && keywords.contains(text[i])) {
             wordList = keywords.values(text[i]);
-            Q_FOREACH(QString word, wordList) {
+            Q_FOREACH(const QString &word, wordList) {
                 if (word == text.midRef(i, word.length())) {
                     if ( i + word.length() == text.length() ||
                          !text.at(i + word.length()).isLetter()) {
@@ -929,7 +929,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
 
         if (( i == 0 || !text[i-1].isLetter()) && literals.contains(text[i])) {
             wordList = literals.values(text[i]);
-            Q_FOREACH(QString word, wordList) {
+            Q_FOREACH(const QString &word, wordList) {
                 if (word == text.midRef(i, word.length())) {
                     if ( i + word.length() == text.length() ||
                          !text.at(i + word.length()).isLetter()) {
@@ -942,7 +942,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
 
         if (( i == 0 || !text[i-1].isLetter()) && builtin.contains(text[i])) {
             wordList = builtin.values(text[i]);
-            Q_FOREACH(QString word, wordList) {
+            Q_FOREACH(const QString &word, wordList) {
                 if (word == text.midRef(i, word.length())) {
                     if ( i + word.length() == text.length() ||
                          !text.at(i + word.length()).isLetter()) {
@@ -955,7 +955,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
 
         if (( i == 0 || !text[i-1].isLetter()) && others.contains(text[i])) {
             wordList = others.values(text[i]);
-            Q_FOREACH(QString word, wordList) {
+            Q_FOREACH(const QString &word, wordList) {
                 if (word == text.midRef(i, word.length())) {
                     if ( i + word.length() == text.length() ||
                          !text.at(i + word.length()).isLetter()) {
