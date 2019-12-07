@@ -693,9 +693,9 @@ void MarkdownHighlighter::setCurrentBlockMargin(
  */
 void MarkdownHighlighter::highlightCodeBlock(const QString& text) {
 
-    if (text.startsWith("```")) {
+    if (text.startsWith(QLatin1String("```"))) {
         if (previousBlockState() != HighlighterState::CodeBlock &&
-                previousBlockState() < 200) {
+            previousBlockState() < MarkdownHighlighter::CodeCpp) {
             QString lang = text.mid(3, text.length());
             MarkdownHighlighter::HighlighterState progLang = langStringToEnum.value(lang);
 
