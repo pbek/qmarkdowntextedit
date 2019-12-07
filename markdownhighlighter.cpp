@@ -759,42 +759,42 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
             loadCppData(types, keywords, builtin, literals, others);
             break;
         case HighlighterState::CodeJs :
-//            loadJSData(types, keywords, preproc);
+            loadJSData(types, keywords, builtin, literals, others);
             break;
         case HighlighterState::CodeC :
-//            loadCData(types, keywords, preproc);
+            loadCppData(types, keywords, builtin, literals, others);
             break;
         case HighlighterState::CodeBash :
-//            loadShData(types, keywords, preproc);
+            loadShellData(types, keywords, builtin, literals, others);
             comment = QLatin1Char('#');
             break;
         case HighlighterState::CodePHP :
-//            loadPHPData(types, keywords, preproc);
+            loadPHPData(types, keywords, builtin, literals, others);
             break;
         case HighlighterState::CodeQML :
-//            loadQMLData(types, keywords, preproc);
+            loadQMLData(types, keywords, builtin, literals, others);
             break;
         case HighlighterState::CodePython :
-//            loadPythonData(types, keywords, preproc);
+            loadPythonData(types, keywords, builtin, literals, others);
             comment = QLatin1Char('#');
             break;
         case HighlighterState::CodeRust :
-//            loadRustData(types, keywords, preproc);
+            loadRustData(types, keywords, builtin, literals, others);
             break;
         case HighlighterState::CodeJava :
-//            loadJavaData(types, keywords, preproc);
+            loadJavaData(types, keywords, builtin, literals, others);
             break;
         case HighlighterState::CodeCSharp :
-//            loadCSharpData(types, keywords, preproc);
+            loadCSharpData(types, keywords, builtin, literals, others);
             break;
         case HighlighterState::CodeGo :
-//            loadGoData(types, keywords, preproc);
+            loadGoData(types, keywords, builtin, literals, others);
             break;
         case HighlighterState::CodeV :
-//            loadVData(types, keywords, preproc);
+            loadVData(types, keywords, builtin, literals, others);
             break;
         case HighlighterState::CodeSQL :
-//            loadSQLData(types, keywords, preproc);
+            loadSQLData(types, keywords, builtin, literals, others);
             break;
     default:
         break;
