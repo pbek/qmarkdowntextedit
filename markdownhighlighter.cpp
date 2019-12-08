@@ -22,7 +22,7 @@
 #include <QRegularExpressionMatch>
 #include <QRegularExpressionMatchIterator>
 #include <utility>
-#include <qownlanguagedata.h>
+#include "qownlanguagedata.h"
 
 QHash<QString, MarkdownHighlighter::HighlighterState> MarkdownHighlighter::langStringToEnum;
 
