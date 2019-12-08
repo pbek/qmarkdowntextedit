@@ -845,12 +845,27 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                 return;
             //integer literal
             } else if (text[i].isNumber()) {
-                if ( ((i+1) < text.length() && (i-1) > 0 ) &&
-                     (text[i+1].isLetter() || text[i-1].isLetter()) ) {
-                    i++;
-                    continue;
+                int prevBound = text.lastIndexOf(QLatin1Char(' '), i);
+                int nextBoundary = text.indexOf(QLatin1Char(' '), i);
+                prevBound = prevBound == -1 ? 0 : prevBound+1;
+                nextBoundary = nextBoundary == -1 ? i : nextBoundary;
+                bool allNum = true;
+                for (int j = prevBound; j < nextBoundary; j++) {
+                    if (!text[j].isNumber()) {
+                        //hex or decimal
+                        if (text[j] == QLatin1Char('x') || text[j] == QLatin1Char('.'))
+                            continue;
+                        allNum = false;
+                        break;
+                    }
                 }
-                setFormat(i, 1, formatNumLit);
+                if (allNum) {
+                    i = nextBoundary;
+                    setFormat(prevBound, nextBoundary, formatNumLit);
+                } else {
+                    i = nextBoundary;
+                    setFormat(prevBound, nextBoundary, _formats[CodeBlock]);
+                }
             //string literal
             } else if (text[i] == QLatin1Char('\"')) {
                 int pos = i;
