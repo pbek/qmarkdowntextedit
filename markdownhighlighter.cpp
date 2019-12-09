@@ -838,7 +838,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
     const QTextCharFormat &formatBuiltIn = _formats[CodeBuiltIn];
     const QTextCharFormat &formatOther = _formats[CodeOther];
 
-    for (int i=0; i< text.length(); i++) {
+    for (int i=0; i< text.length(); i++) {  //dont pre inc this
 
         while (!text[i].isLetter()) {
             //inline comment
@@ -894,19 +894,19 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
             } else if (text[i] == QLatin1Char('\"')) {
                 int pos = i;
                 int cnt = 1;
-                i++;
+                ++i;
                 //bound check
                 if ( (i+1) >= text.length()) return;
                 while (i < text.length()) {
                     if (text[i] == QLatin1Char('\"')) {
-                        cnt++;
-                        i++;
+                        ++cnt;
+                        ++i;
                         break;
                     }
-                    i++; cnt++;
+                    ++i; ++cnt;
                     //bound check
                     if ( (i+1) >= text.length()) {
-                        cnt++;
+                        ++cnt;
                         break;
                     }
                 }
@@ -914,26 +914,26 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
             }  else if (text[i] == QLatin1Char('\'')) {
                 int pos = i;
                 int cnt = 1;
-                i++;
+                ++i;
                 //bound check
                 if ( (i+1) >= text.length()) return;
                 while (i < text.length()) {
                     if (text[i] == QLatin1Char('\'')) {
-                        cnt++;
-                        i++;
+                        ++cnt;
+                        ++i;
                         break;
                     }
                     //bound check
                     if ( (i+1) >= text.length()) {
-                        cnt++;
+                        ++cnt;
                         break;
                     }
-                    i++; cnt++;
+                    ++i; ++cnt;
                 }
                 setFormat(pos, cnt, formatString);
             }
             if (i+1 >= text.length()) return;
-            i++;
+            ++i;
         }
 
         i = applyCodeFormat(i, types, text, formatType);
