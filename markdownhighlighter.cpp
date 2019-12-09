@@ -749,15 +749,17 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
 {
     if (text.isEmpty()) return;
 
+    const auto textLen = text.length();
+
     QChar comment;
 
-    QMultiHash<QChar, QString> keywords;
-    QMultiHash<QChar, QString> others;
-    QMultiHash<QChar, QString> types;
-    QMultiHash<QChar, QString> builtin;
-    QMultiHash<QChar, QString> literals;
+    QMultiHash<char, QLatin1String> keywords{};
+    QMultiHash<char, QLatin1String> others{};
+    QMultiHash<char, QLatin1String> types{};
+    QMultiHash<char, QLatin1String> builtin{};
+    QMultiHash<char, QLatin1String> literals{};
 
-    QStringList wordList;
+    QList<QLatin1String> wordList;
 
     switch (currentBlockState()) {
         case HighlighterState::CodeCpp :
@@ -806,10 +808,32 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
     }
 
     // keep the default code block format
-    QTextCharFormat f = _formats[CodeBlock];
-    setFormat(0, text.length(), f);
+    setFormat(0, textLen, _formats[CodeBlock]);
 
-    //prepare formats
+    auto applyCodeFormat = [this, &wordList](int i, const QMultiHash<char, QLatin1String> &data,
+                        const QString &text, const QTextCharFormat &fmt) -> int {
+        // check if we are at the beginning OR if this is the start of a word
+        // AND the current char is present in the data structure
+        if ( ( i == 0 || !text[i-1].isLetter()) && data.contains(text[i].toLatin1())) {
+            wordList = data.values(text[i].toLatin1());
+#if QT_VERSION >= 0x050700
+            for(const QLatin1String &word : qAsConst(wordList)) {
+#else
+            for(const QLatin1String &word : wordList) {
+#endif
+                if (word == text.midRef(i, word.size())) {
+                    //check if we are at the end of text OR if we have a complete word
+                    if ( i + word.size() == text.length() ||
+                         !text.at(i + word.size()).isLetter()) {
+                        setFormat(i, word.size(), fmt);
+                        i += word.size();
+                    }
+                }
+            }
+        }
+        return i;
+    };
+
     const QTextCharFormat &formatType = _formats[CodeType];
     const QTextCharFormat &formatKeyword = _formats[CodeKeyWord];
     const QTextCharFormat &formatComment = _formats[CodeComment];
@@ -818,42 +842,46 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
     const QTextCharFormat &formatBuiltIn = _formats[CodeBuiltIn];
     const QTextCharFormat &formatOther = _formats[CodeOther];
 
-    for (int i=0; i< text.length(); i++) {
+    for (int i=0; i< textLen; ++i) {
 
         while (!text[i].isLetter()) {
             //inline comment
             if (text[i] == QLatin1Char('/')) {
-                if((i+1) < text.length()){
+                if((i+1) < textLen){
                     if(text[i+1] == QLatin1Char('/')) {
-                        setFormat(i, text.length(), formatComment);
+                        setFormat(i, textLen, formatComment);
                         return;
                     } else if(text[i+1] == QLatin1Char('*')) {
                         int next = text.indexOf(QLatin1String("*/"));
                         if (next == -1) {
-                            setFormat(i, text.length(),  formatComment);
+                            setFormat(i, textLen,  formatComment);
                             return;
                         } else {
                             next += 2;
                             setFormat(i, next - i,  formatComment);
                             i = next;
-                            if (i >= text.length()) return;
+                            if (i >= textLen) return;
                         }
                     }
                 }
             } else if (text[i] == comment) {
-                setFormat(i, text.length(), formatComment);
+                setFormat(i, textLen, formatComment);
                 return;
             //integer literal
             } else if (text[i].isNumber()) {
                 int prevBound = text.lastIndexOf(QLatin1Char(' '), i);
                 int nextBoundary = text.indexOf(QLatin1Char(' '), i);
+                if (nextBoundary > 0)
+                    text[nextBoundary-1] == QLatin1Char(';') ||
+                    text[nextBoundary-1] == QLatin1Char(',') ?
+                    --nextBoundary : nextBoundary;
                 prevBound = prevBound == -1 ? 0 : prevBound+1;
                 nextBoundary = nextBoundary == -1 ? i : nextBoundary;
                 bool allNum = true;
                 for (int j = prevBound; j < nextBoundary; j++) {
-                    if (!text[j].isNumber()) {
+                    if (text[j].isLetter()) {
                         //hex or decimal
-                        if (text[j] == QLatin1Char('x') || text[j] == QLatin1Char('.'))
+                        if (text[j] == QLatin1Char('x'))
                             continue;
                         allNum = false;
                         break;
@@ -861,28 +889,28 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                 }
                 if (allNum) {
                     i = nextBoundary;
-                    setFormat(prevBound, nextBoundary, formatNumLit);
+                    setFormat(prevBound, nextBoundary - prevBound, formatNumLit);
                 } else {
                     i = nextBoundary;
-                    setFormat(prevBound, nextBoundary, _formats[CodeBlock]);
+                    setFormat(prevBound, nextBoundary - prevBound, _formats[CodeBlock]);
                 }
             //string literal
             } else if (text[i] == QLatin1Char('\"')) {
                 int pos = i;
                 int cnt = 1;
-                i++;
+                ++i;
                 //bound check
-                if ( (i+1) >= text.length()) return;
-                while (i < text.length()) {
+                if ( (i+1) >= textLen) return;
+                while (i < textLen) {
                     if (text[i] == QLatin1Char('\"')) {
-                        cnt++;
-                        i++;
+                        ++cnt;
+                        ++i;
                         break;
                     }
-                    i++; cnt++;
+                    ++i; ++cnt;
                     //bound check
-                    if ( (i+1) >= text.length()) {
-                        cnt++;
+                    if ( (i+1) >= textLen) {
+                        ++cnt;
                         break;
                     }
                 }
@@ -890,94 +918,47 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
             }  else if (text[i] == QLatin1Char('\'')) {
                 int pos = i;
                 int cnt = 1;
-                i++;
+                ++i;
                 //bound check
-                if ( (i+1) >= text.length()) return;
-                while (i < text.length()) {
+                if (i+1 >= textLen) return;
+                while (i < textLen) {
                     if (text[i] == QLatin1Char('\'')) {
-                        cnt++;
-                        i++;
+                        ++cnt;
+                        ++i;
                         break;
                     }
                     //bound check
-                    if ( (i+1) >= text.length()) {
-                        cnt++;
+                    if ( (i+1) >= textLen) {
+                        ++cnt;
                         break;
                     }
-                    i++; cnt++;
+                    ++i; ++cnt;
                 }
                 setFormat(pos, cnt, formatString);
             }
-            if (i+1 >= text.length()) return;
-            i++;
+            if (i+1 >= textLen) return;
+            ++i;
         }
 
-        // check if we are at the beginning OR if this is the start of a word
-        // AND the current char is present in the data structure
-        if ( ( i == 0 || !text[i-1].isLetter()) && types.contains(text[i])) {
-            wordList = types.values(text[i]);
-            Q_FOREACH(const QString &word, wordList) {
-                if (word == text.midRef(i, word.length())) {
-                    //check if we are at the end of text OR if we have a complete word
-                    if ( i + word.length() == text.length() ||
-                         !text.at(i + word.length()).isLetter()) {
-                        setFormat(i, word.length(), formatType);
-                        i += word.length();
-                    }
-                }
-            }
-        }
+        i = applyCodeFormat(i, types, text, formatType);
+        i = applyCodeFormat(i, keywords, text, formatKeyword);
+        i = applyCodeFormat(i, literals, text, formatType);
+        i = applyCodeFormat(i, builtin, text, formatBuiltIn);
 
-        if (( i == 0 || !text[i-1].isLetter()) && keywords.contains(text[i])) {
-            wordList = keywords.values(text[i]);
-            Q_FOREACH(const QString &word, wordList) {
-                if (word == text.midRef(i, word.length())) {
-                    if ( i + word.length() == text.length() ||
-                         !text.at(i + word.length()).isLetter()) {
-                        setFormat(i, word.length(), formatKeyword);
-                        i += word.length();
-                    }
-                }
-            }
-        }
-
-
-        if (( i == 0 || !text[i-1].isLetter()) && literals.contains(text[i])) {
-            wordList = literals.values(text[i]);
-            Q_FOREACH(const QString &word, wordList) {
-                if (word == text.midRef(i, word.length())) {
-                    if ( i + word.length() == text.length() ||
-                         !text.at(i + word.length()).isLetter()) {
-                        setFormat(i, word.length(), formatNumLit);
-                        i += word.length();
-                    }
-                }
-            }
-        }
-
-        if (( i == 0 || !text[i-1].isLetter()) && builtin.contains(text[i])) {
-            wordList = builtin.values(text[i]);
-            Q_FOREACH(const QString &word, wordList) {
-                if (word == text.midRef(i, word.length())) {
-                    if ( i + word.length() == text.length() ||
-                         !text.at(i + word.length()).isLetter()) {
-                        setFormat(i, word.length(), formatBuiltIn);
-                        i += word.length();
-                    }
-                }
-            }
-        }
-
-        if (( i == 0 || !text[i-1].isLetter()) && others.contains(text[i])) {
-            wordList = others.values(text[i]);
-            Q_FOREACH(const QString &word, wordList) {
-                if (word == text.midRef(i, word.length())) {
-                    if ( i + word.length() == text.length() ||
-                         !text.at(i + word.length()).isLetter()) {
+        if (( i == 0 || !text[i-1].isLetter()) && others.contains(text[i].toLatin1())) {
+            wordList = others.values(text[i].toLatin1());
+#if QT_VERSION >= 0x050700
+            for(const QLatin1String &word : qAsConst(wordList)) {
+#else
+            for(const QLatin1String &word : wordList) {
+#endif
+                if (word == text.midRef(i, word.size()).toLatin1()) {
+                    if ( i + word.size() == textLen ||
+                         !text.at(i + word.size()).isLetter()) {
                         currentBlockState() == HighlighterState::CodeCpp ?
-                        setFormat(i-1, word.length()+1, formatOther) :
-                                    setFormat(i, word.length(), formatOther);
-                        i += word.length();
+                        setFormat(i-1, word.size()+1, formatOther) :
+                                    setFormat(i, word.size(), formatOther);
+                        i += word.size();
                     }
                 }
             }
