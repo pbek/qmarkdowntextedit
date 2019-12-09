@@ -751,13 +751,13 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
 
     QChar comment;
 
-    QMultiHash<QChar, QString> keywords;
-    QMultiHash<QChar, QString> others;
-    QMultiHash<QChar, QString> types;
-    QMultiHash<QChar, QString> builtin;
-    QMultiHash<QChar, QString> literals;
+    QMultiHash<char, QLatin1String> keywords{};
+    QMultiHash<char, QLatin1String> others{};
+    QMultiHash<char, QLatin1String> types{};
+    QMultiHash<char, QLatin1String> builtin{};
+    QMultiHash<char, QLatin1String> literals{};
 
-    QStringList wordList;
+    QList<QLatin1String> wordList;
 
     switch (currentBlockState()) {
         case HighlighterState::CodeCpp :
@@ -941,8 +941,8 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
         i = applyCodeFormat(i, literals, text, formatType);
         i = applyCodeFormat(i, builtin, text, formatBuiltIn);
 
-        if (( i == 0 || !text[i-1].isLetter()) && others.contains(text[i])) {
-            wordList = others.values(text[i]);
+        if (( i == 0 || !text[i-1].isLetter()) && others.contains(text[i].toLatin1())) {
+            wordList = others.values(text[i].toLatin1());
             Q_FOREACH(const QString &word, wordList) {
                 if (word == text.midRef(i, word.length())) {
                     if ( i + word.length() == text.length() ||
