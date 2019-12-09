@@ -94,7 +94,9 @@ public:
         CodeCSharp = 209,
         CodeGo = 210,
         CodeV = 211,
-        CodeSQL = 212
+        CodeSQL = 212,
+        CodeJSON = 213,
+        CodeXML = 214
     };
     Q_ENUMS(HighlighterState)
 
@@ -161,6 +163,8 @@ protected:
                      const int capturedGroup);
 
     static void initCodeLangs();
+
+    void xmlHighlighter(const QString &text);
 
     QVector<HighlightingRule> _highlightingRulesPre;
     QVector<HighlightingRule> _highlightingRulesAfter;

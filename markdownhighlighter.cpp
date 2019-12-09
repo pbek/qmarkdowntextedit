@@ -756,7 +756,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
     const auto textLen = text.length();
 
     QChar comment;
-    bool isXML;
+    bool isXML = false;
 
     QMultiHash<char, QLatin1String> keywords{};
     QMultiHash<char, QLatin1String> others{};
@@ -812,14 +812,18 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
             loadJSONData(types, keywords, builtin, literals, others);
             break;
         case HighlighterState::CodeXML :
-            loadXMLData(types, keywords, builtin, literals, others);
+            isXML = true;
+            xmlHighlighter(text);
+        return;
             break;
     default:
         break;
     }
 
     // keep the default code block format
-    setFormat(0, textLen, _formats[CodeBlock]);
+    if (!isXML) {
+        setFormat(0, textLen, _formats[CodeBlock]);
+    }
 
     auto applyCodeFormat = [this, &wordList](int i, const QMultiHash<char, QLatin1String> &data,
                         const QString &text, const QTextCharFormat &fmt) -> int {
@@ -989,12 +993,49 @@ void MarkdownHighlighter::xmlHighlighter(const QString &text) {
     if (text.isEmpty()) return;
     const auto textLen = text.length();
 
+    setFormat(0, textLen, _formats[CodeBlock]);
+
     for (int i = 0; i < textLen; ++i) {
         if (text[i] == QLatin1Char('<') && text[i+1] != QLatin1Char('!')) {
-            int found = text.indexOf(QLatin1Char('>'));
+
+            int found = text.indexOf(QLatin1Char('>'), i);
             if (found > 0) {
+                ++i;
+                if (text[i] == QLatin1Char('/')) ++i;
+                int space = text.indexOf(QLatin1Char(' '), i);
+                if (space > 0) found = space;
                 setFormat(i, found - i, _formats[CodeKeyWord]);
+
             }
+        }
+
+        if (text[i] == QLatin1Char('=')) {
+            int lastSpace = text.lastIndexOf(QLatin1Char(' '), i);
+            if (lastSpace > 0) {
+                setFormat(lastSpace, i - lastSpace, _formats[CodeBuiltIn]);
+            }
+        }
+
+        if (text[i] == QLatin1Char('\"')) {
+            int pos = i;
+            int cnt = 1;
+            ++i;
+            //bound check
+            if ( (i+1) >= textLen) return;
+            while (i < textLen) {
+                if (text[i] == QLatin1Char('\"')) {
+                    ++cnt;
+                    ++i;
+                    break;
+                }
+                ++i; ++cnt;
+                //bound check
+                if ( (i+1) >= textLen) {
+                    ++cnt;
+                    break;
+                }
+            }
+            setFormat(pos, cnt, _formats[CodeString]);
         }
     }
 }
