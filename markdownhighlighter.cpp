@@ -456,9 +456,11 @@ void MarkdownHighlighter::initCodeLangs()
         {QLatin1String("c#"),          MarkdownHighlighter::CodeCSharp},
         {QLatin1String("csharp"),      MarkdownHighlighter::CodeCSharp},
         {QLatin1String("go"),          MarkdownHighlighter::CodeCSharp},
+        {QLatin1String("html"),        MarkdownHighlighter::CodeXML},
         {QLatin1String("java"),        MarkdownHighlighter::CodeJava},
         {QLatin1String("javascript"),  MarkdownHighlighter::CodeJava},
         {QLatin1String("js"),          MarkdownHighlighter::CodeJs},
+        {QLatin1String("json"),        MarkdownHighlighter::CodeJSON},
         {QLatin1String("php"),         MarkdownHighlighter::CodePHP},
         {QLatin1String("py"),          MarkdownHighlighter::CodePython},
         {QLatin1String("python"),      MarkdownHighlighter::CodePython},
@@ -466,7 +468,9 @@ void MarkdownHighlighter::initCodeLangs()
         {QLatin1String("rust"),        MarkdownHighlighter::CodeRust},
         {QLatin1String("sh"),          MarkdownHighlighter::CodeBash},
         {QLatin1String("sql"),         MarkdownHighlighter::CodeSQL},
-        {QLatin1String("v"),           MarkdownHighlighter::CodeV}
+        {QLatin1String("SQL"),         MarkdownHighlighter::CodeSQL},
+        {QLatin1String("v"),           MarkdownHighlighter::CodeV},
+        {QLatin1String("xml"),         MarkdownHighlighter::CodeXML}
     };
 
 }
@@ -752,6 +756,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
     const auto textLen = text.length();
 
     QChar comment;
+    bool isXML = false;
 
     QMultiHash<char, QLatin1String> keywords{};
     QMultiHash<char, QLatin1String> others{};
@@ -803,12 +808,22 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
         case HighlighterState::CodeSQL :
             loadSQLData(types, keywords, builtin, literals, others);
             break;
+        case HighlighterState::CodeJSON :
+            loadJSONData(types, keywords, builtin, literals, others);
+            break;
+        case HighlighterState::CodeXML :
+            isXML = true;
+            xmlHighlighter(text);
+        return;
+            break;
     default:
         break;
     }
 
     // keep the default code block format
-    setFormat(0, textLen, _formats[CodeBlock]);
+    if (!isXML) {
+        setFormat(0, textLen, _formats[CodeBlock]);
+    }
 
     auto applyCodeFormat = [this, &wordList](int i, const QMultiHash<char, QLatin1String> &data,
                         const QString &text, const QTextCharFormat &fmt) -> int {
@@ -871,12 +886,19 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
             } else if (text[i].isNumber()) {
                 int prevBound = text.lastIndexOf(QLatin1Char(' '), i);
                 int nextBoundary = text.indexOf(QLatin1Char(' '), i);
-                if (nextBoundary > 0)
+                if (nextBoundary > 0) {
                     text[nextBoundary-1] == QLatin1Char(';') ||
                     text[nextBoundary-1] == QLatin1Char(',') ?
                     --nextBoundary : nextBoundary;
+                } else if (nextBoundary < 0 && i < textLen) {
+                    if (text[textLen-1] == QLatin1Char(',') ||
+                            text[textLen-1] == QLatin1Char(';')) {
+                        nextBoundary = textLen-1;
+                    }
+
+                }
                 prevBound = prevBound == -1 ? 0 : prevBound+1;
-                nextBoundary = nextBoundary == -1 ? i : nextBoundary;
+                nextBoundary = nextBoundary == -1 ? textLen : nextBoundary;
                 bool allNum = true;
                 for (int j = prevBound; j < nextBoundary; j++) {
                     if (text[j].isLetter()) {
@@ -942,7 +964,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
 
         i = applyCodeFormat(i, types, text, formatType);
         i = applyCodeFormat(i, keywords, text, formatKeyword);
-        i = applyCodeFormat(i, literals, text, formatType);
+        i = applyCodeFormat(i, literals, text, formatNumLit);
         i = applyCodeFormat(i, builtin, text, formatBuiltIn);
 
         if (( i == 0 || !text[i-1].isLetter()) && others.contains(text[i].toLatin1())) {
@@ -962,6 +984,58 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                     }
                 }
             }
+        }
+    }
+}
+
+
+void MarkdownHighlighter::xmlHighlighter(const QString &text) {
+    if (text.isEmpty()) return;
+    const auto textLen = text.length();
+
+    setFormat(0, textLen, _formats[CodeBlock]);
+
+    for (int i = 0; i < textLen; ++i) {
+        if (text[i] == QLatin1Char('<') && text[i+1] != QLatin1Char('!')) {
+
+            int found = text.indexOf(QLatin1Char('>'), i);
+            if (found > 0) {
+                ++i;
+                if (text[i] == QLatin1Char('/')) ++i;
+                int space = text.indexOf(QLatin1Char(' '), i);
+                if (space > 0) found = space;
+                setFormat(i, found - i, _formats[CodeKeyWord]);
+
+            }
+        }
+
+        if (text[i] == QLatin1Char('=')) {
+            int lastSpace = text.lastIndexOf(QLatin1Char(' '), i);
+            if (lastSpace > 0) {
+                setFormat(lastSpace, i - lastSpace, _formats[CodeBuiltIn]);
+            }
+        }
+
+        if (text[i] == QLatin1Char('\"')) {
+            int pos = i;
+            int cnt = 1;
+            ++i;
+            //bound check
+            if ( (i+1) >= textLen) return;
+            while (i < textLen) {
+                if (text[i] == QLatin1Char('\"')) {
+                    ++cnt;
+                    ++i;
+                    break;
+                }
+                ++i; ++cnt;
+                //bound check
+                if ( (i+1) >= textLen) {
+                    ++cnt;
+                    break;
+                }
+            }
+            setFormat(pos, cnt, _formats[CodeString]);
         }
     }
 }

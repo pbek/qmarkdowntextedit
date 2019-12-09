@@ -1866,3 +1866,37 @@ void loadSQLData(QMultiHash<char, QLatin1String> &types,
     literals = sql_literals;
     other = sql_other;
 }
+
+/********************************************************/
+/***   JSON DATA      ***********************************/
+/********************************************************/
+
+static const QMultiHash<char, QLatin1String> json_keywords = {
+};
+
+static const QMultiHash<char, QLatin1String> json_types = {
+};
+
+static const QMultiHash<char, QLatin1String> json_literals = {
+    {('f'), QLatin1String("false")},
+    {('t'), QLatin1String("true")},
+    {('n'), QLatin1String("null")}
+};
+
+static const QMultiHash<char, QLatin1String> json_builtin = {
+};
+
+static const QMultiHash<char, QLatin1String> json_other = {
+};
+
+void loadJSONData(QMultiHash<char, QLatin1String> &types,
+             QMultiHash<char, QLatin1String> &keywords,
+             QMultiHash<char, QLatin1String> &builtin,
+             QMultiHash<char, QLatin1String> &literals,
+             QMultiHash<char, QLatin1String> &other){
+    types = json_types;
+    keywords = json_keywords;
+    builtin = json_builtin;
+    literals = json_literals;
+    other = json_other;
+}
