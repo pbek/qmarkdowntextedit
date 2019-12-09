@@ -809,6 +809,26 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
     QTextCharFormat f = _formats[CodeBlock];
     setFormat(0, text.length(), f);
 
+    auto applyCodeFormat = [this, &wordList](int i, const QMultiHash<char, QLatin1String> &data,
+                        const QString &text, const QTextCharFormat &fmt) -> int {
+        // check if we are at the beginning OR if this is the start of a word
+        // AND the current char is present in the data structure
+        if ( ( i == 0 || !text[i-1].isLetter()) && data.contains(text[i].toLatin1())) {
+            wordList = data.values(text[i].toLatin1());
+            Q_FOREACH(const QString &word, wordList) {
+                if (word == text.midRef(i, word.length())) {
+                    //check if we are at the end of text OR if we have a complete word
+                    if ( i + word.length() == text.length() ||
+                         !text.at(i + word.length()).isLetter()) {
+                        setFormat(i, word.length(), fmt);
+                        i += word.length();
+                    }
+                }
+            }
+        }
+        return i;
+    };
+
     //prepare formats
     const QTextCharFormat &formatType = _formats[CodeType];
     const QTextCharFormat &formatKeyword = _formats[CodeKeyWord];
@@ -916,61 +936,10 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
             i++;
         }
 
-        // check if we are at the beginning OR if this is the start of a word
-        // AND the current char is present in the data structure
-        if ( ( i == 0 || !text[i-1].isLetter()) && types.contains(text[i])) {
-            wordList = types.values(text[i]);
-            Q_FOREACH(const QString &word, wordList) {
-                if (word == text.midRef(i, word.length())) {
-                    //check if we are at the end of text OR if we have a complete word
-                    if ( i + word.length() == text.length() ||
-                         !text.at(i + word.length()).isLetter()) {
-                        setFormat(i, word.length(), formatType);
-                        i += word.length();
-                    }
-                }
-            }
-        }
-
-        if (( i == 0 || !text[i-1].isLetter()) && keywords.contains(text[i])) {
-            wordList = keywords.values(text[i]);
-            Q_FOREACH(const QString &word, wordList) {
-                if (word == text.midRef(i, word.length())) {
-                    if ( i + word.length() == text.length() ||
-                         !text.at(i + word.length()).isLetter()) {
-                        setFormat(i, word.length(), formatKeyword);
-                        i += word.length();
-                    }
-                }
-            }
-        }
-
-
-        if (( i == 0 || !text[i-1].isLetter()) && literals.contains(text[i])) {
-            wordList = literals.values(text[i]);
-            Q_FOREACH(const QString &word, wordList) {
-                if (word == text.midRef(i, word.length())) {
-                    if ( i + word.length() == text.length() ||
-                         !text.at(i + word.length()).isLetter()) {
-                        setFormat(i, word.length(), formatNumLit);
-                        i += word.length();
-                    }
-                }
-            }
-        }
-
-        if (( i == 0 || !text[i-1].isLetter()) && builtin.contains(text[i])) {
-            wordList = builtin.values(text[i]);
-            Q_FOREACH(const QString &word, wordList) {
-                if (word == text.midRef(i, word.length())) {
-                    if ( i + word.length() == text.length() ||
-                         !text.at(i + word.length()).isLetter()) {
-                        setFormat(i, word.length(), formatBuiltIn);
-                        i += word.length();
-                    }
-                }
-            }
-        }
+        i = applyCodeFormat(i, types, text, formatType);
+        i = applyCodeFormat(i, keywords, text, formatKeyword);
+        i = applyCodeFormat(i, literals, text, formatType);
+        i = applyCodeFormat(i, builtin, text, formatBuiltIn);
 
         if (( i == 0 || !text[i-1].isLetter()) && others.contains(text[i])) {
             wordList = others.values(text[i]);
