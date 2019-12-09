@@ -846,14 +846,18 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
             //integer literal
             } else if (text[i].isNumber()) {
                 int prevBound = text.lastIndexOf(QLatin1Char(' '), i);
+                text[prevBound+1] == QLatin1Char(';') || text[prevBound+1] == QLatin1Char(',') ?
+                ++prevBound : prevBound;
                 int nextBoundary = text.indexOf(QLatin1Char(' '), i);
+                text[nextBoundary-1] == QLatin1Char(';') || text[nextBoundary-1] == QLatin1Char(',') ?
+                --nextBoundary : nextBoundary;
                 prevBound = prevBound == -1 ? 0 : prevBound+1;
                 nextBoundary = nextBoundary == -1 ? i : nextBoundary;
                 bool allNum = true;
                 for (int j = prevBound; j < nextBoundary; j++) {
-                    if (!text[j].isNumber()) {
+                    if (text[j].isLetter()) {
                         //hex or decimal
-                        if (text[j] == QLatin1Char('x') || text[j] == QLatin1Char('.'))
+                        if (text[j] == QLatin1Char('x'))
                             continue;
                         allNum = false;
                         break;
@@ -861,10 +865,10 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                 }
                 if (allNum) {
                     i = nextBoundary;
-                    setFormat(prevBound, nextBoundary, formatNumLit);
+                    setFormat(prevBound, nextBoundary - prevBound, formatNumLit);
                 } else {
                     i = nextBoundary;
-                    setFormat(prevBound, nextBoundary, _formats[CodeBlock]);
+                    setFormat(prevBound, nextBoundary - prevBound, _formats[CodeBlock]);
                 }
             //string literal
             } else if (text[i] == QLatin1Char('\"')) {
