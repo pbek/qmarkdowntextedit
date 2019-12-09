@@ -808,8 +808,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
     }
 
     // keep the default code block format
-    QTextCharFormat f = _formats[CodeBlock];
-    setFormat(0, textLen, f);
+    setFormat(0, textLen, _formats[CodeBlock]);
 
     auto applyCodeFormat = [this, &wordList](int i, const QMultiHash<char, QLatin1String> &data,
                         const QString &text, const QTextCharFormat &fmt) -> int {
@@ -817,13 +816,17 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
         // AND the current char is present in the data structure
         if ( ( i == 0 || !text[i-1].isLetter()) && data.contains(text[i].toLatin1())) {
             wordList = data.values(text[i].toLatin1());
-            Q_FOREACH(const QString &word, wordList) {
-                if (word == text.midRef(i, word.length())) {
+#if QT_VERSION >= 0x050700
+            for(const QLatin1String &word : qAsConst(wordList)) {
+#else
+            for(const QLatin1String &word : wordList) {
+#endif
+                if (word == text.midRef(i, word.size())) {
                     //check if we are at the end of text OR if we have a complete word
-                    if ( i + word.length() == text.length() ||
-                         !text.at(i + word.length()).isLetter()) {
-                        setFormat(i, word.length(), fmt);
-                        i += word.length();
+                    if ( i + word.size() == text.length() ||
+                         !text.at(i + word.size()).isLetter()) {
+                        setFormat(i, word.size(), fmt);
+                        i += word.size();
                     }
                 }
             }
@@ -831,7 +834,6 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
         return i;
     };
 
-    //prepare formats
     const QTextCharFormat &formatType = _formats[CodeType];
     const QTextCharFormat &formatKeyword = _formats[CodeKeyWord];
     const QTextCharFormat &formatComment = _formats[CodeComment];
@@ -945,14 +947,18 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
 
         if (( i == 0 || !text[i-1].isLetter()) && others.contains(text[i].toLatin1())) {
             wordList = others.values(text[i].toLatin1());
-            Q_FOREACH(const QString &word, wordList) {
-                if (word == text.midRef(i, word.length())) {
-                    if ( i + word.length() == textLen ||
-                         !text.at(i + word.length()).isLetter()) {
+#if QT_VERSION >= 0x050700
+            for(const QLatin1String &word : qAsConst(wordList)) {
+#else
+            for(const QLatin1String &word : wordList) {
+#endif
+                if (word == text.midRef(i, word.size()).toLatin1()) {
+                    if ( i + word.size() == textLen ||
+                         !text.at(i + word.size()).isLetter()) {
                         currentBlockState() == HighlighterState::CodeCpp ?
-                        setFormat(i-1, word.length()+1, formatOther) :
-                                    setFormat(i, word.length(), formatOther);
-                        i += word.length();
+                        setFormat(i-1, word.size()+1, formatOther) :
+                                    setFormat(i, word.size(), formatOther);
+                        i += word.size();
                     }
                 }
             }
