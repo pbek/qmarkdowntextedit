@@ -1,6 +1,7 @@
 TARGET = QMarkdownTextedit
 TEMPLATE = lib
 QT += core gui widgets
+CONFIG += c++11
 
 include(qmarkdowntextedit.pri)
 
