@@ -1048,17 +1048,29 @@ void MarkdownHighlighter::cssHighlighter(const QString &text)
                 if (colon < 0) continue;
                 i = colon;
                 while(text[++i].isSpace());
-                if (text[i] == QLatin1Char('#')) {
-                    int semicolon = text.indexOf(QLatin1Char(';'));
-                    if (semicolon < 0) semicolon = textLen;
-                    QString color = text.mid(i, semicolon);
-                    if (color[color.length()-1] == QLatin1Char(';')) color.chop(1);
-                    qWarning () << color << text[semicolon] << text[i];
-                    QTextCharFormat f = _formats[CodeBlock];
-                    f.setBackground(QColor(color));
-                    f.setForeground(Qt::black);
-                    setFormat(i, semicolon - i, f);
+                int semicolon = text.indexOf(QLatin1Char(';'));
+                if (semicolon < 0) semicolon = textLen;
+                QString color = text.mid(i, semicolon-i);
+                QTextCharFormat f = _formats[CodeBlock];
+                QColor c(color);
+                if (color.startsWith(QLatin1String("rgb"))) {
+                    int t = text.indexOf('(', i);
+                    int rPos = text.indexOf(',', t);
+                    int gPos = text.indexOf(',', rPos+1);
+                    int bPos = text.indexOf(')', gPos);
+                    if (rPos > -1 && gPos > -1 && bPos > -1) {
+                        const QStringRef r = text.midRef(t+1, rPos - (t+1));
+                        const QStringRef g = text.midRef(rPos+1, gPos - (rPos + 1));
+                        const QStringRef b = text.midRef(gPos+1, bPos - (gPos+1));
+                        c.setRgb(r.toInt(), g.toInt(), b.toInt());
+                    } else {
+                        c.setRgb(255, 255, 255);
+                    }
                 }
+                f.setBackground(c);
+                f.setForeground(Qt::black);
+                setFormat(i, semicolon - i, f);
+                i = semicolon;
             }
         }
     }
