@@ -153,6 +153,8 @@ protected:
 
     int highlightIntegerLiterals(const QString& text, int i);
 
+    void cssHighlighter(const QString &text);
+
     void xmlHighlighter(const QString &text);
 
     void highlightFrontmatterBlock(const QString& text);
