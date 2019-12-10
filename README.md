@@ -6,6 +6,7 @@ QMarkdownTextEdit is a C++ Qt [QPlainTextEdit](http://doc.qt.io/qt-5/qplaintexte
 
 ## Features
 - markdown highlighting
+- syntax highlighting
 - clickable links with `Ctrl + Click`
 - block indent with `Tab` and `Shift + Tab`
 - duplicate text with `Ctrl + Alt + Down`
