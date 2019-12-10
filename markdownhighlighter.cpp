@@ -889,67 +889,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                 return;
             //integer literal
             } else if (text[i].isNumber()) {
-                int prevBound = text.lastIndexOf(QLatin1Char(' '), i);
-                int nextBoundary = text.indexOf(QLatin1Char(' '), i);
-                if (nextBoundary > 0) {
-                    text[nextBoundary-1] == QLatin1Char(';') ||
-                    text[nextBoundary-1] == QLatin1Char(',') ?
-                    --nextBoundary : nextBoundary;
-                } else if (nextBoundary < 0 && i < textLen) {
-                    //look for a comma
-                    int t = text.indexOf(QLatin1Char(','), i);
-                    if (t < 0) {
-                        t = text.indexOf(QLatin1Char(')'), i);
-                    }
-                    if (t < 0) {
-                        t = text.indexOf(QLatin1Char(';'), i);
-                    }
-                    nextBoundary = t > -1 ? t : textLen;
-                }
-                if (prevBound > 0) {
-                    //if the next letter after space is not a num
-                    if (!text[prevBound+1].isNumber()) {
-                        //look for a comma
-                        int tmp = text.lastIndexOf(QLatin1Char(','), i);
-                        //not found? look for an opening bracket
-                        if (tmp == -1) {
-                            tmp = text.lastIndexOf(QLatin1Char('('), i);
-                        }
-                        prevBound = tmp > -1 ? tmp : prevBound;
-                    }
-                }
-                prevBound = prevBound == -1 ? 0 : prevBound+1;
-                nextBoundary = nextBoundary == -1 ? textLen : nextBoundary;
-                bool allNum = true;
-                for (int j = prevBound; j < nextBoundary; j++) {
-                    if (text[j].isLetter()) {
-                        //hex or decimal
-                        if (text[j] == QLatin1Char('x'))
-                            continue;
-                        allNum = false;
-                        break;
-                    }
-                }
-                if (allNum) {
-                    i = nextBoundary;
-                    setFormat(prevBound, nextBoundary - prevBound, formatNumLit);
-                } else {
-                    i = nextBoundary;
-                    setFormat(prevBound, nextBoundary - prevBound, _formats[CodeBlock]);
-                    if (currentBlockState() == HighlighterState::CodeCSS) {
-                        if ((text[i-1] == QLatin1Char('x') && text[i-2] == QLatin1Char('p')) ||
-                            (text[i] == QLatin1Char('x') && text[i-1] == QLatin1Char('p')) ||
-                             (text[i-1] == QLatin1Char('m') && text[i-2] == QLatin1Char('e')) ||
-                             (text[i] == QLatin1Char('e') && text[i-1] == QLatin1Char('e'))) {
-                            setFormat(i-2, i - (i-2), formatKeyword);
-                            if (text[i-3].isNumber()){
-                                int space = text.lastIndexOf(QLatin1Char(' '), i-2);
-                                if (space > 0)
-                                    setFormat(space, (i-2) - space, formatNumLit);
-                            }
-                        }
-                    }
-                }
+                highlightIntegerLiterals(text, i);
             //string literal
             } else if (text[i] == QLatin1Char('\"')) {
                 int pos = i;
@@ -1020,6 +960,66 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
             }
         }
     }
+}
+
+int MarkdownHighlighter::highlightIntegerLiterals(const QString &text, int i)
+{
+    const int textLen = text.length();
+    int prevBound = text.lastIndexOf(QLatin1Char(' '), i);
+    int nextBoundary = text.indexOf(QLatin1Char(' '), i);
+    if (nextBoundary > 0) {
+        text[nextBoundary-1] == QLatin1Char(';') ||
+        text[nextBoundary-1] == QLatin1Char(',') ?
+        --nextBoundary : nextBoundary;
+    } else if (nextBoundary < 0 && i < textLen) {
+        //look for a comma
+        int t = text.indexOf(QLatin1Char(','), i);
+        if (t < 0) {
+            t = text.indexOf(QLatin1Char(')'), i);
+        }
+        if (t < 0) {
+            t = text.indexOf(QLatin1Char(';'), i);
+        }
+        nextBoundary = t > -1 ? t : textLen;
+    }
+    if (prevBound > 0) {
+        //if the next letter after space is not a num
+        if (!text[prevBound+1].isNumber()) {
+            //look for a comma
+            int tmp = text.lastIndexOf(QLatin1Char(','), i);
+            //not found? look for an opening bracket
+            if (tmp == -1) {
+                tmp = text.lastIndexOf(QLatin1Char('('), i);
+            }
+            prevBound = tmp > -1 ? tmp : prevBound;
+        }
+    }
+    prevBound = prevBound == -1 ? 0 : prevBound+1;
+    nextBoundary = nextBoundary == -1 ? textLen : nextBoundary;
+    bool allNum = true;
+    for (int j = prevBound; j < nextBoundary; j++) {
+        if (text[j].isLetter()) {
+            //hex or decimal
+            if (text[j] == QLatin1Char('x'))
+                continue;
+            //highlight nums with em/px in CSS
+            else if ((currentBlockState() == HighlighterState::CodeCSS) &&
+                     (text[j] == QLatin1Char('p') || text[j] == QLatin1Char('e') ||
+                      text[j] == QLatin1Char('m'))) {
+                    continue;
+            }
+            allNum = false;
+            break;
+        }
+    }
+    if (allNum) {
+        i = nextBoundary;
+        setFormat(prevBound, nextBoundary - prevBound, _formats[CodeNumLiteral]);
+    } else {
+//        i = nextBoundary;
+//        setFormat(prevBound, nextBoundary - prevBound, _formats[CodeBlock]);
+    }
+    return i;
 }
 
 

@@ -151,6 +151,10 @@ protected:
 
     void highlightSyntax(const QString &text);
 
+    int highlightIntegerLiterals(const QString& text, int i);
+
+    void xmlHighlighter(const QString &text);
+
     void highlightFrontmatterBlock(const QString& text);
 
     void highlightCommentBlock(QString text);
@@ -164,8 +168,6 @@ protected:
                      const int capturedGroup);
 
     static void initCodeLangs();
-
-    void xmlHighlighter(const QString &text);
 
     QVector<HighlightingRule> _highlightingRulesPre;
     QVector<HighlightingRule> _highlightingRulesAfter;
