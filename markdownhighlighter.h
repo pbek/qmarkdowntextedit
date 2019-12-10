@@ -96,7 +96,8 @@ public:
         CodeV = 211,
         CodeSQL = 212,
         CodeJSON = 213,
-        CodeXML = 214
+        CodeXML = 214,
+        CodeCSS = 215
     };
     Q_ENUMS(HighlighterState)
 
@@ -150,6 +151,12 @@ protected:
 
     void highlightSyntax(const QString &text);
 
+    int highlightIntegerLiterals(const QString& text, int i);
+
+    void cssHighlighter(const QString &text);
+
+    void xmlHighlighter(const QString &text);
+
     void highlightFrontmatterBlock(const QString& text);
 
     void highlightCommentBlock(QString text);
@@ -163,8 +170,6 @@ protected:
                      const int capturedGroup);
 
     static void initCodeLangs();
-
-    void xmlHighlighter(const QString &text);
 
     QVector<HighlightingRule> _highlightingRulesPre;
     QVector<HighlightingRule> _highlightingRulesAfter;

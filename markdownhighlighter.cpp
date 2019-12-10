@@ -1,6 +1,7 @@
 
 /*
  * Copyright (c) 2014-2019 Patrizio Bekerle -- http://www.bekerle.com
+ * Copyright (c) 2019      Waqar Ahmed      -- <waqar.17a@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -455,6 +456,7 @@ void MarkdownHighlighter::initCodeLangs()
         {QLatin1String("c++"),         MarkdownHighlighter::CodeCpp},
         {QLatin1String("c#"),          MarkdownHighlighter::CodeCSharp},
         {QLatin1String("csharp"),      MarkdownHighlighter::CodeCSharp},
+        {QLatin1String("css"),         MarkdownHighlighter::CodeCSS},
         {QLatin1String("go"),          MarkdownHighlighter::CodeCSharp},
         {QLatin1String("html"),        MarkdownHighlighter::CodeXML},
         {QLatin1String("java"),        MarkdownHighlighter::CodeJava},
@@ -756,7 +758,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
     const auto textLen = text.length();
 
     QChar comment;
-    bool isXML = false;
+    bool isCSS = false;
 
     QMultiHash<char, QLatin1String> keywords{};
     QMultiHash<char, QLatin1String> others{};
@@ -812,18 +814,20 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
             loadJSONData(types, keywords, builtin, literals, others);
             break;
         case HighlighterState::CodeXML :
-            isXML = true;
             xmlHighlighter(text);
-        return;
+            return;
+            break;
+        case HighlighterState::CodeCSS :
+            isCSS = true; //TODO: rename this to something sensible
+            loadCSSData(types, keywords, builtin, literals, others);
+            //cssHighlighter(text);
             break;
     default:
         break;
     }
 
     // keep the default code block format
-    if (!isXML) {
-        setFormat(0, textLen, _formats[CodeBlock]);
-    }
+    setFormat(0, textLen, _formats[CodeBlock]);
 
     auto applyCodeFormat = [this, &wordList](int i, const QMultiHash<char, QLatin1String> &data,
                         const QString &text, const QTextCharFormat &fmt) -> int {
@@ -884,38 +888,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                 return;
             //integer literal
             } else if (text[i].isNumber()) {
-                int prevBound = text.lastIndexOf(QLatin1Char(' '), i);
-                int nextBoundary = text.indexOf(QLatin1Char(' '), i);
-                if (nextBoundary > 0) {
-                    text[nextBoundary-1] == QLatin1Char(';') ||
-                    text[nextBoundary-1] == QLatin1Char(',') ?
-                    --nextBoundary : nextBoundary;
-                } else if (nextBoundary < 0 && i < textLen) {
-                    if (text[textLen-1] == QLatin1Char(',') ||
-                            text[textLen-1] == QLatin1Char(';')) {
-                        nextBoundary = textLen-1;
-                    }
-
-                }
-                prevBound = prevBound == -1 ? 0 : prevBound+1;
-                nextBoundary = nextBoundary == -1 ? textLen : nextBoundary;
-                bool allNum = true;
-                for (int j = prevBound; j < nextBoundary; j++) {
-                    if (text[j].isLetter()) {
-                        //hex or decimal
-                        if (text[j] == QLatin1Char('x'))
-                            continue;
-                        allNum = false;
-                        break;
-                    }
-                }
-                if (allNum) {
-                    i = nextBoundary;
-                    setFormat(prevBound, nextBoundary - prevBound, formatNumLit);
-                } else {
-                    i = nextBoundary;
-                    setFormat(prevBound, nextBoundary - prevBound, _formats[CodeBlock]);
-                }
+                highlightIntegerLiterals(text, i);
             //string literal
             } else if (text[i] == QLatin1Char('\"')) {
                 int pos = i;
@@ -966,6 +939,9 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
         i = applyCodeFormat(i, keywords, text, formatKeyword);
         i = applyCodeFormat(i, literals, text, formatNumLit);
         i = applyCodeFormat(i, builtin, text, formatBuiltIn);
+        if (isCSS) {
+            cssHighlighter(text);
+        }
 
         if (( i == 0 || !text[i-1].isLetter()) && others.contains(text[i].toLatin1())) {
             wordList = others.values(text[i].toLatin1());
@@ -983,6 +959,118 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                         i += word.size();
                     }
                 }
+            }
+        }
+    }
+}
+
+int MarkdownHighlighter::highlightIntegerLiterals(const QString &text, int i)
+{
+    const int textLen = text.length();
+    int prevBound = text.lastIndexOf(QLatin1Char(' '), i);
+    int nextBoundary = text.indexOf(QLatin1Char(' '), i);
+    if (nextBoundary > 0) {
+        text[nextBoundary-1] == QLatin1Char(';') ||
+        text[nextBoundary-1] == QLatin1Char(',') ?
+        --nextBoundary : nextBoundary;
+    } else if (nextBoundary < 0 && i < textLen) {
+        //look for a comma
+        int t = text.indexOf(QLatin1Char(','), i);
+        if (t < 0) {
+            t = text.indexOf(QLatin1Char(')'), i);
+        }
+        if (t < 0) {
+            t = text.indexOf(QLatin1Char(';'), i);
+        }
+        nextBoundary = t > -1 ? t : textLen;
+    }
+    if (prevBound > 0) {
+        //if the next letter after space is not a num
+        if (prevBound < text.length() && !text[prevBound+1].isNumber()) {
+            //look for a comma
+            int tmp = text.lastIndexOf(QLatin1Char(','), i);
+            //not found? look for an opening bracket
+            if (tmp == -1) {
+                tmp = text.lastIndexOf(QLatin1Char('('), i);
+            }
+            prevBound = tmp > -1 ? tmp : prevBound;
+        }
+    }
+    prevBound = prevBound == -1 ? 0 : prevBound+1;
+    nextBoundary = nextBoundary == -1 ? textLen : nextBoundary;
+    bool allNum = true;
+    for (int j = prevBound; j < nextBoundary; j++) {
+        if (!text[j].isNumber()) {
+            //hex or decimal
+            if (text[j] == QLatin1Char('x'))
+                continue;
+            allNum = false;
+            break;
+        }
+    }
+    if (allNum) {
+        i = nextBoundary;
+        setFormat(prevBound, nextBoundary - prevBound, _formats[CodeNumLiteral]);
+    } else {
+        i = nextBoundary;
+        //setFormat(prevBound, nextBoundary - prevBound, _formats[CodeBlock]);
+        if (currentBlockState() == HighlighterState::CodeCSS) {
+            if ((text[i-1] == QLatin1Char('x') && text[i-2] == QLatin1Char('p')) ||
+                (text[i] == QLatin1Char('x') && text[i-1] == QLatin1Char('p')) ||
+                 (text[i-1] == QLatin1Char('m') && text[i-2] == QLatin1Char('e')) ||
+                 (text[i] == QLatin1Char('e') && text[i-1] == QLatin1Char('e'))) {
+                setFormat(i-2, i - (i-2), _formats[CodeKeyWord]);
+                if (text[i-3].isNumber()){
+                    int space = text.lastIndexOf(QLatin1Char(' '), i-2);
+                    if (space > 0)
+                        setFormat(space, (i-2) - space, _formats[CodeNumLiteral]);
+                }
+            }
+        }
+    }
+    return i;
+}
+
+void MarkdownHighlighter::cssHighlighter(const QString &text)
+{
+    if (text.isEmpty()) return;
+    const auto textLen = text.length();
+
+    for (int i = 0; i<textLen; ++i) {
+        if (text[i] == QLatin1Char('.') || text[i] == QLatin1Char('#')) {
+            if (text[i + 1].isSpace() || text[i+1].isNumber()) continue;
+            int space = text.indexOf(QLatin1Char(' '), i);
+            setFormat(i, space - i, _formats[CodeKeyWord]);
+        } else if (text[i] == QLatin1Char('c')) {
+            if (text.midRef(i, 5) == QLatin1String("color")) {
+                i += 5;
+                int colon = text.indexOf(QLatin1Char(':'),i);
+                if (colon < 0) continue;
+                i = colon;
+                while(text[++i].isSpace());
+                int semicolon = text.indexOf(QLatin1Char(';'));
+                if (semicolon < 0) semicolon = textLen;
+                QString color = text.mid(i, semicolon-i);
+                QTextCharFormat f = _formats[CodeBlock];
+                QColor c(color);
+                if (color.startsWith(QLatin1String("rgb"))) {
+                    int t = text.indexOf('(', i);
+                    int rPos = text.indexOf(',', t);
+                    int gPos = text.indexOf(',', rPos+1);
+                    int bPos = text.indexOf(')', gPos);
+                    if (rPos > -1 && gPos > -1 && bPos > -1) {
+                        const QStringRef r = text.midRef(t+1, rPos - (t+1));
+                        const QStringRef g = text.midRef(rPos+1, gPos - (rPos + 1));
+                        const QStringRef b = text.midRef(gPos+1, bPos - (gPos+1));
+                        c.setRgb(r.toInt(), g.toInt(), b.toInt());
+                    } else {
+                        c.setRgb(255, 255, 255);
+                    }
+                }
+                f.setBackground(c);
+                f.setForeground(Qt::black);
+                setFormat(i, semicolon - i, f);
+                i = semicolon;
             }
         }
     }
