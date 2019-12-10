@@ -96,7 +96,8 @@ public:
         CodeV = 211,
         CodeSQL = 212,
         CodeJSON = 213,
-        CodeXML = 214
+        CodeXML = 214,
+        CodeCSS = 215
     };
     Q_ENUMS(HighlighterState)
 
