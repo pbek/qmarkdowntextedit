@@ -932,11 +932,23 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                 }
                 if (allNum) {
                     i = nextBoundary;
-                    qWarning () << text.mid(prevBound, nextBoundary);
                     setFormat(prevBound, nextBoundary - prevBound, formatNumLit);
                 } else {
                     i = nextBoundary;
                     setFormat(prevBound, nextBoundary - prevBound, _formats[CodeBlock]);
+                    if (currentBlockState() == HighlighterState::CodeCSS) {
+                        if ((text[i-1] == QLatin1Char('x') && text[i-2] == QLatin1Char('p')) ||
+                            (text[i] == QLatin1Char('x') && text[i-1] == QLatin1Char('p')) ||
+                             (text[i-1] == QLatin1Char('m') && text[i-2] == QLatin1Char('e')) ||
+                             (text[i] == QLatin1Char('e') && text[i-1] == QLatin1Char('e'))) {
+                            setFormat(i-2, i - (i-2), formatKeyword);
+                            if (text[i-3].isNumber()){
+                                int space = text.lastIndexOf(QLatin1Char(' '), i-2);
+                                if (space > 0)
+                                    setFormat(space, (i-2) - space, formatNumLit);
+                            }
+                        }
+                    }
                 }
             //string literal
             } else if (text[i] == QLatin1Char('\"')) {

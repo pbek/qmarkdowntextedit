@@ -2231,7 +2231,11 @@ static const QMultiHash<char, QLatin1String> css_types = {
     {'x', QLatin1String("x")},
     {'y', QLatin1String("y")},
     {'z', QLatin1String("z")},
-    {'i', QLatin1String("index")}
+    {'i', QLatin1String("index")},
+    {'r', QLatin1String("rgb")},
+    {'s', QLatin1String("sans")},
+    {'s', QLatin1String("serif")},
+    {'n', QLatin1String("normal")}
 };
 
 static const QMultiHash<char, QLatin1String> css_literals = {
