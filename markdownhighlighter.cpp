@@ -456,6 +456,7 @@ void MarkdownHighlighter::initCodeLangs()
         {QLatin1String("c++"),         MarkdownHighlighter::CodeCpp},
         {QLatin1String("c#"),          MarkdownHighlighter::CodeCSharp},
         {QLatin1String("csharp"),      MarkdownHighlighter::CodeCSharp},
+        {QLatin1String("css"),         MarkdownHighlighter::CodeCSS},
         {QLatin1String("go"),          MarkdownHighlighter::CodeCSharp},
         {QLatin1String("html"),        MarkdownHighlighter::CodeXML},
         {QLatin1String("java"),        MarkdownHighlighter::CodeJava},
@@ -815,7 +816,10 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
         case HighlighterState::CodeXML :
             isXML = true;
             xmlHighlighter(text);
-        return;
+            return;
+            break;
+        case HighlighterState::CodeCSS :
+            loadCSSData(types, keywords, builtin, literals, others);
             break;
     default:
         break;
@@ -892,11 +896,27 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                     text[nextBoundary-1] == QLatin1Char(',') ?
                     --nextBoundary : nextBoundary;
                 } else if (nextBoundary < 0 && i < textLen) {
-                    if (text[textLen-1] == QLatin1Char(',') ||
-                            text[textLen-1] == QLatin1Char(';')) {
-                        nextBoundary = textLen-1;
+                    //look for a comma
+                    int t = text.indexOf(QLatin1Char(','), i);
+                    if (t < 0) {
+                        t = text.indexOf(QLatin1Char(')'), i);
                     }
-
+                    if (t < 0) {
+                        t = text.indexOf(QLatin1Char(';'), i);
+                    }
+                    nextBoundary = t > -1 ? t : textLen;
+                }
+                if (prevBound > 0) {
+                    //if the next letter after space is not a num
+                    if (!text[prevBound+1].isNumber()) {
+                        //look for a comma
+                        int tmp = text.lastIndexOf(QLatin1Char(','), i);
+                        //not found? look for an opening bracket
+                        if (tmp == -1) {
+                            tmp = text.lastIndexOf(QLatin1Char('('), i);
+                        }
+                        prevBound = tmp > -1 ? tmp : prevBound;
+                    }
                 }
                 prevBound = prevBound == -1 ? 0 : prevBound+1;
                 nextBoundary = nextBoundary == -1 ? textLen : nextBoundary;
@@ -912,6 +932,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                 }
                 if (allNum) {
                     i = nextBoundary;
+                    qWarning () << text.mid(prevBound, nextBoundary);
                     setFormat(prevBound, nextBoundary - prevBound, formatNumLit);
                 } else {
                     i = nextBoundary;
