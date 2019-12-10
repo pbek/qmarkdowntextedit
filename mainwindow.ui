@@ -26,6 +26,7 @@
 ## Features
 
 - markdown highlighting
+- syntax highlighting
 - clickable links with `Ctrl + Click`
 - block indent with `Tab` and `Shift + Tab`
 - duplicate text with `Ctrl + Alt + Down`
@@ -33,6 +34,13 @@
     - jump between search results with `Up` and `Down`
     - close search field with `Escape`
 - and much more...
+
+```cpp
+#include &lt;iostream&gt;
+int main () {
+    std::cout &lt;&lt; &quot;hello&quot;
+}
+```
 
 ## References
 
@@ -55,7 +63,7 @@ There are inherent dangers in the use of any software, and you are solely respon
      <x>0</x>
      <y>0</y>
      <width>1070</width>
-     <height>25</height>
+     <height>23</height>
     </rect>
    </property>
   </widget>
