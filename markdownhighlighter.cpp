@@ -317,7 +317,7 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize) {
 
     // set character formats for headlines
     format = QTextCharFormat();
-    format.setForeground(QBrush(QColor(0, 49, 110)));
+    format.setForeground(QBrush(QColor(2, 69, 150)));
     format.setFontWeight(QFont::Bold);
     format.setFontPointSize(defaultFontSize * 1.6);
     _formats[H1] = format;
@@ -359,7 +359,7 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize) {
     // set character format for code blocks
     format = QTextCharFormat();
     format.setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-    format.setBackground(QColor(220, 220, 220));
+    //format.setBackground(QColor(220, 220, 220));
     _formats[CodeBlock] = format;
     _formats[InlineCodeBlock] = format;
 
@@ -412,7 +412,7 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize) {
 
     format = QTextCharFormat();
     format.setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-    format.setForeground(QColor("#E6DB74"));
+    format.setForeground(QColor("#a39b4e"));
     _formats[CodeString] = format;
 
     format = QTextCharFormat();
@@ -422,12 +422,12 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize) {
 
     format = QTextCharFormat();
     format.setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-    format.setForeground(QColor("#66D9EF"));
+    format.setForeground(QColor("#54aebf"));
     _formats[CodeType] = format;
 
     format = QTextCharFormat();
     format.setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-    format.setForeground(QColor("#E69F66"));
+    format.setForeground(QColor("#db8744"));
     _formats[CodeOther] = format;
 
     format = QTextCharFormat();
@@ -437,7 +437,7 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize) {
 
     format = QTextCharFormat();
     format.setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-    format.setForeground(Qt::green);
+    format.setForeground(QColor("#018a0f"));
     _formats[CodeBuiltIn] = format;
 }
 
@@ -1002,15 +1002,13 @@ void MarkdownHighlighter::xmlHighlighter(const QString &text) {
             if (found > 0) {
                 ++i;
                 if (text[i] == QLatin1Char('/')) ++i;
-                int space = text.indexOf(QLatin1Char(' '), i);
-                if (space > 0) found = space;
                 setFormat(i, found - i, _formats[CodeKeyWord]);
-
             }
         }
 
         if (text[i] == QLatin1Char('=')) {
             int lastSpace = text.lastIndexOf(QLatin1Char(' '), i);
+            if (lastSpace == i-1) lastSpace = text.lastIndexOf(QLatin1Char(' '), i-2);
             if (lastSpace > 0) {
                 setFormat(lastSpace, i - lastSpace, _formats[CodeBuiltIn]);
             }
