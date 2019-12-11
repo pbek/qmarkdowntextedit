@@ -200,7 +200,7 @@ void MarkdownHighlighter::initHighlightingRules() {
         HighlightingRule rule(HighlighterState::Link);
 
         // highlight urls without any other markup
-        rule.pattern = QRegularExpression(QStringLiteral(R"(\b\w+?:\/\/[^\s]+)"));
+        rule.pattern = QRegularExpression(QStringLiteral(R"(\b\w+?:\/\/[^\s>]+)"));
         rule.capturingGroup = 0;
         _highlightingRulesAfter.append(rule);
 
