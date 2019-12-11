@@ -1044,10 +1044,14 @@ void MarkdownHighlighter::cssHighlighter(const QString &text)
         } else if (text[i] == QLatin1Char('c')) {
             if (text.midRef(i, 5) == QLatin1String("color")) {
                 i += 5;
-                int colon = text.indexOf(QLatin1Char(':'),i);
+                int colon = text.indexOf(QLatin1Char(':'), i);
                 if (colon < 0) continue;
                 i = colon;
-                while(text[++i].isSpace());
+                i++;
+                while(i < textLen) {
+                    if (!text[i].isSpace()) break;
+                    i++;
+                }
                 int semicolon = text.indexOf(QLatin1Char(';'));
                 if (semicolon < 0) semicolon = textLen;
                 QString color = text.mid(i, semicolon-i);
