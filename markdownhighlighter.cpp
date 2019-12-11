@@ -888,7 +888,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                 return;
             //integer literal
             } else if (text[i].isNumber()) {
-                highlightIntegerLiterals(text, i);
+               i = highlightIntegerLiterals(text, i);
             //string literal
             } else if (text[i] == QLatin1Char('\"')) {
                 int pos = i;
@@ -1013,12 +1013,13 @@ int MarkdownHighlighter::highlightIntegerLiterals(const QString &text, int i)
         setFormat(prevBound, nextBoundary - prevBound, _formats[CodeNumLiteral]);
     } else {
         i = nextBoundary;
+        //if (i == textLen) return i;
         //setFormat(prevBound, nextBoundary - prevBound, _formats[CodeBlock]);
         if (currentBlockState() == HighlighterState::CodeCSS) {
             if ((text[i-1] == QLatin1Char('x') && text[i-2] == QLatin1Char('p')) ||
                 (text[i] == QLatin1Char('x') && text[i-1] == QLatin1Char('p')) ||
                  (text[i-1] == QLatin1Char('m') && text[i-2] == QLatin1Char('e')) ||
-                 (text[i] == QLatin1Char('e') && text[i-1] == QLatin1Char('e'))) {
+                 (text[i] == QLatin1Char('e') && text[i-1] == QLatin1Char('m'))) {
                 setFormat(i-2, i - (i-2), _formats[CodeKeyWord]);
                 if (text[i-3].isNumber()){
                     int space = text.lastIndexOf(QLatin1Char(' '), i-2);
@@ -1035,7 +1036,6 @@ void MarkdownHighlighter::cssHighlighter(const QString &text)
 {
     if (text.isEmpty()) return;
     const auto textLen = text.length();
-
     for (int i = 0; i<textLen; ++i) {
         if (text[i] == QLatin1Char('.') || text[i] == QLatin1Char('#')) {
             if (text[i + 1].isSpace() || text[i+1].isNumber()) continue;
@@ -1064,11 +1064,36 @@ void MarkdownHighlighter::cssHighlighter(const QString &text)
                         const QStringRef b = text.midRef(gPos+1, bPos - (gPos+1));
                         c.setRgb(r.toInt(), g.toInt(), b.toInt());
                     } else {
-                        c.setRgb(255, 255, 255);
+                        c = _formats[HighlighterState::NoState].background().color();
                     }
                 }
+
+                if (!c.isValid()) {
+                    continue;
+                }
+
+                int lightness{};
+                QColor foreground;
+                //really dark
+                if (c.lightness() <= 20) {
+                    foreground = Qt::white;
+                } else if (c.lightness() > 20 && c.lightness() <= 51){
+                    foreground = QColor("#ccc");
+                } else if (c.lightness() > 51 && c.lightness() <= 78){
+                    foreground = QColor("#bbb");
+                } else if (c.lightness() > 78 && c.lightness() <= 110){
+                    foreground = QColor("#bbb");
+                } else if (c.lightness() > 127) {
+                    lightness = c.lightness() + 100;
+                    foreground = c.darker(lightness);
+                }
+                else {
+                    lightness = c.lightness() + 100;
+                    foreground = c.lighter(lightness);
+                }
+
                 f.setBackground(c);
-                f.setForeground(Qt::black);
+                f.setForeground(foreground);
                 setFormat(i, semicolon - i, f);
                 i = semicolon;
             }
