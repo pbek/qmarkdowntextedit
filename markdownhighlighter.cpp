@@ -931,7 +931,10 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                 }
                 setFormat(pos, cnt, formatString);
             }
-            if (i+1 >= textLen) return;
+            if (i+1 >= textLen) {
+                if (isCSS) cssHighlighter(text);
+                return;
+            }
             ++i;
         }
 
@@ -939,9 +942,6 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
         i = applyCodeFormat(i, keywords, text, formatKeyword);
         i = applyCodeFormat(i, literals, text, formatNumLit);
         i = applyCodeFormat(i, builtin, text, formatBuiltIn);
-        if (isCSS) {
-            cssHighlighter(text);
-        }
 
         if (( i == 0 || !text[i-1].isLetter()) && others.contains(text[i].toLatin1())) {
             wordList = others.values(text[i].toLatin1());
@@ -1098,6 +1098,7 @@ void MarkdownHighlighter::cssHighlighter(const QString &text)
 
                 f.setBackground(c);
                 f.setForeground(foreground);
+                setFormat(i, semicolon - i, QTextCharFormat()); //clear prev format
                 setFormat(i, semicolon - i, f);
                 i = semicolon;
             }
