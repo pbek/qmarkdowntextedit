@@ -20,81 +20,6 @@
       <property name="plainText">
        <string>QMarkdownTextEdit
 ==============
-```css
-/* Applies to the entire body of the HTML document (except where overridden by more specific
-selectors). */
-body {
-  margin: 27px
-  color: #000000;
-  color: #111111;
-  color: #222222;
-  color: #333333;
-  color: #444444;
-  color: #444ee4;
-  color: #ffffff;
-color: #0d5572;
-color: #05464f;
-color: #133a30;
-color: #dd0000;
-color: #006994;
-color: #00aae4;
-color: #1e90ff;
-color: #0079c1;
-color: #3eb489;
-color: #50c878;
-color: #7851a9;
-color: #800020;
-color: #ff9966;
-color: #ff7538;
-color: #9f1d35;
-color: #3e8ede;
-color: #007fff;
-color: #c32148;
-color: #39ca74;
-color: #933028;
-color: #f26b43;
-color: #ef5927;
-color: #e5e5cc;
-color: #0067a5;
-color: #023352;
-color: #0d5572;
-color: #b7504c;
-color: #9c3bf3;
-color: #0f4c81;
-color: #a64ca6;
-color: #b7504c;
-color: #8d0d0d;
-color: #ffa891;
-color: #8b0000;
-color: #990000;
-color: #dfb63f;
-color: #e1ae1b;
-color: #c6962c;
-color: #b18628;
-color: #7a3ee8;
-color: #819bb4;
-color: #2c89c4;
-  background-coor: rgb(240,240,240);
-  background-coor: rgb(24,78,140);
-  font-family: arial, sans-serif;
-  font-size: 14px;
-  coor: #ff0;
-  coor: #649449;
-}
-
-/* Applies to all &lt;h1&gt;...&lt;/h1&gt; elements. */
-h1 {
-  font-size: 35px;
-  font-weight: normal;
-  margin-top: 5px;
-}
-
-/* Applies to all elements with &lt;... class=&quot;someclass&quot;&gt; specified. */
-.someclass { color: red; }
-
-/* Applies to the element with &lt;... id=&quot;someid&quot;&gt; specified. */
-#someid { color: green; }
-```
 
 *QMarkdownTextEdit* is a C++ Qt [QPlainTextEdit](http://doc.qt.io/qt-5/qplaintextedit.html) widget with **markdown highlighting** and some other goodies.
 
@@ -109,9 +34,6 @@ h1 {
     - jump between search results with `Up` and `Down`
     - close search field with `Escape`
 - and much more...
-
-```css
-```
 
 ## References
 
