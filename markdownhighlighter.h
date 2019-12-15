@@ -173,7 +173,7 @@ protected:
 
     QVector<HighlightingRule> _highlightingRulesPre;
     QVector<HighlightingRule> _highlightingRulesAfter;
-    static QHash<QString, HighlighterState> langStringToEnum;
+    static QHash<QString, HighlighterState> _langStringToEnum;
     QVector<QTextBlock> _dirtyTextBlocks;
     QHash<HighlighterState, QTextCharFormat> _formats;
     QTimer *_timer;
