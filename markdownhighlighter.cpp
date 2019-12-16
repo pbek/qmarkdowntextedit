@@ -856,7 +856,6 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
     const QTextCharFormat &formatType = _formats[CodeType];
     const QTextCharFormat &formatKeyword = _formats[CodeKeyWord];
     const QTextCharFormat &formatComment = _formats[CodeComment];
-    const QTextCharFormat &formatString = _formats[CodeString];
     const QTextCharFormat &formatNumLit = _formats[CodeNumLiteral];
     const QTextCharFormat &formatBuiltIn = _formats[CodeBuiltIn];
     const QTextCharFormat &formatOther = _formats[CodeOther];
@@ -866,6 +865,8 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
         while (!text[i].isLetter()) {
             if (text[i].isSpace()) {
                 ++i;
+                //make sure we don't cross the bound
+                if (i == textLen) return;
                 if (text[i].isLetter()) break;
                 else continue;
             }
@@ -896,68 +897,31 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                i = highlightIntegerLiterals(text, i);
             //string literal
             } else if (text[i] == QLatin1Char('\"')) {
-                int pos = i;
-                int cnt = 1;
-                ++i;
-                //bound check
-                if ( (i+1) >= textLen) return;
-                while (i < textLen) {
-                    if (text[i] == QLatin1Char('\"')) {
-                        ++cnt;
-                        ++i;
-                        break;
-                    }
-                    ++i; ++cnt;
-                    //bound check
-                    if ( (i+1) >= textLen) {
-                        ++cnt;
-                        break;
-                    }
-                }
-                setFormat(pos, cnt, formatString);
+               i = highlightStringLiterals('\"', text, i);
             }  else if (text[i] == QLatin1Char('\'')) {
-                int pos = i;
-                int cnt = 1;
-                ++i;
-                //bound check
-                if (i+1 >= textLen) return;
-                while (i < textLen) {
-                    if (text[i] == QLatin1Char('\'')) {
-                        ++cnt;
-                        ++i;
-                        break;
-                    }
-                    //bound check
-                    if ( (i+1) >= textLen) {
-                        ++cnt;
-                        break;
-                    }
-                    ++i; ++cnt;
-                }
-                setFormat(pos, cnt, formatString);
+               i = highlightStringLiterals('\'', text, i);
             }
             if (i+1 >= textLen) {
                 if (isCSS) cssHighlighter(text);
                 return;
             }
-            setFormat(i, 1, _formats[CodeBlock]);
             ++i;
         }
 
         int pos = i;
 
         i = applyCodeFormat(i, types, text, formatType);
+        if (i == textLen || !text[i].isLetter()) continue;
 
-        if (text[i].isSpace()) continue;
         i = applyCodeFormat(i, keywords, text, formatKeyword);
+        if (i == textLen || !text[i].isLetter()) continue;
 
-        if (text[i].isSpace()) continue;
         i = applyCodeFormat(i, literals, text, formatNumLit);
+        if (i == textLen || !text[i].isLetter()) continue;
 
-        if (text[i].isSpace()) continue;
         i = applyCodeFormat(i, builtin, text, formatBuiltIn);
+        if (i == textLen || !text[i].isLetter()) continue;
 
-        if (text[i].isSpace()) continue;
         if (( i == 0 || !text[i-1].isLetter()) && others.contains(text[i].toLatin1())) {
             wordList = others.values(text[i].toLatin1());
 #if QT_VERSION >= 0x050700
@@ -984,10 +948,28 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                 if (!text[cnt].isLetter()) break;
                 ++cnt;
             }
-            setFormat(i, cnt - i, _formats[CodeBlock]);
             i = cnt;
         }
     }
+}
+
+int MarkdownHighlighter::highlightStringLiterals(QChar st, const QString &text, int i) {
+    const int textLen = text.length();
+
+    int pos = i;
+    int cnt = 1;
+    ++i;
+    while (i < textLen) {
+        if (text[i] == st) {
+            ++cnt;
+            ++i;
+            break;
+        }
+
+        ++i; ++cnt;
+    }
+    setFormat(pos, cnt, _formats[CodeString]);
+    return i;
 }
 
 int MarkdownHighlighter::highlightIntegerLiterals(const QString &text, int i)
