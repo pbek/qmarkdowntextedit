@@ -103,15 +103,18 @@ static const QMultiHash<char, QLatin1String> cpp_types = {
     {('Q'), QLatin1String("QHash")},
     {('Q'), QLatin1String("QList")},
     {('Q'), QLatin1String("QMap")},
-    {('Q'), QLatin1String("QLatin1String")},
+    {('Q'), QLatin1String("QString")},
     {('Q'), QLatin1String("QVector")},
     {('s'), QLatin1String("short")},
-    {('s'), QLatin1String("string")},
+    {('s'), QLatin1String("size_t")},
     {('s'), QLatin1String("struct")},
     {('u'), QLatin1String("union")},
-    {('v'), QLatin1String("vector")},
+    {('u'), QLatin1String("uint8_t")},
+    {('u'), QLatin1String("uint16_t")},
+    {('u'), QLatin1String("uint32_t")},
+    {('u'), QLatin1String("uint64_t")},
     {('v'), QLatin1String("void")},
-    {('w'), QLatin1String("wchar_t")},
+    {('w'), QLatin1String("wchar_t")}
 };
 
 static const QMultiHash<char, QLatin1String> cpp_literals = {
