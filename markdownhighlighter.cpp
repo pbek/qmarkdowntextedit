@@ -25,7 +25,7 @@
 #include <utility>
 #include "qownlanguagedata.h"
 
-QHash<QString, MarkdownHighlighter::HighlighterState> MarkdownHighlighter::langStringToEnum;
+QHash<QString, MarkdownHighlighter::HighlighterState> MarkdownHighlighter::_langStringToEnum;
 
 /**
  * Markdown syntax highlighting
@@ -447,7 +447,7 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize) {
  */
 void MarkdownHighlighter::initCodeLangs()
 {
-    MarkdownHighlighter::langStringToEnum =
+    MarkdownHighlighter::_langStringToEnum =
             QHash<QString, MarkdownHighlighter::HighlighterState> {
         {QLatin1String("bash"),        MarkdownHighlighter::CodeBash},
         {QLatin1String("c"),           MarkdownHighlighter::CodeC},
@@ -712,7 +712,7 @@ void MarkdownHighlighter::highlightCodeBlock(const QString& text) {
         if (previousBlockState() != HighlighterState::CodeBlock &&
             previousBlockState() < HighlighterState::CodeCpp) {
             QString lang = text.mid(3, text.length());
-            MarkdownHighlighter::HighlighterState progLang = langStringToEnum.value(lang);
+            MarkdownHighlighter::HighlighterState progLang = _langStringToEnum.value(lang);
 
             if (progLang >= HighlighterState::CodeCpp) {
                 setCurrentBlockState(progLang);
@@ -816,7 +816,6 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
         case HighlighterState::CodeXML :
             xmlHighlighter(text);
             return;
-            break;
         case HighlighterState::CodeCSS :
             isCSS = true; //TODO: rename this to something sensible
             loadCSSData(types, keywords, builtin, literals, others);
@@ -966,68 +965,63 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
 
 int MarkdownHighlighter::highlightIntegerLiterals(const QString &text, int i)
 {
-    const int textLen = text.length();
-    int prevBound = text.lastIndexOf(QLatin1Char(' '), i);
-    int nextBoundary = text.indexOf(QLatin1Char(' '), i);
-    if (nextBoundary > 0) {
-        text[nextBoundary-1] == QLatin1Char(';') ||
-        text[nextBoundary-1] == QLatin1Char(',') ?
-        --nextBoundary : nextBoundary;
-    } else if (nextBoundary < 0 && i < textLen) {
-        //look for a comma
-        int t = text.indexOf(QLatin1Char(','), i);
-        if (t < 0) {
-            t = text.indexOf(QLatin1Char(')'), i);
-        }
-        if (t < 0) {
-            t = text.indexOf(QLatin1Char(';'), i);
-        }
-        nextBoundary = t > -1 ? t : textLen;
-    }
-    if (prevBound > 0) {
-        //if the next letter after space is not a num
-        if (prevBound < text.length() && !text[prevBound+1].isNumber()) {
-            //look for a comma
-            int tmp = text.lastIndexOf(QLatin1Char(','), i);
-            //not found? look for an opening bracket
-            if (tmp == -1) {
-                tmp = text.lastIndexOf(QLatin1Char('('), i);
-            }
-            prevBound = tmp > -1 ? tmp : prevBound;
-        }
-    }
-    prevBound = prevBound == -1 ? 0 : prevBound+1;
-    nextBoundary = nextBoundary == -1 ? textLen : nextBoundary;
-    bool allNum = true;
-    for (int j = prevBound; j < nextBoundary; j++) {
-        if (!text[j].isNumber()) {
-            //hex or decimal
-            if (text[j] == QLatin1Char('x'))
-                continue;
-            allNum = false;
+    bool isPreNum = false;
+    if (i == 0) isPreNum = true;
+    else {
+        switch(text[i - 1].toLatin1()) {
+        case '[':
+        case '(':
+        case '{':
+        case ' ':
+        case ',':
+        case '=':
+        case '<':
+        case '>':
+            isPreNum = true;
             break;
         }
     }
-    if (allNum) {
-        i = nextBoundary;
-        setFormat(prevBound, nextBoundary - prevBound, _formats[CodeNumLiteral]);
-    } else {
-        i = nextBoundary;
-        //if (i == textLen) return i;
-        //setFormat(prevBound, nextBoundary - prevBound, _formats[CodeBlock]);
-        if (currentBlockState() == HighlighterState::CodeCSS) {
-            if ((text[i-1] == QLatin1Char('x') && text[i-2] == QLatin1Char('p')) ||
-                (text[i] == QLatin1Char('x') && text[i-1] == QLatin1Char('p')) ||
-                 (text[i-1] == QLatin1Char('m') && text[i-2] == QLatin1Char('e')) ||
-                 (text[i] == QLatin1Char('e') && text[i-1] == QLatin1Char('m'))) {
-                setFormat(i-2, i - (i-2), _formats[CodeKeyWord]);
-                if (text[i-3].isNumber()){
-                    int space = text.lastIndexOf(QLatin1Char(' '), i-2);
-                    if (space > 0)
-                        setFormat(space, (i-2) - space, _formats[CodeNumLiteral]);
-                }
-            }
+    int start = i;
+
+    if ((i+1) >= text.length()) {
+        if (isPreNum) setFormat(i, 1, _formats[CodeNumLiteral]);
+        return ++i;
+    }
+
+    ++i;
+    if (text[i] == 'x') ++i;
+
+    if (isPreNum) {
+        while (i < text.length()) {
+            if (!text[i].isNumber() && text[i] != '.') break;
+            ++i;
         }
+    } else {
+        return i;
+    }
+
+    i--;
+
+    bool isPostNum = false;
+    if (i+1 == text.length()) isPostNum = true;
+    else {
+        switch(text[i + 1].toLatin1()) {
+        case ']':
+        case ')':
+        case '}':
+        case ' ':
+        case ',':
+        case '=':
+        case '>':
+        case '<':
+        case ';':
+            isPostNum = true;
+            break;
+        }
+    }
+    if (isPostNum) {
+        int end = ++i;
+        setFormat(start, end - start, _formats[CodeNumLiteral]);
     }
     return i;
 }
