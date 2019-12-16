@@ -864,6 +864,11 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
     for (int i=0; i< textLen; ++i) {
 
         while (!text[i].isLetter()) {
+            if (text[i].isSpace()) {
+                ++i;
+                if (text[i].isLetter()) break;
+                else continue;
+            }
             //inline comment
             if (text[i] == QLatin1Char('/')) {
                 if((i+1) < textLen){
@@ -935,14 +940,24 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                 if (isCSS) cssHighlighter(text);
                 return;
             }
+            setFormat(i, 1, _formats[CodeBlock]);
             ++i;
         }
 
+        int pos = i;
+
         i = applyCodeFormat(i, types, text, formatType);
+
+        if (text[i].isSpace()) continue;
         i = applyCodeFormat(i, keywords, text, formatKeyword);
+
+        if (text[i].isSpace()) continue;
         i = applyCodeFormat(i, literals, text, formatNumLit);
+
+        if (text[i].isSpace()) continue;
         i = applyCodeFormat(i, builtin, text, formatBuiltIn);
 
+        if (text[i].isSpace()) continue;
         if (( i == 0 || !text[i-1].isLetter()) && others.contains(text[i].toLatin1())) {
             wordList = others.values(text[i].toLatin1());
 #if QT_VERSION >= 0x050700
@@ -960,6 +975,17 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                     }
                 }
             }
+        }
+
+        //we were unable to find any match
+        if (!text[i].isSpace() && pos == i) {
+            int cnt = i;
+            while (cnt < textLen) {
+                if (!text[cnt].isLetter()) break;
+                ++cnt;
+            }
+            setFormat(i, cnt - i, _formats[CodeBlock]);
+            i = cnt;
         }
     }
 }
