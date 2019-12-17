@@ -174,7 +174,7 @@ protected:
 
     int highlightIntegerLiterals(const QString& text, int i);
 
-    int highlightStringLiterals(QChar st, const QString& text, int i);
+    int highlightStringLiterals(QChar strType, const QString& text, int i);
 
     void cssHighlighter(const QString &text);
 
