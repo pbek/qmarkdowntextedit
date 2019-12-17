@@ -82,22 +82,43 @@ public:
         FrontmatterBlockEnd,
 
         //languages
+        /*********
+         * When adding a language make sure that its value is a multiple of 2
+         * This is because we use the next number as comment for that language
+         * In case the language doesn't support multiline comments in the traditional C++
+         * sense, leave the next value empty. Otherwise mark the next value as comment for
+         * that language.
+         * e.g
+         * CodeCpp = 200
+         * CodeCppComment = 201
+         */
         CodeCpp = 200,
-        CodeJs = 201,
-        CodeC = 202,
-        CodeBash = 203,
-        CodePHP = 204,
-        CodeQML = 205,
-        CodePython = 206,
-        CodeRust = 207,
-        CodeJava = 208,
-        CodeCSharp = 209,
-        CodeGo = 210,
-        CodeV = 211,
-        CodeSQL = 212,
-        CodeJSON = 213,
-        CodeXML = 214,
-        CodeCSS = 215
+        CodeCppComment = 201,
+        CodeJs = 202,
+        CodeJsComment = 203,
+        CodeC = 204,
+        CodeCComment = 205,
+        CodeBash = 206,
+        CodePHP = 208,
+        CodePHPComment = 209,
+        CodeQML = 210,
+        CodeQMLComment = 211,
+        CodePython = 212,
+        CodeRust = 214,
+        CodeRustComment = 215,
+        CodeJava = 216,
+        CodeJavaComment = 217,
+        CodeCSharp = 218,
+        CodeCSharpComment = 219,
+        CodeGo = 220,
+        CodeGoComment = 221,
+        CodeV = 222,
+        CodeVComment = 223,
+        CodeSQL = 224,
+        CodeJSON = 226,
+        CodeXML = 228,
+        CodeCSS = 230,
+        CodeCSSComment = 231
     };
     Q_ENUMS(HighlighterState)
 

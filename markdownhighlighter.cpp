@@ -770,12 +770,15 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
 
     switch (currentBlockState()) {
         case HighlighterState::CodeCpp :
+        case HighlighterState::CodeCppComment :
             loadCppData(types, keywords, builtin, literals, others);
             break;
         case HighlighterState::CodeJs :
+        case HighlighterState::CodeJsComment :
             loadJSData(types, keywords, builtin, literals, others);
             break;
         case HighlighterState::CodeC :
+        case HighlighterState::CodeCComment :
             loadCppData(types, keywords, builtin, literals, others);
             break;
         case HighlighterState::CodeBash :
@@ -783,9 +786,11 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
             comment = QLatin1Char('#');
             break;
         case HighlighterState::CodePHP :
+        case HighlighterState::CodePHPComment :
             loadPHPData(types, keywords, builtin, literals, others);
             break;
         case HighlighterState::CodeQML :
+        case HighlighterState::CodeQMLComment :
             loadQMLData(types, keywords, builtin, literals, others);
             break;
         case HighlighterState::CodePython :
@@ -793,18 +798,23 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
             comment = QLatin1Char('#');
             break;
         case HighlighterState::CodeRust :
+        case HighlighterState::CodeRustComment :
             loadRustData(types, keywords, builtin, literals, others);
             break;
         case HighlighterState::CodeJava :
+        case HighlighterState::CodeJavaComment :
             loadJavaData(types, keywords, builtin, literals, others);
             break;
         case HighlighterState::CodeCSharp :
+        case HighlighterState::CodeCSharpComment :
             loadCSharpData(types, keywords, builtin, literals, others);
             break;
         case HighlighterState::CodeGo :
+        case HighlighterState::CodeGoComment :
             loadGoData(types, keywords, builtin, literals, others);
             break;
         case HighlighterState::CodeV :
+        case HighlighterState::CodeVComment :
             loadVData(types, keywords, builtin, literals, others);
             break;
         case HighlighterState::CodeSQL :
@@ -817,15 +827,18 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
             xmlHighlighter(text);
             return;
         case HighlighterState::CodeCSS :
-            isCSS = true; //TODO: rename this to something sensible
+        case HighlighterState::CodeCSSComment :
+            isCSS = true;
             loadCSSData(types, keywords, builtin, literals, others);
-            //cssHighlighter(text);
             break;
     default:
         break;
     }
 
     // keep the default code block format
+    // this statement is very slow
+    // TODO: do this formatting when necessary instead of
+    // applying it to the whole block in the beginning
     setFormat(0, textLen, _formats[CodeBlock]);
 
     auto applyCodeFormat = [this, &wordList](int i, const QMultiHash<char, QLatin1String> &data,
@@ -861,6 +874,8 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
 
     for (int i=0; i< textLen; ++i) {
 
+        if (currentBlockState() % 2 != 0) goto Comment;
+
         while (!text[i].isLetter()) {
             if (text[i].isSpace()) {
                 ++i;
@@ -876,11 +891,24 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                         setFormat(i, textLen, formatComment);
                         return;
                     } else if(text[i+1] == QLatin1Char('*')) {
+                        Comment:
                         int next = text.indexOf(QLatin1String("*/"));
                         if (next == -1) {
+                            //we didn't find a comment end.
+                            //Check if we are already in a comment block
+                            if (currentBlockState() % 2 == 0)
+                                setCurrentBlockState(currentBlockState() + 1);
                             setFormat(i, textLen,  formatComment);
                             return;
                         } else {
+                            //we found a comment end
+                            //mark this block as code if it was previously comment
+                            //first check if the comment ended on the same line
+                            //if modulo 2 is not equal to zero, it means we are in a comment
+                            //-1 will set this block's state as language
+                            if (currentBlockState() % 2 != 0) {
+                                setCurrentBlockState(currentBlockState() - 1);
+                            }
                             next += 2;
                             setFormat(i, next - i,  formatComment);
                             i = next;
@@ -894,7 +922,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
             //integer literal
             } else if (text[i].isNumber()) {
                i = highlightIntegerLiterals(text, i);
-            //string literal
+            //string literals
             } else if (text[i] == QLatin1Char('\"')) {
                i = highlightStringLiterals('\"', text, i);
             }  else if (text[i] == QLatin1Char('\'')) {
@@ -909,18 +937,33 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
 
         int pos = i;
 
+        /* Highlight Types */
         i = applyCodeFormat(i, types, text, formatType);
+        /************************************************
+         next letter is usually a space, in that case
+         going forward is useless, so continue;
+         We can ++i here and go to the beginning of the next word
+         so that the next formatter can check for formatting but this will
+         cause problems in case the next word is also of 'Type' or the current
+         type(keyword/builtin). We can work around it and reset the value of i
+         in the beginning of the loop to the word's first letter but I am not
+         sure about its efficiency yet.
+         ************************************************/
         if (i == textLen || !text[i].isLetter()) continue;
 
+        /* Highlight Keywords */
         i = applyCodeFormat(i, keywords, text, formatKeyword);
         if (i == textLen || !text[i].isLetter()) continue;
 
+        /* Highlight Literals (true/false/NULL,nullptr) */
         i = applyCodeFormat(i, literals, text, formatNumLit);
         if (i == textLen || !text[i].isLetter()) continue;
 
+        /* Highlight Builtin library stuff */
         i = applyCodeFormat(i, builtin, text, formatBuiltIn);
         if (i == textLen || !text[i].isLetter()) continue;
 
+        /* Highlight other stuff (preprocessor etc.) */
         if (( i == 0 || !text[i-1].isLetter()) && others.contains(text[i].toLatin1())) {
             wordList = others.values(text[i].toLatin1());
 #if QT_VERSION >= 0x050700
@@ -940,8 +983,8 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
             }
         }
 
-        //we were unable to find any match
-        if (!text[i].isSpace() && pos == i) {
+        //we were unable to find any match, lets skip this word
+        if (pos == i) {
             int cnt = i;
             while (cnt < textLen) {
                 if (!text[cnt].isLetter()) break;
