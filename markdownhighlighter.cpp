@@ -828,15 +828,17 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
             return;
         case HighlighterState::CodeCSS :
         case HighlighterState::CodeCSSComment :
-            isCSS = true; //TODO: rename this to something sensible
+            isCSS = true;
             loadCSSData(types, keywords, builtin, literals, others);
-            //cssHighlighter(text);
             break;
     default:
         break;
     }
 
     // keep the default code block format
+    // this statement is very slow
+    // TODO: do this formatting when necessary instead of
+    // applying it to the whole block in the beginning
     setFormat(0, textLen, _formats[CodeBlock]);
 
     auto applyCodeFormat = [this, &wordList](int i, const QMultiHash<char, QLatin1String> &data,
@@ -920,7 +922,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
             //integer literal
             } else if (text[i].isNumber()) {
                i = highlightIntegerLiterals(text, i);
-            //string literal
+            //string literals
             } else if (text[i] == QLatin1Char('\"')) {
                i = highlightStringLiterals('\"', text, i);
             }  else if (text[i] == QLatin1Char('\'')) {
@@ -935,18 +937,33 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
 
         int pos = i;
 
+        /* Highlight Types */
         i = applyCodeFormat(i, types, text, formatType);
+        /************************************************
+         next letter is usually a space, in that case
+         going forward is useless, so continue;
+         We can ++i here and go to the beginning of the next word
+         so that the next formatter can check for formatting but this will
+         cause problems in case the next word is also of 'Type' or the current
+         type(keyword/builtin). We can work around it and reset the value of i
+         in the beginning of the loop to the word's first letter but I am not
+         sure about its efficiency yet.
+         ************************************************/
         if (i == textLen || !text[i].isLetter()) continue;
 
+        /* Highlight Keywords */
         i = applyCodeFormat(i, keywords, text, formatKeyword);
         if (i == textLen || !text[i].isLetter()) continue;
 
+        /* Highlight Literals (true/false/NULL,nullptr) */
         i = applyCodeFormat(i, literals, text, formatNumLit);
         if (i == textLen || !text[i].isLetter()) continue;
 
+        /* Highlight Builtin library stuff */
         i = applyCodeFormat(i, builtin, text, formatBuiltIn);
         if (i == textLen || !text[i].isLetter()) continue;
 
+        /* Highlight other stuff (preprocessor etc.) */
         if (( i == 0 || !text[i-1].isLetter()) && others.contains(text[i].toLatin1())) {
             wordList = others.values(text[i].toLatin1());
 #if QT_VERSION >= 0x050700
@@ -966,7 +983,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
             }
         }
 
-        //we were unable to find any match
+        //we were unable to find any match, lets skip this word
         if (pos == i) {
             int cnt = i;
             while (cnt < textLen) {
