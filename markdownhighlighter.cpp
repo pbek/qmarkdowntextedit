@@ -995,25 +995,48 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
     }
 }
 
-int MarkdownHighlighter::highlightStringLiterals(QChar st, const QString &text, int i) {
-    const int textLen = text.length();
-
-    int pos = i;
-    int cnt = 1;
+/**
+ * @brief Highlight string literals in code
+ * @param strType str type i.e., ' or "
+ * @param text the text being scanned
+ * @param i pos of i in loop
+ * @return pos of i after the string
+ */
+int MarkdownHighlighter::highlightStringLiterals(QChar strType, const QString &text, int i) {
+    setFormat(i, 1,  _formats[CodeString]);
     ++i;
-    while (i < textLen) {
-        if (text[i] == st) {
-            ++cnt;
+
+    while (i < text.length()) {
+        //make sure it's not an escape seq
+        if (text.at(i) == strType && text.at(i-1) != '\\') {
+            setFormat(i, 1,  _formats[CodeString]);
             ++i;
             break;
         }
-
-        ++i; ++cnt;
+        //look for escape sequence
+        if (text.at(i) == '\\') {
+            //look for space
+            int spacePos = text.indexOf(' ', i);
+            //if space not found, look for the string end
+            //this may present problems in very special cases for e.g \"hello\"
+            if (spacePos == -1) {
+                spacePos = text.indexOf(strType, i);
+            }
+            setFormat(i, spacePos - i, _formats[CodeNumLiteral]);
+            i = spacePos;
+        }
+        setFormat(i, 1,  _formats[CodeString]);
+        ++i;
     }
-    setFormat(pos, cnt, _formats[CodeString]);
     return i;
 }
 
+/**
+ * @brief Highlight number literals in code
+ * @param text the text being scanned
+ * @param i pos of i in loop
+ * @return pos of i after the number
+ */
 int MarkdownHighlighter::highlightIntegerLiterals(const QString &text, int i)
 {
     bool isPreNum = false;
