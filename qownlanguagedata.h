@@ -107,6 +107,7 @@ static const QMultiHash<char, QLatin1String> cpp_types = {
     {('Q'), QLatin1String("QVector")},
     {('s'), QLatin1String("short")},
     {('s'), QLatin1String("size_t")},
+    {('s'), QLatin1String("ssize_t")},
     {('s'), QLatin1String("struct")},
     {('u'), QLatin1String("union")},
     {('u'), QLatin1String("uint8_t")},
