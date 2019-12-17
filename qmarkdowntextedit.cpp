@@ -801,7 +801,7 @@ bool QMarkdownTextEdit::handleBracketRemoval() {
  * (if there is a text selected) in the noteTextEdit
  * @return
  */
-bool QMarkdownTextEdit::increaseSelectedTextIndention(bool reverse) {
+bool QMarkdownTextEdit::increaseSelectedTextIndention(bool reverse, QString indentCharacters) {
     QTextCursor cursor = this->textCursor();
     QString selectedText = cursor.selectedText();
 
@@ -814,15 +814,18 @@ bool QMarkdownTextEdit::increaseSelectedTextIndention(bool reverse) {
         if (reverse) {
             // un-indent text
 
-            // remove strange newline characters
-            newText = selectedText.replace(
-                    QRegularExpression(newLine + "[\\t ]"), "\n");
+            QSettings settings;
+            const int indentSize = indentCharacters == "\t" ? 4 : indentCharacters.count();
 
-            // remove leading \t or space
-            newText.remove(QRegularExpression("^[\\t ]"));
+            // remove leading \t or spaces in following lines
+            newText = selectedText.replace(
+                    QRegularExpression(newLine + "(\\t| {1," + QString::number(indentSize) +"})"), "\n");
+
+            // remove leading \t or spaces in first line
+            newText.remove(QRegularExpression("^(\\t| {1," + QString::number(indentSize) +"})"));
         } else {
             // indent text
-            newText = selectedText.replace(newLine, "\n\t").prepend("\t");
+            newText = selectedText.replace(newLine, "\n" + indentCharacters).prepend(indentCharacters);
 
             // remove trailing \t
             newText.replace(QRegularExpression("\\t$"), "");
@@ -868,7 +871,10 @@ bool QMarkdownTextEdit::increaseSelectedTextIndention(bool reverse) {
         return true;
     }
 
-    return false;
+    // else just insert indentCharacters
+    cursor.insertText(indentCharacters);
+
+    return true;
 }
 
 /**
@@ -1264,7 +1270,7 @@ bool QMarkdownTextEdit::handleReturnEntered() {
 /**
  * Handles entered tab or reverse tab keys
  */
-bool QMarkdownTextEdit::handleTabEntered(bool reverse) {
+bool QMarkdownTextEdit::handleTabEntered(bool reverse, QString indentCharacters) {
     if (isReadOnly()) {
         return true;
     }
@@ -1291,7 +1297,7 @@ bool QMarkdownTextEdit::handleTabEntered(bool reverse) {
             if (reverse) {
                 whitespaces.chop(1);
             } else {
-                whitespaces += "\t";
+                whitespaces += indentCharacters;
             }
 
             cursor.insertText(whitespaces + listCharacter + whitespaceCharacter);
@@ -1312,7 +1318,7 @@ bool QMarkdownTextEdit::handleTabEntered(bool reverse) {
             if (reverse) {
                 whitespaces.chop(1);
             } else {
-                whitespaces += "\t";
+                whitespaces += indentCharacters;
             }
 
             cursor.insertText(whitespaces + listCharacter + "." +
@@ -1322,7 +1328,7 @@ bool QMarkdownTextEdit::handleTabEntered(bool reverse) {
     }
 
     // check if we want to intent the whole text
-    return increaseSelectedTextIndention(reverse);
+    return increaseSelectedTextIndention(reverse, indentCharacters);
 }
 
 /**

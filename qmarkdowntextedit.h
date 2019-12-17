@@ -79,8 +79,8 @@ protected:
     bool _centerCursor = false;
 
     bool eventFilter(QObject *obj, QEvent *event);
-    bool increaseSelectedTextIndention(bool reverse);
-    bool handleTabEntered(bool reverse);
+    bool increaseSelectedTextIndention(bool reverse, QString indentCharacters = "\t");
+    bool handleTabEntered(bool reverse, QString indentCharacters = "\t");
     QMap<QString, QString> parseMarkdownUrlsFromText(const QString& text);
     bool handleReturnEntered();
     bool handleBracketClosing(const QString& openingCharacter,
