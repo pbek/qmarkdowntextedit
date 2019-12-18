@@ -118,7 +118,9 @@ public:
         CodeJSON = 226,
         CodeXML = 228,
         CodeCSS = 230,
-        CodeCSSComment = 231
+        CodeCSSComment = 231,
+        CodeTypeScript = 232,
+        CodeTypeScriptComment = 233
     };
     Q_ENUMS(HighlighterState)
 

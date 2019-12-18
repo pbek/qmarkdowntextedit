@@ -471,6 +471,8 @@ void MarkdownHighlighter::initCodeLangs()
         {QLatin1String("sh"),          MarkdownHighlighter::CodeBash},
         {QLatin1String("sql"),         MarkdownHighlighter::CodeSQL},
         {QLatin1String("SQL"),         MarkdownHighlighter::CodeSQL},
+        {QLatin1String("ts"),          MarkdownHighlighter::CodeTypeScript},
+        {QLatin1String("typescript"),  MarkdownHighlighter::CodeTypeScript},
         {QLatin1String("v"),           MarkdownHighlighter::CodeV},
         {QLatin1String("xml"),         MarkdownHighlighter::CodeXML}
     };
@@ -830,6 +832,10 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
         case HighlighterState::CodeCSSComment :
             isCSS = true;
             loadCSSData(types, keywords, builtin, literals, others);
+            break;
+        case HighlighterState::CodeTypeScript:
+        case HighlighterState::CodeTypeScriptComment:
+            loadTypescriptData(types, keywords, builtin, literals, others);
             break;
     default:
         break;
