@@ -882,7 +882,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
 
         if (currentBlockState() % 2 != 0) goto Comment;
 
-        while (!text[i].isLetter()) {
+        while (i < textLen && !text[i].isLetter()) {
             if (text[i].isSpace()) {
                 ++i;
                 //make sure we don't cross the bound
@@ -934,7 +934,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
             }  else if (text[i] == QLatin1Char('\'')) {
                i = highlightStringLiterals('\'', text, i);
             }
-            if (i+1 >= textLen) {
+            if (i >= textLen) {
                 if (isCSS) cssHighlighter(text);
                 return;
             }
@@ -942,6 +942,8 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
         }
 
         int pos = i;
+
+        if (i == textLen || !text[i].isLetter()) continue;
 
         /* Highlight Types */
         i = applyCodeFormat(i, types, text, formatType);
@@ -999,6 +1001,8 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
             i = cnt;
         }
     }
+
+    if (isCSS) cssHighlighter(text);
 }
 
 /**
@@ -1112,9 +1116,17 @@ void MarkdownHighlighter::cssHighlighter(const QString &text)
     const auto textLen = text.length();
     for (int i = 0; i<textLen; ++i) {
         if (text[i] == QLatin1Char('.') || text[i] == QLatin1Char('#')) {
+            if (i+1 >= textLen) return;
             if (text[i + 1].isSpace() || text[i+1].isNumber()) continue;
             int space = text.indexOf(QLatin1Char(' '), i);
+            if (space < 0) {
+                space = text.indexOf('{');
+                if (space < 0) {
+                    space = textLen;
+                }
+            }
             setFormat(i, space - i, _formats[CodeKeyWord]);
+            i = space;
         } else if (text[i] == QLatin1Char('c')) {
             if (text.midRef(i, 5) == QLatin1String("color")) {
                 i += 5;
