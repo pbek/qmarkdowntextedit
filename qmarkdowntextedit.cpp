@@ -824,11 +824,14 @@ bool QMarkdownTextEdit::increaseSelectedTextIndention(bool reverse, QString inde
             // remove leading \t or spaces in first line
             newText.remove(QRegularExpression("^(\\t| {1," + QString::number(indentSize) +"})"));
         } else {
+            // replace trailing new line to prevent an indent of the line after the selection
+            newText = selectedText.replace(QRegularExpression(QRegularExpression::escape(newLine) + "$"), "\n");
+
             // indent text
-            newText = selectedText.replace(newLine, "\n" + indentCharacters).prepend(indentCharacters);
+            newText.replace(newLine, "\n" + indentCharacters).prepend(indentCharacters);
 
             // remove trailing \t
-            newText.replace(QRegularExpression("\\t$"), "");
+            newText.remove(QRegularExpression("\\t$"));
         }
 
         // insert the new text
