@@ -801,7 +801,7 @@ bool QMarkdownTextEdit::handleBracketRemoval() {
  * (if there is a text selected) in the noteTextEdit
  * @return
  */
-bool QMarkdownTextEdit::increaseSelectedTextIndention(bool reverse, QString indentCharacters) {
+bool QMarkdownTextEdit::increaseSelectedTextIndention(bool reverse, const QString& indentCharacters) {
     QTextCursor cursor = this->textCursor();
     QString selectedText = cursor.selectedText();
 
@@ -1273,7 +1273,7 @@ bool QMarkdownTextEdit::handleReturnEntered() {
 /**
  * Handles entered tab or reverse tab keys
  */
-bool QMarkdownTextEdit::handleTabEntered(bool reverse, QString indentCharacters) {
+bool QMarkdownTextEdit::handleTabEntered(bool reverse, const QString& indentCharacters) {
     if (isReadOnly()) {
         return true;
     }
@@ -1298,7 +1298,8 @@ bool QMarkdownTextEdit::handleTabEntered(bool reverse, QString indentCharacters)
 
             // add or remove one tabulator key
             if (reverse) {
-                whitespaces.chop(1);
+                // remove one set of indentCharacters
+                whitespaces.replace(whitespaces.indexOf(indentCharacters), indentCharacters.size(), QStringLiteral(""));
             } else {
                 whitespaces += indentCharacters;
             }
