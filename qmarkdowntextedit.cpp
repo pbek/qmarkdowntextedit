@@ -805,10 +805,10 @@ bool QMarkdownTextEdit::increaseSelectedTextIndention(bool reverse, const QStrin
     QTextCursor cursor = this->textCursor();
     QString selectedText = cursor.selectedText();
 
-    if (selectedText != "") {
+    if (!selectedText.isEmpty()) {
         // we need this strange newline character we are getting in the
         // selected text for newlines
-        QString newLine = QString::fromUtf8(QByteArray::fromHex("e280a9"));
+        const QString newLine = QString::fromUtf8(QByteArray::fromHex("e280a9"));
         QString newText;
 
         if (reverse) {
@@ -843,32 +843,39 @@ bool QMarkdownTextEdit::increaseSelectedTextIndention(bool reverse, const QStrin
 
         return true;
     } else if (reverse) {
-        // if nothing was selected but we want to reverse the indention check
-        // if there is a \t in front or after the cursor and remove it if so
-        int position = cursor.position();
+        const int indentSize = indentCharacters.count();
 
-        if (!cursor.atStart()) {
-            // get character in front of cursor
-            cursor.setPosition(position - 1, QTextCursor::KeepAnchor);
-        }
+        // do the check as often as we have characters to un-indent
+        for (int i = 1; i <= indentSize; i++) {
+            // if nothing was selected but we want to reverse the indention check
+            // if there is a \t in front or after the cursor and remove it if so
+            int position = cursor.position();
 
-        // check for \t or space in front of cursor
-        QRegularExpression re("[\\t ]");
-        QRegularExpressionMatch match = re.match(cursor.selectedText());
-
-        if (!match.hasMatch()) {
-            // (select to) check for \t or space after the cursor
-            cursor.setPosition(position);
-
-            if (!cursor.atEnd()) {
-                cursor.setPosition(position + 1, QTextCursor::KeepAnchor);
+            if (!cursor.atStart()) {
+                // get character in front of cursor
+                cursor.setPosition(position - 1, QTextCursor::KeepAnchor);
             }
-        }
 
-        match = re.match(cursor.selectedText());
+            // check for \t or space in front of cursor
+            QRegularExpression re("[\\t ]");
+            QRegularExpressionMatch match = re.match(cursor.selectedText());
 
-        if (match.hasMatch()) {
-            cursor.removeSelectedText();
+            if (!match.hasMatch()) {
+                // (select to) check for \t or space after the cursor
+                cursor.setPosition(position);
+
+                if (!cursor.atEnd()) {
+                    cursor.setPosition(position + 1, QTextCursor::KeepAnchor);
+                }
+            }
+
+            match = re.match(cursor.selectedText());
+
+            if (match.hasMatch()) {
+                cursor.removeSelectedText();
+            }
+
+            cursor = this->textCursor();
         }
 
         return true;
