@@ -487,7 +487,6 @@ void MarkdownHighlighter::initCodeLangs()
         {QLatin1String("rust"),        MarkdownHighlighter::CodeRust},
         {QLatin1String("sh"),          MarkdownHighlighter::CodeBash},
         {QLatin1String("sql"),         MarkdownHighlighter::CodeSQL},
-        {QLatin1String("SQL"),         MarkdownHighlighter::CodeSQL},
         {QLatin1String("ts"),          MarkdownHighlighter::CodeTypeScript},
         {QLatin1String("typescript"),  MarkdownHighlighter::CodeTypeScript},
         {QLatin1String("v"),           MarkdownHighlighter::CodeV},
@@ -908,7 +907,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                 else continue;
             }
             //inline comment
-            if (text[i] == QLatin1Char('/')) {
+            if (comment.isNull() && text[i] == QLatin1Char('/')) {
                 if((i+1) < textLen){
                     if(text[i+1] == QLatin1Char('/')) {
                         setFormat(i, textLen, formatComment);
