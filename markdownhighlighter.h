@@ -66,6 +66,8 @@ public:
         BrokenLink,
         FrontmatterBlock,
         TrailingSpace,
+        CheckBoxUnChecked,
+        CheckBoxChecked,
 
         //code highlighting
         CodeKeyWord = 1000,

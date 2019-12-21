@@ -118,8 +118,9 @@ void MarkdownHighlighter::initHighlightingRules() {
         _highlightingRulesPre.append(rule);
     }
 
-    // highlight unordered lists
+    // highlight lists
     {
+        // highlight unordered lists
         HighlightingRule rule(HighlighterState::List);
         rule.pattern = QRegularExpression(QStringLiteral("^\\s*[-*+]\\s"));
         rule.useStateAsCurrentBlockState = true;
@@ -127,6 +128,22 @@ void MarkdownHighlighter::initHighlightingRules() {
 
         // highlight ordered lists
         rule.pattern = QRegularExpression(QStringLiteral(R"(^\s*\d+\.\s)"));
+        _highlightingRulesPre.append(rule);
+    }
+
+    // highlight checked checkboxes
+    {
+        HighlightingRule rule(HighlighterState::CheckBoxChecked);
+        rule.pattern = QRegularExpression(R"(^\s*[+|\-|\*] (\[x\])(\s+))");
+        rule.capturingGroup = 1;
+        _highlightingRulesPre.append(rule);
+    }
+
+    // highlight unchecked checkboxes
+    {
+        HighlightingRule rule(HighlighterState::CheckBoxUnChecked);
+        rule.pattern = QRegularExpression(R"(^\s*[+|\-|\*] (\[( |)\])(\s+))");
+        rule.capturingGroup = 1;
         _highlightingRulesPre.append(rule);
     }
 
