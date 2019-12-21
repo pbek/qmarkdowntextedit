@@ -2402,3 +2402,32 @@ void loadTypescriptData(QMultiHash<char, QLatin1String> &types,
     literals = typescript_literals;
     other = typescript_other;
 }
+
+/********************************************************/
+/***   YAML DATA  ***************************************/
+/********************************************************/
+
+static const QMultiHash<char, QLatin1String> YAML_keywords = {};
+static const QMultiHash<char, QLatin1String> YAML_types = {};
+static const QMultiHash<char, QLatin1String> YAML_literals = {
+    {('f'), QLatin1String("false")},
+    {('t'), QLatin1String("true")},
+    {('n'), QLatin1String("null")},
+    {('n'), QLatin1String("no")},
+    {('y'), QLatin1String("yes")},
+};
+
+static const QMultiHash<char, QLatin1String> YAML_builtin = {};
+static const QMultiHash<char, QLatin1String> YAML_other = {};
+
+void loadYAMLData(QMultiHash<char, QLatin1String> &types,
+             QMultiHash<char, QLatin1String> &keywords,
+             QMultiHash<char, QLatin1String> &builtin,
+             QMultiHash<char, QLatin1String> &literals,
+             QMultiHash<char, QLatin1String> &other){
+    types = YAML_types;
+    keywords = YAML_keywords;
+    builtin = YAML_builtin;
+    literals = YAML_literals;
+    other = YAML_other;
+}

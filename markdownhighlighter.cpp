@@ -490,7 +490,9 @@ void MarkdownHighlighter::initCodeLangs()
         {QLatin1String("ts"),          MarkdownHighlighter::CodeTypeScript},
         {QLatin1String("typescript"),  MarkdownHighlighter::CodeTypeScript},
         {QLatin1String("v"),           MarkdownHighlighter::CodeV},
-        {QLatin1String("xml"),         MarkdownHighlighter::CodeXML}
+        {QLatin1String("xml"),         MarkdownHighlighter::CodeXML},
+        {QLatin1String("yml"),         MarkdownHighlighter::CodeYAML},
+        {QLatin1String("yaml"),        MarkdownHighlighter::CodeYAML}
     };
 
 }
@@ -777,6 +779,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
 
     QChar comment;
     bool isCSS = false;
+    bool isYAML = false;
 
     QMultiHash<char, QLatin1String> keywords{};
     QMultiHash<char, QLatin1String> others{};
@@ -852,6 +855,11 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
         case HighlighterState::CodeTypeScript:
         case HighlighterState::CodeTypeScriptComment:
             loadTypescriptData(types, keywords, builtin, literals, others);
+            break;
+        case HighlighterState::CodeYAML:
+            isYAML = true;
+            comment = '#';
+            loadYAMLData(types, keywords, builtin, literals, others);
             break;
     default:
         break;
@@ -940,7 +948,8 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                 }
             } else if (text[i] == comment) {
                 setFormat(i, textLen, formatComment);
-                return;
+                i = textLen;
+                break;
             //integer literal
             } else if (text[i].isNumber()) {
                i = highlightIntegerLiterals(text, i);
@@ -951,8 +960,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                i = highlightStringLiterals('\'', text, i);
             }
             if (i >= textLen) {
-                if (isCSS) cssHighlighter(text);
-                return;
+                break;
             }
             ++i;
         }
@@ -1018,7 +1026,12 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
         }
     }
 
+    /***********************
+    **** POST PROCESSORS ***
+    ***********************/
+
     if (isCSS) cssHighlighter(text);
+    if (isYAML) ymlHighlighter(text);
 }
 
 /**
@@ -1124,6 +1137,72 @@ int MarkdownHighlighter::highlightIntegerLiterals(const QString &text, int i)
         setFormat(start, end - start, _formats[CodeNumLiteral]);
     }
     return i;
+}
+
+/**
+ * @brief The YAML highlighter
+ * @param text
+ * @details This function post processes a line after the main syntax
+ * highlighter has run for additional highlighting. It does these things
+ *
+ * 1. Highlight all the words that have a colon after them as 'keyword' except:
+ * If the word is a string, skip it.
+ * If the colon is in between a path, skip it (C:\)
+ *
+ * Once the colon is found, the function will skip every character except 'h'
+ *
+ * 2. If an h letter is found, check the next 4/5 letters for http/https and
+ * highlight them as a link (underlined)
+ */
+void MarkdownHighlighter::ymlHighlighter(const QString &text) {
+    if (text.isEmpty()) return;
+    const auto textLen = text.length();
+    bool colonDone = false;
+
+    for (int i = 0; i < textLen; ++i) {
+        if (!text[i].isLetter()) continue;
+
+        if (colonDone && text.at(i) != 'h') continue;
+
+        //we found a string literal, skip it
+        if (i > 1 && text.at(i-1) == '"') {
+            int next = text.indexOf('"', i);
+            i = next;
+            continue;
+        }
+
+        if (i > 1 && text.at(i-1) == '\'') {
+            int next = text.indexOf('\'', i);
+            i = next;
+            continue;
+        }
+
+
+        int colon = text.indexOf(':', i);
+
+        //if colon isn't found, we set this true
+        if (colon == -1) colonDone = true;
+
+        //colon is found, check if it isn't some path or something else
+        if (!colonDone && (colon+1 < textLen) && !(text[colon+1] == '\\') &&
+            !(text[colon+1] == '/')) {
+            colonDone = true; //only one colon per line allowed
+            setFormat(i, colon - i, _formats[CodeKeyWord]);
+        }
+
+        //underlined links
+        if (text[i] == 'h') {
+            if (text.midRef(i, 5) == QStringLiteral("https") ||
+                text.midRef(i, 4) == QStringLiteral("http")) {
+                int space = text.indexOf(' ', i);
+                if (space == -1) space = textLen;
+                QTextCharFormat f = _formats[CodeString];
+                f.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+                setFormat(i, space - i, f);
+                i = space;
+            }
+        }
+    }
 }
 
 void MarkdownHighlighter::cssHighlighter(const QString &text)
