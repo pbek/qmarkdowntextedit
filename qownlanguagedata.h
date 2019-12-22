@@ -402,7 +402,31 @@ static const QMultiHash<char, QLatin1String> shell_builtin = {
     {('z'), QLatin1String("zregexparse")},
     {('z'), QLatin1String("zsocket")},
     {('z'), QLatin1String("zstyle")},
-    {('z'), QLatin1String("ztcp")}
+    {('z'), QLatin1String("ztcp")},
+    {('g'), QLatin1String("git")},
+    {('r'), QLatin1String("rm")},
+    {('s'), QLatin1String("sudo")},
+    {('f'), QLatin1String("fdisk")},
+    {('a'), QLatin1String("apt")},
+    {('s'), QLatin1String("snap")},
+    {('s'), QLatin1String("snapcraft")},
+    {('y'), QLatin1String("yaourt")},
+    {('n'), QLatin1String("nmcli")},
+    {('p'), QLatin1String("pacman")},
+    {('p'), QLatin1String("pamac")},
+    {('f'), QLatin1String("fsck")},
+    {('m'), QLatin1String("mount")},
+    {('m'), QLatin1String("mkdir")},
+    {('m'), QLatin1String("mkswap")},
+    {('s'), QLatin1String("sleep")},
+    {('l'), QLatin1String("ls")},
+    {('w'), QLatin1String("wget")},
+    {('k'), QLatin1String("kill")},
+    {('k'), QLatin1String("killall")},
+    {('g'), QLatin1String("gdb")},
+    {('Q'), QLatin1String("QOwnNotes")},
+    {('q'), QLatin1String("qownnotes")},
+    {('c'), QLatin1String("curl")}
 };
 
 static const QMultiHash<char, QLatin1String> shell_other = {
