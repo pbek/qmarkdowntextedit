@@ -1209,6 +1209,26 @@ void MarkdownHighlighter::ymlHighlighter(const QString &text) {
     }
 }
 
+/**
+ * @brief The INI highlighter
+ * @param text The text being highlighted
+ * @details This function is responsible for ini highlighting.
+ * It has basic error detection when
+ * (1) You opened a section but didn't close with bracket e.g [Section
+ * (2) You wrote an option but it didn't have an '='
+ * Such errors will be marked with a dotted red underline
+ *
+ * It has comment highlighting support. Everything after a ';' will
+ * be highlighted till the end of the line.
+ *
+ * An option value pair will be highlighted regardless of space. Example:
+ * Option 1 = value
+ * In this, 'Option 1' will be highlighted completely and not just '1'.
+ * I am not sure about its correctness but for now its like this.
+ *
+ * The loop is unrolled frequently upon a match. Before adding anything
+ * new be sure to test in debug mode and apply bound checking as required.
+ */
 void MarkdownHighlighter::iniHighlighter(const QString &text) {
     if (text.isEmpty()) return;
     const auto textLen = text.length();
