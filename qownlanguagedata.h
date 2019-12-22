@@ -426,6 +426,12 @@ static const QMultiHash<char, QLatin1String> shell_builtin = {
     {('g'), QLatin1String("gdb")},
     {('Q'), QLatin1String("QOwnNotes")},
     {('q'), QLatin1String("qownnotes")},
+    {('d'), QLatin1String("docker")},
+    {('o'), QLatin1String("openssl")},
+    {('p'), QLatin1String("php")},
+    {('p'), QLatin1String("python")},
+    {('p'), QLatin1String("perl")},
+    {('g'), QLatin1String("go")},
     {('c'), QLatin1String("curl")}
 };
 
