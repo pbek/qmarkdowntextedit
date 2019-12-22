@@ -1106,7 +1106,7 @@ int MarkdownHighlighter::highlightIntegerLiterals(const QString &text, int i)
     }
 
     ++i;
-    if (text[i] == 'x') ++i;
+    if (text[i] == 'x' && text[i-1] == '0') ++i;
 
     if (isPreNum) {
         while (i < text.length()) {
