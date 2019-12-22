@@ -914,7 +914,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
             if (text[i].isSpace()) {
                 ++i;
                 //make sure we don't cross the bound
-                if (i == textLen) return;
+                if (i == textLen) break;
                 if (text[i].isLetter()) break;
                 else continue;
             }
@@ -1106,6 +1106,7 @@ int MarkdownHighlighter::highlightIntegerLiterals(const QString &text, int i)
     }
 
     ++i;
+    //hex numbers highlighting (only if there's a preceding zero)
     if (text[i] == 'x' && text[i-1] == '0') ++i;
 
     if (isPreNum) {
@@ -1187,11 +1188,16 @@ void MarkdownHighlighter::ymlHighlighter(const QString &text) {
         //if colon isn't found, we set this true
         if (colon == -1) colonDone = true;
 
+        if (!colonDone) {
+            if (colon+1 == textLen) {
+                setFormat(i, colon - i, _formats[CodeKeyWord]);
+                //colonDone = true;
+            } else {
         //colon is found, check if it isn't some path or something else
-        if (!colonDone && (colon+1 < textLen) && !(text[colon+1] == '\\') &&
-            !(text[colon+1] == '/')) {
-            colonDone = true; //only one colon per line allowed
-            setFormat(i, colon - i, _formats[CodeKeyWord]);
+                if (!(text[colon+1] == '\\' && text[colon+1] == '/')) {
+                    setFormat(i, colon - i, _formats[CodeKeyWord]);
+                }
+            }
         }
 
         //underlined links
