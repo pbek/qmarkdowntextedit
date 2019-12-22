@@ -2437,8 +2437,6 @@ static const QMultiHash<char, QLatin1String> YAML_literals = {
     {('f'), QLatin1String("false")},
     {('t'), QLatin1String("true")},
     {('n'), QLatin1String("null")},
-    {('n'), QLatin1String("no")},
-    {('y'), QLatin1String("yes")},
 };
 
 static const QMultiHash<char, QLatin1String> YAML_builtin = {};
