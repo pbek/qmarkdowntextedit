@@ -123,7 +123,8 @@ public:
         CodeCSSComment = 231,
         CodeTypeScript = 232,
         CodeTypeScriptComment = 233,
-        CodeYAML = 234
+        CodeYAML = 234,
+        CodeINI = 236
     };
     Q_ENUMS(HighlighterState)
 
@@ -182,6 +183,8 @@ protected:
     int highlightStringLiterals(QChar strType, const QString& text, int i);
 
     void ymlHighlighter(const QString &text);
+
+    void iniHighlighter(const QString &text);
 
     void cssHighlighter(const QString &text);
 
