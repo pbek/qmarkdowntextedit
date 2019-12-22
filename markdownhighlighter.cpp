@@ -476,6 +476,7 @@ void MarkdownHighlighter::initCodeLangs()
         {QLatin1String("css"),         MarkdownHighlighter::CodeCSS},
         {QLatin1String("go"),          MarkdownHighlighter::CodeCSharp},
         {QLatin1String("html"),        MarkdownHighlighter::CodeXML},
+        {QLatin1String("ini"),         MarkdownHighlighter::CodeINI},
         {QLatin1String("java"),        MarkdownHighlighter::CodeJava},
         {QLatin1String("javascript"),  MarkdownHighlighter::CodeJava},
         {QLatin1String("js"),          MarkdownHighlighter::CodeJs},
@@ -861,6 +862,9 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
             comment = '#';
             loadYAMLData(types, keywords, builtin, literals, others);
             break;
+        case HighlighterState::CodeINI:
+            iniHighlighter(text);
+            return;
     default:
         break;
     }
@@ -975,11 +979,11 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
          next letter is usually a space, in that case
          going forward is useless, so continue;
          We can ++i here and go to the beginning of the next word
-         so that the next formatter can check for formatting but this will
+         so that the next formatter can check for a match but this will
          cause problems in case the next word is also of 'Type' or the current
          type(keyword/builtin). We can work around it and reset the value of i
-         in the beginning of the loop to the word's first letter but I am not
-         sure about its efficiency yet.
+         in the beginning of the loop to the word's first letter but its not
+         as efficient.
          ************************************************/
         if (i == textLen || !text[i].isLetter()) continue;
 
@@ -1102,7 +1106,7 @@ int MarkdownHighlighter::highlightIntegerLiterals(const QString &text, int i)
     }
 
     ++i;
-    if (text[i] == 'x') ++i;
+    if (text[i] == 'x' && text[i-1] == '0') ++i;
 
     if (isPreNum) {
         while (i < text.length()) {
@@ -1201,6 +1205,76 @@ void MarkdownHighlighter::ymlHighlighter(const QString &text) {
                 setFormat(i, space - i, f);
                 i = space;
             }
+        }
+    }
+}
+
+/**
+ * @brief The INI highlighter
+ * @param text The text being highlighted
+ * @details This function is responsible for ini highlighting.
+ * It has basic error detection when
+ * (1) You opened a section but didn't close with bracket e.g [Section
+ * (2) You wrote an option but it didn't have an '='
+ * Such errors will be marked with a dotted red underline
+ *
+ * It has comment highlighting support. Everything after a ';' will
+ * be highlighted till the end of the line.
+ *
+ * An option value pair will be highlighted regardless of space. Example:
+ * Option 1 = value
+ * In this, 'Option 1' will be highlighted completely and not just '1'.
+ * I am not sure about its correctness but for now its like this.
+ *
+ * The loop is unrolled frequently upon a match. Before adding anything
+ * new be sure to test in debug mode and apply bound checking as required.
+ */
+void MarkdownHighlighter::iniHighlighter(const QString &text) {
+    if (text.isEmpty()) return;
+    const auto textLen = text.length();
+
+    for (int i = 0; i < textLen; ++i) {
+        //start of a [section]
+        if (text.at(i) == '[') {
+            QTextCharFormat sectionFormat = _formats[CodeType];
+            int sectionEnd = text.indexOf(']', i);
+            //if an end bracket isn't found, we apply red underline to show error
+            if (sectionEnd == -1) {
+                sectionFormat.setUnderlineStyle(QTextCharFormat::DotLine);
+                sectionFormat.setUnderlineColor(Qt::red);
+                sectionEnd = textLen;
+            }
+            sectionEnd++;
+            setFormat(i, sectionEnd - i, sectionFormat);
+            i = sectionEnd;
+            if (i >= textLen) break;
+        }
+
+        //comment ';'
+        else if (text.at(i) == ';') {
+            setFormat(i, textLen, _formats[CodeComment]);
+            i = textLen;
+            break;
+        }
+
+        //key-val
+        else if (text.at(i).isLetter()) {
+            QTextCharFormat format = _formats[CodeKeyWord];
+            int equalsPos = text.indexOf('=', i);
+            if (equalsPos == -1) {
+                format.setUnderlineColor(Qt::red);
+                format.setUnderlineStyle(QTextCharFormat::DotLine);
+                equalsPos = textLen;
+            }
+            setFormat(i, equalsPos - i, format);
+            i = equalsPos - 1;
+            if (i >= textLen) break;
+        }
+        //skip everything after '=' (except comment)
+        else if (text.at(i) == '=') {
+            int findComment = text.indexOf(';', i);
+            if (findComment == -1) break;
+            i = findComment - 1;
         }
     }
 }
