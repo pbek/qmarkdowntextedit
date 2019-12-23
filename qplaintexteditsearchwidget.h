@@ -32,7 +32,7 @@ public:
         RegularExpressionMode
     };
 
-    explicit QPlainTextEditSearchWidget(QPlainTextEdit *parent = 0);
+    explicit QPlainTextEditSearchWidget(QPlainTextEdit *parent = nullptr);
     bool doSearch(bool searchDown = true, bool allowRestartAtTop = true);
     void setDarkMode(bool enabled);
     ~QPlainTextEditSearchWidget();

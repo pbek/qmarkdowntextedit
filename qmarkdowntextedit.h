@@ -37,7 +37,7 @@ public:
 
     Q_DECLARE_FLAGS(AutoTextOptions, AutoTextOption)
 
-    explicit QMarkdownTextEdit(QWidget *parent = 0, bool initHighlighter = true);
+    explicit QMarkdownTextEdit(QWidget *parent = nullptr, bool initHighlighter = true);
     MarkdownHighlighter *highlighter();
     QPlainTextEditSearchWidget *searchWidget();
     void setIgnoredClickUrlSchemata(QStringList ignoredUrlSchemata);
