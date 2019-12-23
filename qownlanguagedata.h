@@ -409,6 +409,7 @@ static const QMultiHash<char, QLatin1String> shell_builtin = {
     {('f'), QLatin1String("fdisk")},
     {('a'), QLatin1String("apt")},
     {('s'), QLatin1String("snap")},
+    {('f'), QLatin1String("flatpak")},
     {('s'), QLatin1String("snapcraft")},
     {('y'), QLatin1String("yaourt")},
     {('n'), QLatin1String("nmcli")},
