@@ -1350,29 +1350,140 @@ void QMarkdownTextEdit::setAutoTextOptions(AutoTextOptions options) {
 }
 
 /**
- * Overrides QPlainTextEdit::paintEvent to fix the RTL bug of QPlainTextEdit
- *
  * @param e
+ * @details This does two things
+ * 1. Overrides QPlainTextEdit::paintEvent to fix the RTL bug of QPlainTextEdit
+ * 2. Paints a rectangle around code block fences [Code taken from ghostwriter(which in turn
+ * is based on QPlaintextEdit::paintEvent() with modifications and minor improvements
+ * for our use
  */
 void QMarkdownTextEdit::paintEvent(QPaintEvent *e) {
     QTextBlock block = firstVisibleBlock();
 
-    while (block.isValid()) {
-        QTextLayout *layout = block.layout();
+    QPainter painter(viewport());
+    const QRect viewportRect = viewport()->rect();
+    //painter.fillRect(viewportRect, Qt::transparent);
+    bool firstVisible = true;
+    QPointF offset(contentOffset());
+    QRectF blockAreaRect; // Code or block quote rect.
+    bool inBlockArea = false;
+
+    bool clipTop = false;
+    bool drawBlock = false;
+    qreal dy = 0.0;
+    bool done = false;
+
+    QColor color = Qt::gray;
+    color.setAlpha(25);
+
+    const int cornerRadius = 5;
+
+
+    while (block.isValid() && !done) {
+
+        const QRectF r = blockBoundingRect(block).translated(offset);
+        const int state = block.userState();
+
+        if (!inBlockArea &&
+               (state == MarkdownHighlighter::CodeBlock ||
+                state >= MarkdownHighlighter::CodeCpp)) {
+            blockAreaRect = r;
+            dy = 0.0;
+            inBlockArea = true;
+
+            // If this is the first visible block within the viewport
+            // and if the previous block is part of the text block area,
+            // then the rectangle to draw for the block area will have
+            // its top clipped by the viewport and will need to be
+            // drawn specially.
+            const int prevBlockState = block.previous().userState();
+            if(firstVisible &&
+                   (prevBlockState == MarkdownHighlighter::CodeBlock ||
+                    prevBlockState >= MarkdownHighlighter::CodeCpp)) {
+                clipTop = true;
+            }
+        }
+        // Else if the block ends a text block area...
+        else if (inBlockArea && state == MarkdownHighlighter::CodeBlockEnd) {
+            drawBlock = true;
+            inBlockArea = false;
+            blockAreaRect.setHeight(dy);
+        }
+        // If the block is at the end of the document and ends a text
+        // block area...
+        //
+        if (inBlockArea && block == this->document()->lastBlock()) {
+            drawBlock = true;
+            inBlockArea = false;
+            dy += r.height();
+            blockAreaRect.setHeight(dy);
+        }
+        offset.ry() += r.height();
+        dy += r.height();
+
+        // If this is the last text block visible within the viewport...
+        if (offset.y() > viewportRect.height()) {
+            if (inBlockArea)
+            {
+                blockAreaRect.setHeight(dy);
+                drawBlock = true;
+            }
+
+            // Finished drawing.
+            done = true;
+        }
+        // If this is the last text block visible within the viewport...
+        if (offset.y() > viewportRect.height()) {
+            if (inBlockArea) {
+                blockAreaRect.setHeight(dy);
+                drawBlock = true;
+            }
+            // Finished drawing.
+            done = true;
+        }
+
+        if (drawBlock) {
+            painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+            painter.setPen(Qt::NoPen);
+            painter.setBrush(QBrush(color));
+
+            // If the first visible block is "clipped" such that the previous block
+            // is part of the text block area, then only draw a rectangle with the
+            // bottom corners rounded, and with the top corners square to reflect
+            // that the first visible block is part of a larger block of text.
+            //
+            if (clipTop) {
+                QPainterPath path;
+                path.setFillRule(Qt::WindingFill);
+                path.addRoundedRect(blockAreaRect, cornerRadius, cornerRadius);
+                qreal adjustedHeight = blockAreaRect.height() / 2;
+                path.addRect(blockAreaRect.adjusted(0, 0, 0, -adjustedHeight));
+                painter.drawPath(path.simplified());
+                clipTop = false;
+            }
+            // Else draw the entire rectangle with all corners rounded.
+            else {
+                painter.drawRoundedRect(blockAreaRect, cornerRadius, cornerRadius);
+            }
+
+            drawBlock = false;
+        }
 
         // this fixes the RTL bug of QPlainTextEdit
         // https://bugreports.qt.io/browse/QTBUG-7516
-        if (block.text().isRightToLeft())
-        {
-            QTextOption opt = document()->defaultTextOption();
-            opt = QTextOption(Qt::AlignRight);
+        if (block.text().isRightToLeft()) {
+            QTextLayout *layout = block.layout();
+            //opt = document()->defaultTextOption();
+            QTextOption opt = QTextOption(Qt::AlignRight);
             opt.setTextDirection(Qt::RightToLeft);
             layout->setTextOption(opt);
         }
 
         block = block.next();
+        firstVisible = false;
     }
 
+    painter.end();
     QPlainTextEdit::paintEvent(e);
 }
 
