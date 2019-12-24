@@ -730,38 +730,35 @@ void MarkdownHighlighter::setCurrentBlockMargin(
 void MarkdownHighlighter::highlightCodeBlock(const QString& text) {
 
     if (text.startsWith(QLatin1String("```"))) {
-        if (previousBlockState() != HighlighterState::CodeBlock &&
-            previousBlockState() < HighlighterState::CodeCpp) {
+        if (previousBlockState() != CodeBlock &&
+            previousBlockState() < CodeCpp) {
             QString lang = text.mid(3, text.length()).toLower();
-            MarkdownHighlighter::HighlighterState progLang = _langStringToEnum.value(lang);
+            HighlighterState progLang = _langStringToEnum.value(lang);
 
-            if (progLang >= HighlighterState::CodeCpp) {
+            if (progLang >= CodeCpp) {
                 setCurrentBlockState(progLang);
             } else {
-                previousBlockState() == HighlighterState::CodeBlock ?
-                            setCurrentBlockState(CodeBlockEnd) : setCurrentBlockState(CodeBlock);
+                setCurrentBlockState(CodeBlock);
             }
-        } else if (previousBlockState() == HighlighterState::CodeBlock ||
-                   previousBlockState() >= HighlighterState::CodeCpp) {
-            setCurrentBlockState(HighlighterState::CodeBlockEnd);
+        } else if (previousBlockState() == CodeBlock ||
+                   previousBlockState() >= CodeCpp) {
+            setCurrentBlockState(CodeBlockEnd);
         }
 
         // set the font size from the current rule's font format
-        QTextCharFormat &maskedFormat =
-                _formats[HighlighterState::MaskedSyntax];
-        maskedFormat.setFontPointSize(
-                    _formats[HighlighterState::CodeBlock].fontPointSize());
+        QTextCharFormat &maskedFormat = _formats[MaskedSyntax];
+        maskedFormat.setFontPointSize(_formats[CodeBlock].fontPointSize());
 
         setFormat(0, text.length(), maskedFormat);
-    } else if (previousBlockState() == HighlighterState::CodeBlock ||
-               previousBlockState() >= HighlighterState::CodeCpp) {
+    } else if (previousBlockState() == CodeBlock ||
+               previousBlockState() >= CodeCpp) {
 
-        if (previousBlockState() >= HighlighterState::CodeCpp) {
+        if (previousBlockState() >= CodeCpp) {
             setCurrentBlockState(previousBlockState());
             highlightSyntax(text);
         } else {
-            setFormat(0, text.length(), _formats[HighlighterState::CodeBlock]);
-            setCurrentBlockState(HighlighterState::CodeBlock);
+            setFormat(0, text.length(), _formats[CodeBlock]);
+            setCurrentBlockState(CodeBlock);
         }
     }
 }
