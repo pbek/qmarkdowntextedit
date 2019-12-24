@@ -178,7 +178,7 @@ protected:
 
     void highlightSyntax(const QString &text);
 
-    int highlightIntegerLiterals(const QString& text, int i);
+    int highlightNumericLiterals(const QString& text, int i);
 
     int highlightStringLiterals(QChar strType, const QString& text, int i);
 

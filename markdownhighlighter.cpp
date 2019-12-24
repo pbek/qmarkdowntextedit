@@ -946,7 +946,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                 break;
             //integer literal
             } else if (text[i].isNumber()) {
-               i = highlightIntegerLiterals(text, i);
+               i = highlightNumericLiterals(text, i);
             //string literals
             } else if (text[i] == QLatin1Char('\"')) {
                i = highlightStringLiterals('\"', text, i);
@@ -1066,12 +1066,16 @@ int MarkdownHighlighter::highlightStringLiterals(QChar strType, const QString &t
 }
 
 /**
- * @brief Highlight number literals in code
+ * @brief Highlight numeric literals in code
  * @param text the text being scanned
  * @param i pos of i in loop
  * @return pos of i after the number
+ *
+ * @details it doesn't highlight the following yet:
+ *  - 1000'0000
+ *  - 100u, 100l, 100f
  */
-int MarkdownHighlighter::highlightIntegerLiterals(const QString &text, int i)
+int MarkdownHighlighter::highlightNumericLiterals(const QString &text, int i)
 {
     bool isPreNum = false;
     if (i == 0) isPreNum = true;
