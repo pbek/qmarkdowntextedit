@@ -1000,7 +1000,8 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                 if (word == text.midRef(i, word.size()).toLatin1()) {
                     if ( i + word.size() == textLen ||
                          !text.at(i + word.size()).isLetter()) {
-                        currentBlockState() == HighlighterState::CodeCpp ?
+                        //for C/C++ we do -1 to highlight the '#' in preprocessor
+                        currentBlockState() == CodeCpp || currentBlockState() == CodeC ?
                         setFormat(i-1, word.size()+1, formatOther) :
                                     setFormat(i, word.size(), formatOther);
                         i += word.size();
