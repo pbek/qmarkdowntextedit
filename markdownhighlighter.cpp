@@ -68,7 +68,7 @@ void MarkdownHighlighter::timerTick() {
     // emit a signal every second if there was some highlighting done
     if (_highlightingFinished) {
         _highlightingFinished = false;
-        emit(highlightingFinished());
+        emit highlightingFinished();
     }
 }
 
@@ -730,9 +730,8 @@ void MarkdownHighlighter::setCurrentBlockMargin(
 void MarkdownHighlighter::highlightCodeBlock(const QString& text) {
 
     if (text.startsWith(QLatin1String("```"))) {
-        if (previousBlockState() != CodeBlock &&
-            previousBlockState() < CodeCpp) {
-            QString lang = text.mid(3, text.length()).toLower();
+        if (previousBlockState() != CodeBlock && previousBlockState() < CodeCpp) {
+            const QString &lang = text.mid(3, text.length()).toLower();
             HighlighterState progLang = _langStringToEnum.value(lang);
 
             if (progLang >= CodeCpp) {
@@ -752,14 +751,8 @@ void MarkdownHighlighter::highlightCodeBlock(const QString& text) {
         setFormat(0, text.length(), maskedFormat);
     } else if (previousBlockState() == CodeBlock ||
                previousBlockState() >= CodeCpp) {
-
-        if (previousBlockState() >= CodeCpp) {
-            setCurrentBlockState(previousBlockState());
-            highlightSyntax(text);
-        } else {
-            setFormat(0, text.length(), _formats[CodeBlock]);
-            setCurrentBlockState(CodeBlock);
-        }
+        setCurrentBlockState(previousBlockState());
+        highlightSyntax(text);
     }
 }
 
