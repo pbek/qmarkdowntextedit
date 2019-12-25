@@ -68,7 +68,7 @@ void MarkdownHighlighter::timerTick() {
     // emit a signal every second if there was some highlighting done
     if (_highlightingFinished) {
         _highlightingFinished = false;
-        emit(highlightingFinished());
+        emit highlightingFinished();
     }
 }
 
@@ -730,39 +730,29 @@ void MarkdownHighlighter::setCurrentBlockMargin(
 void MarkdownHighlighter::highlightCodeBlock(const QString& text) {
 
     if (text.startsWith(QLatin1String("```"))) {
-        if (previousBlockState() != HighlighterState::CodeBlock &&
-            previousBlockState() < HighlighterState::CodeCpp) {
-            QString lang = text.mid(3, text.length()).toLower();
-            MarkdownHighlighter::HighlighterState progLang = _langStringToEnum.value(lang);
+        if (previousBlockState() != CodeBlock && previousBlockState() < CodeCpp) {
+            const QString &lang = text.mid(3, text.length()).toLower();
+            HighlighterState progLang = _langStringToEnum.value(lang);
 
-            if (progLang >= HighlighterState::CodeCpp) {
+            if (progLang >= CodeCpp) {
                 setCurrentBlockState(progLang);
             } else {
-                previousBlockState() == HighlighterState::CodeBlock ?
-                            setCurrentBlockState(CodeBlockEnd) : setCurrentBlockState(CodeBlock);
+                setCurrentBlockState(CodeBlock);
             }
-        } else if (previousBlockState() == HighlighterState::CodeBlock ||
-                   previousBlockState() >= HighlighterState::CodeCpp) {
-            setCurrentBlockState(HighlighterState::CodeBlockEnd);
+        } else if (previousBlockState() == CodeBlock ||
+                   previousBlockState() >= CodeCpp) {
+            setCurrentBlockState(CodeBlockEnd);
         }
 
         // set the font size from the current rule's font format
-        QTextCharFormat &maskedFormat =
-                _formats[HighlighterState::MaskedSyntax];
-        maskedFormat.setFontPointSize(
-                    _formats[HighlighterState::CodeBlock].fontPointSize());
+        QTextCharFormat &maskedFormat = _formats[MaskedSyntax];
+        maskedFormat.setFontPointSize(_formats[CodeBlock].fontPointSize());
 
         setFormat(0, text.length(), maskedFormat);
-    } else if (previousBlockState() == HighlighterState::CodeBlock ||
-               previousBlockState() >= HighlighterState::CodeCpp) {
-
-        if (previousBlockState() >= HighlighterState::CodeCpp) {
-            setCurrentBlockState(previousBlockState());
-            highlightSyntax(text);
-        } else {
-            setFormat(0, text.length(), _formats[HighlighterState::CodeBlock]);
-            setCurrentBlockState(HighlighterState::CodeBlock);
-        }
+    } else if (previousBlockState() == CodeBlock ||
+               previousBlockState() >= CodeCpp) {
+        setCurrentBlockState(previousBlockState());
+        highlightSyntax(text);
     }
 }
 
@@ -956,7 +946,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                 break;
             //integer literal
             } else if (text[i].isNumber()) {
-               i = highlightIntegerLiterals(text, i);
+               i = highlightNumericLiterals(text, i);
             //string literals
             } else if (text[i] == QLatin1Char('\"')) {
                i = highlightStringLiterals('\"', text, i);
@@ -1010,7 +1000,8 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                 if (word == text.midRef(i, word.size()).toLatin1()) {
                     if ( i + word.size() == textLen ||
                          !text.at(i + word.size()).isLetter()) {
-                        currentBlockState() == HighlighterState::CodeCpp ?
+                        //for C/C++ we do -1 to highlight the '#' in preprocessor
+                        currentBlockState() == CodeCpp || currentBlockState() == CodeC ?
                         setFormat(i-1, word.size()+1, formatOther) :
                                     setFormat(i, word.size(), formatOther);
                         i += word.size();
@@ -1075,12 +1066,16 @@ int MarkdownHighlighter::highlightStringLiterals(QChar strType, const QString &t
 }
 
 /**
- * @brief Highlight number literals in code
+ * @brief Highlight numeric literals in code
  * @param text the text being scanned
  * @param i pos of i in loop
  * @return pos of i after the number
+ *
+ * @details it doesn't highlight the following yet:
+ *  - 1000'0000
+ *  - 100u, 100l, 100f
  */
-int MarkdownHighlighter::highlightIntegerLiterals(const QString &text, int i)
+int MarkdownHighlighter::highlightNumericLiterals(const QString &text, int i)
 {
     bool isPreNum = false;
     if (i == 0) isPreNum = true;
