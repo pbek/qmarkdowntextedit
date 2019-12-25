@@ -1387,9 +1387,12 @@ void QMarkdownTextEdit::paintEvent(QPaintEvent *e) {
         if (!inBlockArea &&
                (state == MarkdownHighlighter::CodeBlock ||
                 state >= MarkdownHighlighter::CodeCpp)) {
-            blockAreaRect = r;
-            dy = 0.0;
-            inBlockArea = true;
+            //skip the backticks
+            if (!block.text().startsWith("```")) {
+                blockAreaRect = r;
+                dy = 0.0;
+                inBlockArea = true;
+            }
 
             // If this is the first visible block within the viewport
             // and if the previous block is part of the text block area,
