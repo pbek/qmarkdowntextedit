@@ -40,6 +40,10 @@ public:
                         HighlightingOptions highlightingOptions =
                         HighlightingOption::None);
 
+    inline QColor codeBlockBackgroungColor() const {
+        return _formats[CodeBlockBackgroundColor].background().color();
+    }
+
     // we use some predefined numbers here to be compatible with
     // the peg-markdown parser
     enum HighlighterState {
@@ -77,6 +81,8 @@ public:
         CodeOther = 1004,
         CodeNumLiteral = 1005,
         CodeBuiltIn = 1006,
+
+        CodeBlockBackgroundColor = 1007,
 
         // internal
         CodeBlockEnd = 100,

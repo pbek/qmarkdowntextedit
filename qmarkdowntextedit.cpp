@@ -1373,9 +1373,7 @@ void QMarkdownTextEdit::paintEvent(QPaintEvent *e) {
     qreal dy = 0.0;
     bool done = false;
 
-    QColor color = Qt::gray;
-    color.setAlpha(25);
-
+    const QColor &color = _highlighter->codeBlockBackgroungColor();
     const int cornerRadius = 5;
 
 
