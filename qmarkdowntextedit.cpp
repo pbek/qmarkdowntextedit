@@ -1373,9 +1373,7 @@ void QMarkdownTextEdit::paintEvent(QPaintEvent *e) {
     qreal dy = 0.0;
     bool done = false;
 
-    QColor color = Qt::gray;
-    color.setAlpha(25);
-
+    const QColor &color = _highlighter->codeBlockBackgroungColor();
     const int cornerRadius = 5;
 
 
@@ -1387,9 +1385,12 @@ void QMarkdownTextEdit::paintEvent(QPaintEvent *e) {
         if (!inBlockArea &&
                (state == MarkdownHighlighter::CodeBlock ||
                 state >= MarkdownHighlighter::CodeCpp)) {
-            blockAreaRect = r;
-            dy = 0.0;
-            inBlockArea = true;
+            //skip the backticks
+            if (!block.text().startsWith("```")) {
+                blockAreaRect = r;
+                dy = 0.0;
+                inBlockArea = true;
+            }
 
             // If this is the first visible block within the viewport
             // and if the previous block is part of the text block area,

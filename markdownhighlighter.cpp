@@ -457,6 +457,12 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize) {
     format.setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
     format.setForeground(QColor("#018a0f"));
     _formats[CodeBuiltIn] = format;
+
+    format = QTextCharFormat();
+    QColor c = Qt::gray;
+    c.setAlpha(25);
+    format.setBackground(c);
+    _formats[CodeBlockBackgroundColor] = format;
 }
 
 /**
