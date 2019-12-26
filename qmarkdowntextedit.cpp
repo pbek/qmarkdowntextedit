@@ -1373,7 +1373,7 @@ void QMarkdownTextEdit::paintEvent(QPaintEvent *e) {
     qreal dy = 0.0;
     bool done = false;
 
-    const QColor &color = _highlighter->codeBlockBackgroungColor();
+    const QColor &color = _highlighter->codeBlockBackgroundColor();
     const int cornerRadius = 5;
 
 

@@ -40,8 +40,14 @@ public:
                         HighlightingOptions highlightingOptions =
                         HighlightingOption::None);
 
-    inline QColor codeBlockBackgroungColor() const {
-        return _formats[CodeBlockBackgroundColor].background().color();
+    inline QColor codeBlockBackgroundColor() const {
+        const QBrush brush = _formats[CodeBlock].background();
+
+        if (!brush.isOpaque()) {
+            return QColor(Qt::transparent);
+        }
+
+        return brush.color();
     }
 
     // we use some predefined numbers here to be compatible with
@@ -81,8 +87,6 @@ public:
         CodeOther = 1004,
         CodeNumLiteral = 1005,
         CodeBuiltIn = 1006,
-
-        CodeBlockBackgroundColor = 1007,
 
         // internal
         CodeBlockEnd = 100,
