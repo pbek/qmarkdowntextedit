@@ -1073,66 +1073,87 @@ int MarkdownHighlighter::highlightStringLiterals(QChar strType, const QString &t
  *
  * @details it doesn't highlight the following yet:
  *  - 1000'0000
- *  - 100u, 100l, 100f
  */
 int MarkdownHighlighter::highlightNumericLiterals(const QString &text, int i)
 {
-    bool isPreNum = false;
-    if (i == 0) isPreNum = true;
+    bool isPreAllowed = false;
+    if (i == 0) isPreAllowed = true;
     else {
-        switch(text[i - 1].toLatin1()) {
+        //these values are allowed before a number
+        switch(text.at(i - 1).toLatin1()) {
         case '[':
         case '(':
         case '{':
         case ' ':
         case ',':
         case '=':
+        case '+':
+        case '-':
+        case '*':
+        case '/':
+        case '%':
         case '<':
         case '>':
-            isPreNum = true;
+            isPreAllowed = true;
             break;
         }
     }
+
+    if (!isPreAllowed) return ++i;
+
     int start = i;
 
     if ((i+1) >= text.length()) {
-        if (isPreNum) setFormat(i, 1, _formats[CodeNumLiteral]);
+        setFormat(i, 1, _formats[CodeNumLiteral]);
         return ++i;
     }
 
     ++i;
     //hex numbers highlighting (only if there's a preceding zero)
-    if (text[i] == 'x' && text[i-1] == '0') ++i;
+    if (text.at(i) == QChar('x') && text.at(i - 1) == QChar('0'))
+        ++i;
 
-    if (isPreNum) {
-        while (i < text.length()) {
-            if (!text[i].isNumber() && text[i] != '.') break;
-            ++i;
-        }
-    } else {
-        return i;
+    while (i < text.length()) {
+        if (!text.at(i).isNumber() && text.at(i) != QChar('.')) break;
+        ++i;
     }
 
     i--;
 
-    bool isPostNum = false;
-    if (i+1 == text.length()) isPostNum = true;
+    bool isPostAllowed = false;
+    if (i+1 == text.length()) isPostAllowed = true;
     else {
-        switch(text[i + 1].toLatin1()) {
+        //these values are allowed after a number
+        switch(text.at(i + 1).toLatin1()) {
         case ']':
         case ')':
         case '}':
         case ' ':
         case ',':
         case '=':
+        case '+':
+        case '-':
+        case '*':
+        case '/':
+        case '%':
         case '>':
         case '<':
         case ';':
-            isPostNum = true;
+            isPostAllowed = true;
+            break;
+        // for 100u, 1.0F
+        case 'u':
+        case 'l':
+        case 'f':
+        case 'U':
+        case 'L':
+        case 'F':
+            isPostAllowed = true;
+            ++i;
             break;
         }
     }
-    if (isPostNum) {
+    if (isPostAllowed) {
         int end = ++i;
         setFormat(start, end - start, _formats[CodeNumLiteral]);
     }
@@ -1145,60 +1166,65 @@ int MarkdownHighlighter::highlightNumericLiterals(const QString &text, int i)
  * @details This function post processes a line after the main syntax
  * highlighter has run for additional highlighting. It does these things
  *
- * 1. Highlight all the words that have a colon after them as 'keyword' except:
+ * If the current line is a comment, skip it
+ *
+ * Highlight all the words that have a colon after them as 'keyword' except:
  * If the word is a string, skip it.
  * If the colon is in between a path, skip it (C:\)
  *
  * Once the colon is found, the function will skip every character except 'h'
  *
- * 2. If an h letter is found, check the next 4/5 letters for http/https and
+ * If an h letter is found, check the next 4/5 letters for http/https and
  * highlight them as a link (underlined)
  */
 void MarkdownHighlighter::ymlHighlighter(const QString &text) {
     if (text.isEmpty()) return;
     const auto textLen = text.length();
-    bool colonDone = false;
+    bool colonNotFound = false;
+
+    //if this is a comment don't do anything and just return
+    if (text.trimmed().at(0) == QChar('#')) return;
 
     for (int i = 0; i < textLen; ++i) {
-        if (!text[i].isLetter()) continue;
+        if (!text.at(i).isLetter()) continue;
 
-        if (colonDone && text.at(i) != 'h') continue;
+        if (colonNotFound && text.at(i) != QChar('h')) continue;
 
         //we found a string literal, skip it
-        if (i > 1 && text.at(i-1) == '"') {
-            int next = text.indexOf('"', i);
+        if (i != 0 && text.at(i-1) == QChar('"')) {
+            int next = text.indexOf(QChar('"'), i);
             i = next;
             continue;
         }
 
-        if (i > 1 && text.at(i-1) == '\'') {
-            int next = text.indexOf('\'', i);
+        if (i != 0 && text.at(i-1) == QChar('\'')) {
+            int next = text.indexOf(QChar('\''), i);
             i = next;
             continue;
         }
 
 
-        int colon = text.indexOf(':', i);
+        int colon = text.indexOf(QChar(':'), i);
 
         //if colon isn't found, we set this true
-        if (colon == -1) colonDone = true;
+        if (colon == -1) colonNotFound = true;
 
-        if (!colonDone) {
+        if (!colonNotFound) {
+            //if the line ends here, format and return
             if (colon+1 == textLen) {
                 setFormat(i, colon - i, _formats[CodeKeyWord]);
-                //colonDone = true;
+                return;
             } else {
-        //colon is found, check if it isn't some path or something else
-                if (!(text[colon+1] == '\\' && text[colon+1] == '/')) {
+                //colon is found, check if it isn't some path or something else
+                if (!(text.at(colon+1) == QChar('\\') && text.at(colon+1) == QChar('/'))) {
                     setFormat(i, colon - i, _formats[CodeKeyWord]);
                 }
             }
         }
 
         //underlined links
-        if (text[i] == 'h') {
-            if (text.midRef(i, 5) == QStringLiteral("https") ||
-                text.midRef(i, 4) == QStringLiteral("http")) {
+        if (text.at(i) == QChar('h')) {
+            if (text.midRef(i, 5) == "https" || text.midRef(i, 4) == "http") {
                 int space = text.indexOf(' ', i);
                 if (space == -1) space = textLen;
                 QTextCharFormat f = _formats[CodeString];
