@@ -1073,66 +1073,87 @@ int MarkdownHighlighter::highlightStringLiterals(QChar strType, const QString &t
  *
  * @details it doesn't highlight the following yet:
  *  - 1000'0000
- *  - 100u, 100l, 100f
  */
 int MarkdownHighlighter::highlightNumericLiterals(const QString &text, int i)
 {
-    bool isPreNum = false;
-    if (i == 0) isPreNum = true;
+    bool isPreAllowed = false;
+    if (i == 0) isPreAllowed = true;
     else {
-        switch(text[i - 1].toLatin1()) {
+        //these values are allowed before a number
+        switch(text.at(i - 1).toLatin1()) {
         case '[':
         case '(':
         case '{':
         case ' ':
         case ',':
         case '=':
+        case '+':
+        case '-':
+        case '*':
+        case '/':
+        case '%':
         case '<':
         case '>':
-            isPreNum = true;
+            isPreAllowed = true;
             break;
         }
     }
+
+    if (!isPreAllowed) return ++i;
+
     int start = i;
 
     if ((i+1) >= text.length()) {
-        if (isPreNum) setFormat(i, 1, _formats[CodeNumLiteral]);
+        setFormat(i, 1, _formats[CodeNumLiteral]);
         return ++i;
     }
 
     ++i;
     //hex numbers highlighting (only if there's a preceding zero)
-    if (text[i] == 'x' && text[i-1] == '0') ++i;
+    if (text.at(i) == QChar('x') && text.at(i - 1) == QChar('0'))
+        ++i;
 
-    if (isPreNum) {
-        while (i < text.length()) {
-            if (!text[i].isNumber() && text[i] != '.') break;
-            ++i;
-        }
-    } else {
-        return i;
+    while (i < text.length()) {
+        if (!text.at(i).isNumber() && text.at(i) != QChar('.')) break;
+        ++i;
     }
 
     i--;
 
-    bool isPostNum = false;
-    if (i+1 == text.length()) isPostNum = true;
+    bool isPostAllowed = false;
+    if (i+1 == text.length()) isPostAllowed = true;
     else {
-        switch(text[i + 1].toLatin1()) {
+        //these values are allowed after a number
+        switch(text.at(i + 1).toLatin1()) {
         case ']':
         case ')':
         case '}':
         case ' ':
         case ',':
         case '=':
+        case '+':
+        case '-':
+        case '*':
+        case '/':
+        case '%':
         case '>':
         case '<':
         case ';':
-            isPostNum = true;
+            isPostAllowed = true;
+            break;
+        // for 100u, 1.0F
+        case 'u':
+        case 'l':
+        case 'f':
+        case 'U':
+        case 'L':
+        case 'F':
+            isPostAllowed = true;
+            ++i;
             break;
         }
     }
-    if (isPostNum) {
+    if (isPostAllowed) {
         int end = ++i;
         setFormat(start, end - start, _formats[CodeNumLiteral]);
     }
