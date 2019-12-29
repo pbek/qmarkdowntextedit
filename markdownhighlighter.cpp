@@ -1048,16 +1048,81 @@ int MarkdownHighlighter::highlightStringLiterals(QChar strType, const QString &t
             break;
         }
         //look for escape sequence
-        if (text.at(i) == '\\') {
-            //look for space
-            int spacePos = text.indexOf(' ', i);
-            //if space not found, look for the string end
-            //this may present problems in very special cases for e.g \"hello\"
-            if (spacePos == -1) {
-                spacePos = text.indexOf(strType, i);
+        if (text.at(i) == '\\' && (i+1) < text.length()) {
+            int len = 0;
+            switch(text.at(i+1).toLatin1()) {
+            case 'a':
+            case 'b':
+            case 'e':
+            case 'f':
+            case 'n':
+            case 'r':
+            case 't':
+            case 'v':
+            case '\'':
+            case '"':
+            case '\\':
+            case '\?':
+                //2 because we have to highlight \ as well as the following char
+                len = 2;
+                break;
+            //octal esc sequence \123
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+            {
+                if (i + 4 <= text.length()) {
+                    bool isCurrentOctal = true;
+                    if (!isOctal(text.at(i+2).toLatin1())) {
+                        isCurrentOctal = false;
+                        break;
+                    }
+                    if (!isOctal(text.at(i+3).toLatin1())) {
+                        isCurrentOctal = false;
+                        break;
+                    }
+                    len = isCurrentOctal ? 4 : 0;
+                }
+                break;
             }
-            setFormat(i, spacePos - i, _formats[CodeNumLiteral]);
-            i = spacePos;
+            //hex numbers \xFA
+            case 'x':
+            {
+                if (i + 3 <= text.length()) {
+                    bool isCurrentHex = true;
+                    if (!isHex(text.at(i+2).toLatin1())) {
+                        isCurrentHex = false;
+                        break;
+                    }
+                    if (!isHex(text.at(i+3).toLatin1())) {
+                        isCurrentHex = false;
+                        break;
+                    }
+                    len = isCurrentHex ? 4 : 0;
+                }
+                break;
+            }
+            //TODO: implement unicode code point escaping
+            default:
+                break;
+            }
+
+            //if len is zero, that means this wasn't an esc seq
+            //increment i so that we skip this backslash
+            if (len == 0) {
+                setFormat(i, 1,  _formats[CodeString]);
+                ++i;
+                continue;
+            }
+
+            setFormat(i, len, _formats[CodeNumLiteral]);
+            i += len;
+            continue;
         }
         setFormat(i, 1,  _formats[CodeString]);
         ++i;
