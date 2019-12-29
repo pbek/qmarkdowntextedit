@@ -50,6 +50,27 @@ public:
         return brush.color();
     }
 
+   /**
+    * @brief returns true if c is octal
+    * @param c the char being checked
+    * @returns true if the number is octal, false otherwise
+    */
+   inline bool isOctal(const char c) {
+       return (c >= '0' && c <= '7');
+   }
+
+   /**
+    * @brief returns true if c is hex
+    * @param c the char being checked
+    * @returns true if the number is hex, false otherwise
+    */
+   inline bool isHex(const char c) {
+       return (
+           (c >= '0' && c <= '9') ||
+           (c >= 'a' && c <= 'f') ||
+           (c >= 'A' && c <= 'F'));
+   }
+
     // we use some predefined numbers here to be compatible with
     // the peg-markdown parser
     enum HighlighterState {
