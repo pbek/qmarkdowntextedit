@@ -11,6 +11,9 @@
  * for more details.
  *
  */
+#ifndef QOWNLANGUAGEDATA_H
+#define QOWNLANGUAGEDATA_H
+
 #include <QMultiHash>
 
 /* ------------------------
@@ -184,3 +187,5 @@ void loadYAMLData(QMultiHash<char, QLatin1String> &types,
              QMultiHash<char, QLatin1String> &builtin,
              QMultiHash<char, QLatin1String> &literals,
              QMultiHash<char, QLatin1String> &other);
+
+#endif
