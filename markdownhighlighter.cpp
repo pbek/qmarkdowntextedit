@@ -772,6 +772,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
     bool isCSS = false;
     bool isYAML = false;
 
+
     QMultiHash<char, QLatin1String> keywords{};
     QMultiHash<char, QLatin1String> others{};
     QMultiHash<char, QLatin1String> types{};
@@ -1041,6 +1042,7 @@ int MarkdownHighlighter::highlightStringLiterals(QChar strType, const QString &t
     ++i;
 
     while (i < text.length()) {
+        //look for string end
         //make sure it's not an escape seq
         if (text.at(i) == strType && text.at(i-1) != '\\') {
             setFormat(i, 1,  _formats[CodeString]);
