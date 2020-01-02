@@ -174,7 +174,6 @@ public:
     void clearDirtyBlocks();
     void setHighlightingOptions(const HighlightingOptions options);
     void initHighlightingRules();
-
 signals:
     void highlightingFinished();
 
@@ -220,6 +219,8 @@ protected:
     void cssHighlighter(const QString &text);
 
     void xmlHighlighter(const QString &text);
+
+    void taggerScriptHighlighter(const QString &text);
 
     void highlightFrontmatterBlock(const QString& text);
 
