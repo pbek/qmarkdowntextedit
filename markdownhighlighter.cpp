@@ -856,6 +856,9 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
         case HighlighterState::CodeINI:
             iniHighlighter(text);
             return;
+        case HighlighterState::CodeTaggerScript:
+             taggerScriptHighlighter(text);
+             return;
     default:
         break;
     }
@@ -1371,6 +1374,14 @@ void MarkdownHighlighter::iniHighlighter(const QString &text) {
             i = findComment - 1;
         }
     }
+}
+
+/**
+ * @brief The Tagger Script highlighter
+ * @param text
+ * @details TODO
+ */
+void MarkdownHighlighter::taggerScriptHighlighter(const QString &text) {
 }
 
 void MarkdownHighlighter::cssHighlighter(const QString &text)
