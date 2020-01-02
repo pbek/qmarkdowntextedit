@@ -155,7 +155,8 @@ public:
         CodeTypeScript = 232,
         CodeTypeScriptComment = 233,
         CodeYAML = 234,
-        CodeINI = 236
+        CodeINI = 236,
+        CodeTaggerScript = 238
     };
     Q_ENUMS(HighlighterState)
 
