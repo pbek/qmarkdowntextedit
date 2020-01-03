@@ -1380,7 +1380,11 @@ void MarkdownHighlighter::iniHighlighter(const QString &text) {
 /**
  * @brief The Tagger Script highlighter
  * @param text
- * @details TODO
+ * @details his function is responsible for taggerscript highlighting.
+ * It highlights anything between a (inclusive) '&' and a (exclusive) '(' as a function.
+ * An exception is the '$noop()'function, which get highlighted as a comment.
+ *
+ * It has basic error detection when there is an unlcosed %Metadata Variable%
  */
 void MarkdownHighlighter::taggerScriptHighlighter(const QString &text) {
     if (text.isEmpty()) return;
