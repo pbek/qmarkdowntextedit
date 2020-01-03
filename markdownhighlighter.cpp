@@ -1410,6 +1410,14 @@ void MarkdownHighlighter::taggerScriptHighlighter(const QString &text) {
                 setFormat(i, 1, errorFormat);
             }
         }
+
+        //highlight comments
+        if (text.midRef(i, 5) == QLatin1String("$noop")) {
+            int next = text.indexOf(QChar(')'), i);
+            if (next == -1) break;
+            setFormat(i, next-i+1, _formats[CodeComment]);
+            i = next;
+        }
     }
 }
 
