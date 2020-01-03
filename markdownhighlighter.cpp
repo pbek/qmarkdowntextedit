@@ -1418,6 +1418,12 @@ void MarkdownHighlighter::taggerScriptHighlighter(const QString &text) {
             setFormat(i, next-i+1, _formats[CodeComment]);
             i = next;
         }
+
+        //highlight escape chars
+        if (text.at(i) == QChar('\\')) {
+            setFormat(i,2, _formats[CodeOther]);
+            i++;
+        }
     }
 }
 
