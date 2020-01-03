@@ -158,7 +158,7 @@ public:
         CodeINI = 236,
         CodeTaggerScript = 238,
         CodeVex = 240,
-        CodeVexComment = 240,
+        CodeVexComment = 241,
     };
     Q_ENUMS(HighlighterState)
 
