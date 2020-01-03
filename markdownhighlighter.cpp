@@ -491,6 +491,7 @@ void MarkdownHighlighter::initCodeLangs()
         {QLatin1String("ts"),          MarkdownHighlighter::CodeTypeScript},
         {QLatin1String("typescript"),  MarkdownHighlighter::CodeTypeScript},
         {QLatin1String("v"),           MarkdownHighlighter::CodeV},
+        {QLatin1String("vex"),         MarkdownHighlighter::CodeVex},
         {QLatin1String("xml"),         MarkdownHighlighter::CodeXML},
         {QLatin1String("yml"),         MarkdownHighlighter::CodeYAML},
         {QLatin1String("yaml"),        MarkdownHighlighter::CodeYAML}
@@ -856,6 +857,9 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
         case HighlighterState::CodeINI:
             iniHighlighter(text);
             return;
+        case HighlighterState::CodeVex:
+            loadVEXData(types, keywords, builtin, literals, others);
+            break;
     default:
         break;
     }

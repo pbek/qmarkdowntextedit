@@ -155,7 +155,9 @@ public:
         CodeTypeScript = 232,
         CodeTypeScriptComment = 233,
         CodeYAML = 234,
-        CodeINI = 236
+        CodeINI = 236,
+        CodeVex = 238,
+        CodeVexComment = 239,
     };
     Q_ENUMS(HighlighterState)
 
