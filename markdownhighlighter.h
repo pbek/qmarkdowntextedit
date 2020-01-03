@@ -156,8 +156,9 @@ public:
         CodeTypeScriptComment = 233,
         CodeYAML = 234,
         CodeINI = 236,
-        CodeVex = 238,
-        CodeVexComment = 239,
+        CodeTaggerScript = 238,
+        CodeVex = 240,
+        CodeVexComment = 241,
     };
     Q_ENUMS(HighlighterState)
 
@@ -176,7 +177,6 @@ public:
     void clearDirtyBlocks();
     void setHighlightingOptions(const HighlightingOptions options);
     void initHighlightingRules();
-
 signals:
     void highlightingFinished();
 
@@ -222,6 +222,8 @@ protected:
     void cssHighlighter(const QString &text);
 
     void xmlHighlighter(const QString &text);
+
+    void taggerScriptHighlighter(const QString &text);
 
     void highlightFrontmatterBlock(const QString& text);
 

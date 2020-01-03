@@ -488,6 +488,7 @@ void MarkdownHighlighter::initCodeLangs()
         {QLatin1String("rust"),        MarkdownHighlighter::CodeRust},
         {QLatin1String("sh"),          MarkdownHighlighter::CodeBash},
         {QLatin1String("sql"),         MarkdownHighlighter::CodeSQL},
+        {QLatin1String("taggerscript"),MarkdownHighlighter::CodeTaggerScript},
         {QLatin1String("ts"),          MarkdownHighlighter::CodeTypeScript},
         {QLatin1String("typescript"),  MarkdownHighlighter::CodeTypeScript},
         {QLatin1String("v"),           MarkdownHighlighter::CodeV},
@@ -857,6 +858,9 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
         case HighlighterState::CodeINI:
             iniHighlighter(text);
             return;
+        case HighlighterState::CodeTaggerScript:
+             taggerScriptHighlighter(text);
+             return;
         case HighlighterState::CodeVex:
             loadVEXData(types, keywords, builtin, literals, others);
             break;
@@ -1229,6 +1233,62 @@ int MarkdownHighlighter::highlightNumericLiterals(const QString &text, int i)
         setFormat(start, end - start, _formats[CodeNumLiteral]);
     }
     return i;
+}
+
+/**
+ * @brief The Tagger Script highlighter
+ * @param text
+ * @details his function is responsible for taggerscript highlighting.
+ * It highlights anything between a (inclusive) '&' and a (exclusive) '(' as a function.
+ * An exception is the '$noop()'function, which get highlighted as a comment.
+ *
+ * It has basic error detection when there is an unlcosed %Metadata Variable%
+ */
+void MarkdownHighlighter::taggerScriptHighlighter(const QString &text) {
+    if (text.isEmpty()) return;
+    const auto textLen = text.length();
+
+    for (int i = 0; i < textLen; ++i) {
+
+        //highlight functions, unless it's a comment function
+        if (text.at(i) == QChar('$') && text.midRef(i, 5) != QLatin1String("$noop") ) {
+            int next = text.indexOf(QChar('('), i);
+            if (next == -1) break;
+            setFormat(i, next-i, _formats[CodeKeyWord]);
+            i = next;
+        }
+
+        //highlight variables
+        if (text.at(i) == QChar('%')) {
+            int next = text.indexOf(QChar('%'), i+1);
+            int start = i;
+            i++;
+            if (next != -1){
+                setFormat(start, next-start+1, _formats[CodeType]);
+                i = next;
+            }else{
+                // error highlighting
+                QTextCharFormat errorFormat = _formats[NoState];
+                errorFormat.setUnderlineColor(Qt::red);
+                errorFormat.setUnderlineStyle(QTextCharFormat::WaveUnderline);
+                setFormat(start, 1, errorFormat);
+            }
+        }
+
+        //highlight comments
+        if (text.midRef(i, 5) == QLatin1String("$noop")) {
+            int next = text.indexOf(QChar(')'), i);
+            if (next == -1) break;
+            setFormat(i, next-i+1, _formats[CodeComment]);
+            i = next;
+        }
+
+        //highlight escape chars
+        if (text.at(i) == QChar('\\')) {
+            setFormat(i,2, _formats[CodeOther]);
+            i++;
+        }
+    }
 }
 
 /**
