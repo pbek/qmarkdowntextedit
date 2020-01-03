@@ -488,13 +488,13 @@ void MarkdownHighlighter::initCodeLangs()
         {QLatin1String("rust"),        MarkdownHighlighter::CodeRust},
         {QLatin1String("sh"),          MarkdownHighlighter::CodeBash},
         {QLatin1String("sql"),         MarkdownHighlighter::CodeSQL},
+        {QLatin1String("taggerscript"),MarkdownHighlighter::CodeTaggerScript},
         {QLatin1String("ts"),          MarkdownHighlighter::CodeTypeScript},
         {QLatin1String("typescript"),  MarkdownHighlighter::CodeTypeScript},
         {QLatin1String("v"),           MarkdownHighlighter::CodeV},
         {QLatin1String("xml"),         MarkdownHighlighter::CodeXML},
         {QLatin1String("yml"),         MarkdownHighlighter::CodeYAML},
-        {QLatin1String("yaml"),        MarkdownHighlighter::CodeYAML},
-        {QLatin1String("taggerscript"),MarkdownHighlighter::CodeTaggerScript}
+        {QLatin1String("yaml"),        MarkdownHighlighter::CodeYAML}
     };
 
 }
