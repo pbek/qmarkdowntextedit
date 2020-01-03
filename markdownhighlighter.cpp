@@ -1383,6 +1383,11 @@ void MarkdownHighlighter::iniHighlighter(const QString &text) {
  * @details TODO
  */
 void MarkdownHighlighter::taggerScriptHighlighter(const QString &text) {
+    if (text.isEmpty()) return;
+    const auto textLen = text.length();
+
+    for (int i = 0; i < textLen; ++i) {
+    }
 }
 
 void MarkdownHighlighter::cssHighlighter(const QString &text)
