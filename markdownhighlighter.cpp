@@ -1387,6 +1387,14 @@ void MarkdownHighlighter::taggerScriptHighlighter(const QString &text) {
     const auto textLen = text.length();
 
     for (int i = 0; i < textLen; ++i) {
+
+        //highlight functions, unless it's a comment function
+        if (text.at(i) == QChar('$') && text.midRef(i, 5) != QLatin1String("$noop") ) {
+            int next = text.indexOf(QChar('('), i);
+            if (next == -1) break;
+            setFormat(i, next-i, _formats[CodeKeyWord]);
+            i = next;
+        }
     }
 }
 
