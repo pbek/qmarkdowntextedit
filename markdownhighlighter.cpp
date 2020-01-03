@@ -1395,6 +1395,21 @@ void MarkdownHighlighter::taggerScriptHighlighter(const QString &text) {
             setFormat(i, next-i, _formats[CodeKeyWord]);
             i = next;
         }
+
+        //highlight variables
+        if (text.at(i) == QChar('%')) {
+            int next = text.indexOf(QChar('%'), i+1);
+            if (next != -1){
+                setFormat(i, next-i+1, _formats[CodeType]);
+                i = next;
+            }else{
+                // error highlighting
+                QTextCharFormat errorFormat = _formats[NoState];
+                errorFormat.setUnderlineColor(Qt::red);
+                errorFormat.setUnderlineStyle(QTextCharFormat::WaveUnderline);
+                setFormat(i, 1, errorFormat);
+            }
+        }
     }
 }
 
