@@ -553,47 +553,32 @@ void MarkdownHighlighter::highlightMarkdown(const QString& text) {
  * @param text
  */
 void MarkdownHighlighter::highlightHeadline(const QString& text) {
-    bool headingFound = text.startsWith(QLatin1String("# ")) ||
-                        text.startsWith(QLatin1String("## ")) ||
-                        text.startsWith(QLatin1String("### ")) ||
-                        text.startsWith(QLatin1String("#### ")) ||
-                        text.startsWith(QLatin1String("##### ")) ||
-                        text.startsWith(QLatin1String("###### "));
-
-    const QTextCharFormat &maskedFormat = _formats[HighlighterState::MaskedSyntax];
+    bool headingFound = text.at(0) == QChar('#');
+    int headingLevel = 0;
 
     if (headingFound) {
-        int count = 0;
-        int len = text.length() > 6 ? 6 : text.length();
-        //check only first 6 chars of text
-        for (int i = 0; i < len; ++i) {
-            if (text.at(i) == QLatin1Char('#')) {
-                ++count;
-            }
-        }
+        int i = 1;
+        if (i >= text.length())
+            return;
+        while(i < text.length() && text.at(i) == QChar('#') && i < 6)
+            ++i;
 
-        const auto state = HighlighterState(HighlighterState::H1 + count - 1);
+        if (i < text.length() && text.at(i) == QChar(' '))
+            headingLevel = i;
+    }
 
-        QTextCharFormat &format = _formats[state];
-        QTextCharFormat currentMaskedFormat = maskedFormat;
+    if (headingLevel > 0) {
+        const auto state = HighlighterState(HighlighterState::H1 + headingLevel - 1);
 
-        // set the font size from the current rule's font format
-        currentMaskedFormat.setFontPointSize(format.fontPointSize());
-
-        // first highlight everything as MaskedSyntax
-        setFormat(0, text.length(), currentMaskedFormat);
-
-        //const int length = text.length() - count;
-        // then highlight with the real format
         setFormat(0, text.length(), _formats[state]);
 
         // set a margin for the current block
         setCurrentBlockMargin(state);
 
         setCurrentBlockState(state);
-        currentBlock().setUserState(state);
         return;
     }
+
 
     auto hasOnlyHeadChars = [](const QString &txt, const QChar c) -> bool {
         if (txt.isEmpty()) return false;
@@ -605,60 +590,15 @@ void MarkdownHighlighter::highlightHeadline(const QString& text) {
     };
 
     // take care of ==== and ---- headlines
-
-    QTextBlock previousBlock = currentBlock().previous();
-    const QString &previousText = previousBlock.text();
-
     const bool pattern1 = hasOnlyHeadChars(text, QLatin1Char('='));
     if (pattern1) {
-
-        if (( (previousBlockState() == HighlighterState::H1) ||
-               previousBlockState() == HighlighterState::NoState) &&
-               previousText.length() > 0) {
-            QTextCharFormat currentMaskedFormat = maskedFormat;
-            // set the font size from the current rule's font format
-            currentMaskedFormat.setFontPointSize(
-                        _formats[HighlighterState::H1].fontPointSize());
-
-            setFormat(0, text.length(), currentMaskedFormat);
-            setCurrentBlockState(HighlighterState::HeadlineEnd);
-            previousBlock.setUserState(HighlighterState::H1);
-
-            // set a margin for the current block
-            setCurrentBlockMargin(HighlighterState::H1);
-
-            // we want to re-highlight the previous block
-            // this must not done directly, but with a queue, otherwise it
-            // will crash
-            // setting the character format of the previous text, because this
-            // causes text to be formatted the same way when writing after
-            // the text
-            addDirtyBlock(previousBlock);
-        }
+        highlightSubHeadline(text, H1);
         return;
     }
 
     const bool pattern2 = hasOnlyHeadChars(text, QLatin1Char('-'));
     if (pattern2) {
-
-        if (( (previousBlockState() == HighlighterState::H2) ||
-               previousBlockState() == HighlighterState::NoState) &&
-               previousText.length() > 0) {
-            // set the font size from the current rule's font format
-            QTextCharFormat currentMaskedFormat = maskedFormat;
-            currentMaskedFormat.setFontPointSize(
-                        _formats[HighlighterState::H2].fontPointSize());
-
-            setFormat(0, text.length(), currentMaskedFormat);
-            setCurrentBlockState(HighlighterState::HeadlineEnd);
-            previousBlock.setUserState(HighlighterState::H2);
-
-            // set a margin for the current block
-            setCurrentBlockMargin(HighlighterState::H2);
-
-            // we want to re-highlight the previous block
-            addDirtyBlock(previousBlock);
-        }
+        highlightSubHeadline(text, H2);
         return;
     }
 
@@ -677,6 +617,36 @@ void MarkdownHighlighter::highlightHeadline(const QString& text) {
         setFormat(0, text.length(), _formats[HighlighterState::H2]);
         setCurrentBlockState(HighlighterState::H2);
         currentBlock().setUserState(HighlighterState::H2);
+    }
+}
+
+void MarkdownHighlighter::highlightSubHeadline(const QString &text, HighlighterState state)
+{
+    const QTextCharFormat &maskedFormat = _formats[HighlighterState::MaskedSyntax];
+    QTextBlock previousBlock = currentBlock().previous();
+    int prevTextLen = previousBlock.text().length();
+
+    if ( (previousBlockState() == state || previousBlockState() == NoState) &&
+           prevTextLen > 0) {
+        QTextCharFormat currentMaskedFormat = maskedFormat;
+        // set the font size from the current rule's font format
+        currentMaskedFormat.setFontPointSize(_formats[state].fontPointSize());
+
+        setFormat(0, text.length(), currentMaskedFormat);
+        setCurrentBlockState(HeadlineEnd);
+        previousBlock.setUserState(state);
+
+        // set a margin for the current block
+        setCurrentBlockMargin(state);
+
+        // we want to re-highlight the previous block
+        // this must not done directly, but with a queue, otherwise it
+        // will crash
+        // setting the character format of the previous text, because this
+        // causes text to be formatted the same way when writing after
+        // the text
+        if (previousBlockState() != state)
+            addDirtyBlock(previousBlock);
     }
 }
 
@@ -1324,12 +1294,14 @@ void MarkdownHighlighter::ymlHighlighter(const QString &text) {
         //we found a string literal, skip it
         if (i != 0 && text.at(i-1) == QChar('"')) {
             int next = text.indexOf(QChar('"'), i);
+            if (next == -1) break;
             i = next;
             continue;
         }
 
         if (i != 0 && text.at(i-1) == QChar('\'')) {
             int next = text.indexOf(QChar('\''), i);
+            if (next == -1) break;
             i = next;
             continue;
         }
