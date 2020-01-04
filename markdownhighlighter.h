@@ -204,6 +204,8 @@ protected:
 
     void highlightHeadline(const QString& text);
 
+    void highlightSubHeadline(const QString &text, HighlighterState state);
+
     void highlightAdditionalRules(const QVector<HighlightingRule> &rules,
                                   const QString& text);
 
