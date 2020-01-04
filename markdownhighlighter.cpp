@@ -1294,12 +1294,14 @@ void MarkdownHighlighter::ymlHighlighter(const QString &text) {
         //we found a string literal, skip it
         if (i != 0 && text.at(i-1) == QChar('"')) {
             int next = text.indexOf(QChar('"'), i);
+            if (next == -1) break;
             i = next;
             continue;
         }
 
         if (i != 0 && text.at(i-1) == QChar('\'')) {
             int next = text.indexOf(QChar('\''), i);
+            if (next == -1) break;
             i = next;
             continue;
         }
