@@ -190,6 +190,7 @@ protected:
 
         QRegularExpression pattern;
         HighlighterState state = NoState;
+        QString shouldContain[3];
         int capturingGroup = 0;
         int maskedGroup = 0;
         bool useStateAsCurrentBlockState = false;
