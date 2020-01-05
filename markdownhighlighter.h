@@ -200,8 +200,8 @@ protected:
          * Dated: 5-Jan-2020
          */
         QString shouldContain[3];
-        int capturingGroup = 0;
-        int maskedGroup = 0;
+        uint8_t capturingGroup = 0;
+        uint8_t maskedGroup = 0;
         bool useStateAsCurrentBlockState = false;
         bool disableIfCurrentStateIsSet = false;
     };
@@ -245,7 +245,7 @@ protected:
 
     void reHighlightDirtyBlocks();
 
-    void setHeadingStyles(const QTextCharFormat &format,
+    void setHeadingStyles(MarkdownHighlighter::HighlighterState rule,
                      const QRegularExpressionMatch &match,
                      const int capturedGroup);
 
