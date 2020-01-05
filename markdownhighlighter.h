@@ -190,9 +190,18 @@ protected:
 
         QRegularExpression pattern;
         HighlighterState state = NoState;
+        /*
+         * waqar144:
+         * Dear programmer,
+         * shouldContain[3] is an array of 3 and it may seem that if we don't use an array here
+         * but a simple string (since most of the rules have only one check), it will be faster.
+         * It won't be faster. It will be slower.
+         * The resulting struct is larger in size - 40, as opposed to 24 with a single string.
+         * Dated: 5-Jan-2020
+         */
         QString shouldContain[3];
-        int capturingGroup = 0;
-        int maskedGroup = 0;
+        uint8_t capturingGroup = 0;
+        uint8_t maskedGroup = 0;
         bool useStateAsCurrentBlockState = false;
         bool disableIfCurrentStateIsSet = false;
     };
@@ -236,7 +245,7 @@ protected:
 
     void reHighlightDirtyBlocks();
 
-    void setHeadingStyles(const QTextCharFormat &format,
+    void setHeadingStyles(MarkdownHighlighter::HighlighterState rule,
                      const QRegularExpressionMatch &match,
                      const int capturedGroup);
 
