@@ -78,6 +78,7 @@ public:
         Link = 0,
         Image = 3,
         CodeBlock,
+        CodeBlockComment,
         Italic = 7,
         Bold,
         List,
