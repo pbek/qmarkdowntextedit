@@ -735,6 +735,16 @@ void MarkdownHighlighter::setCurrentBlockMargin(
 void MarkdownHighlighter::highlightCodeBlock(const QString& text) {
 
     if (text.startsWith(QLatin1String("```"))) {
+
+        //if someone decides to put these on the same line
+        //interpret it as inline code, not code block
+        if (text.endsWith(QLatin1String("```")) && text.length() > 3) {
+            setFormat(3, text.length() - 3, _formats[HighlighterState::InlineCodeBlock]);
+            setFormat(0, 3, _formats[HighlighterState::MaskedSyntax]);
+            setFormat(text.length() - 3, 3, _formats[HighlighterState::MaskedSyntax]);
+            return;
+        }
+
         if (previousBlockState() != CodeBlock && previousBlockState() != CodeBlockComment && previousBlockState() < CodeCpp) {
             const QString &lang = text.mid(3, text.length()).toLower();
             HighlighterState progLang = _langStringToEnum.value(lang);
