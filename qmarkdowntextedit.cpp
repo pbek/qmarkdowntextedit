@@ -1384,6 +1384,7 @@ void QMarkdownTextEdit::paintEvent(QPaintEvent *e) {
 
         if (!inBlockArea &&
                (state == MarkdownHighlighter::CodeBlock ||
+                state == MarkdownHighlighter::CodeBlockComment||
                 state >= MarkdownHighlighter::CodeCpp)) {
             //skip the backticks
             if (!block.text().startsWith("```")) {
@@ -1400,6 +1401,7 @@ void QMarkdownTextEdit::paintEvent(QPaintEvent *e) {
             const int prevBlockState = block.previous().userState();
             if(firstVisible &&
                    (prevBlockState == MarkdownHighlighter::CodeBlock ||
+                    prevBlockState == MarkdownHighlighter::CodeBlockComment ||
                     prevBlockState >= MarkdownHighlighter::CodeCpp)) {
                 clipTop = true;
             }
