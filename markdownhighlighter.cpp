@@ -559,8 +559,13 @@ void MarkdownHighlighter::setTextFormat(HighlighterState state,
  * @param text
  */
 void MarkdownHighlighter::highlightBlock(const QString &text) {
+    if (currentBlockState() == HeadlineEnd) {
+        currentBlock().previous().setUserState(NoState);
+        addDirtyBlock(currentBlock().previous());
+    }
     setCurrentBlockState(HighlighterState::NoState);
     currentBlock().setUserState(HighlighterState::NoState);
+
     highlightMarkdown(text);
     _highlightingFinished = true;
 }
