@@ -657,17 +657,20 @@ void MarkdownHighlighter::highlightSubHeadline(const QString &text, HighlighterS
 {
     const QTextCharFormat &maskedFormat = _formats[HighlighterState::MaskedSyntax];
     QTextBlock previousBlock = currentBlock().previous();
-    int prevTextLen = previousBlock.text().length();
+    bool prevEmpty = previousBlock.text().isEmpty();
 
-    if ( (previousBlockState() == state || previousBlockState() == NoState) &&
-           prevTextLen > 0) {
+    if (prevEmpty)
+        return;
+
+    //we check for both H1/H2 so that if the user changes his mind, and changes === to ---, changes
+    //be reflected immediately
+    if (previousBlockState() == H1 || previousBlockState() == H2 || previousBlockState() == NoState) {
         QTextCharFormat currentMaskedFormat = maskedFormat;
         // set the font size from the current rule's font format
         currentMaskedFormat.setFontPointSize(_formats[state].fontPointSize());
 
         setFormat(0, text.length(), currentMaskedFormat);
         setCurrentBlockState(HeadlineEnd);
-        previousBlock.setUserState(state);
 
         // set a margin for the current block
         setCurrentBlockMargin(state);
@@ -678,8 +681,10 @@ void MarkdownHighlighter::highlightSubHeadline(const QString &text, HighlighterS
         // setting the character format of the previous text, because this
         // causes text to be formatted the same way when writing after
         // the text
-        if (previousBlockState() != state)
+        if (previousBlockState() != state) {
             addDirtyBlock(previousBlock);
+            previousBlock.setUserState(state);
+        }
     }
 }
 
