@@ -330,7 +330,8 @@ void MarkdownHighlighter::initHighlightingRules() {
     {
         HighlightingRule rule(HighlighterState::CodeBlock);
         rule.pattern = QRegularExpression(QStringLiteral("^((\\t)|( {4,})).+$"));
-        rule.shouldContain[0] = QStringLiteral("\t");
+        rule.shouldContain[0] = QChar('\t');
+        rule.shouldContain[1] = QStringLiteral("    ");
         rule.disableIfCurrentStateIsSet = true;
         _highlightingRulesAfter.append(rule);
     }
