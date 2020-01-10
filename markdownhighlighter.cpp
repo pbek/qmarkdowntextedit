@@ -880,6 +880,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
             loadVEXData(types, keywords, builtin, literals, others);
             break;
     default:
+        comment = QChar('\a');
         break;
     }
 
@@ -940,7 +941,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
                         return;
                     } else if(text[i+1] == QLatin1Char('*')) {
                         Comment:
-                        int next = text.indexOf(QLatin1String("*/"));
+                        int next = text.indexOf(QLatin1String("*/"), i);
                         if (next == -1) {
                             //we didn't find a comment end.
                             //Check if we are already in a comment block
