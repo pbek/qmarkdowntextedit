@@ -311,7 +311,7 @@ void MarkdownHighlighter::initHighlightingRules() {
     {
         HighlightingRule rule(HighlighterState::TrailingSpace);
         rule.pattern = QRegularExpression(QStringLiteral("( +)$"));
-        rule.shouldContain[0] = QStringLiteral(" \n");
+        rule.shouldContain[0] = QString(" \0"); //waqar144: dont use QStringLiteral here.
         rule.capturingGroup = 1;
         _highlightingRulesAfter.append(rule);
     }
