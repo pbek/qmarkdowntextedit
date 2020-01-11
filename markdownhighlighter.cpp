@@ -1201,7 +1201,7 @@ int MarkdownHighlighter::highlightNumericLiterals(const QString &text, int i)
         }
     }
 
-    if (!isPreAllowed) return ++i;
+    if (!isPreAllowed) return i;
 
     int start = i;
 
@@ -1244,6 +1244,18 @@ int MarkdownHighlighter::highlightNumericLiterals(const QString &text, int i)
             isPostAllowed = true;
             break;
         // for 100u, 1.0F
+        case 'p':
+            if (currentBlockState() == CodeCSS)
+                if (i + 2 < text.length() && text.at(i+2) == QChar('x')) {
+                    isPostAllowed = true;
+                }
+            break;
+        case 'e':
+            if (currentBlockState() == CodeCSS)
+                if (i + 2 < text.length() && text.at(i+2) == QChar('m')) {
+                    isPostAllowed = true;
+                }
+            break;
         case 'u':
         case 'l':
         case 'f':
@@ -1259,7 +1271,7 @@ int MarkdownHighlighter::highlightNumericLiterals(const QString &text, int i)
         int end = ++i;
         setFormat(start, end - start, _formats[CodeNumLiteral]);
     }
-    return i;
+    return --i;
 }
 
 /**
