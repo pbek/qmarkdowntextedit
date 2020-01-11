@@ -1384,8 +1384,9 @@ void MarkdownHighlighter::ymlHighlighter(const QString &text) {
 
         //underlined links
         if (text.at(i) == QChar('h')) {
-            if (text.midRef(i, 5) == "https" || text.midRef(i, 4) == "http") {
-                int space = text.indexOf(' ', i);
+            if (text.midRef(i, 5) == QLatin1String("https") ||
+                    text.midRef(i, 4) == QLatin1String("http")) {
+                int space = text.indexOf(QChar(' '), i);
                 if (space == -1) space = textLen;
                 QTextCharFormat f = _formats[CodeString];
                 f.setUnderlineStyle(QTextCharFormat::SingleUnderline);
@@ -1422,9 +1423,9 @@ void MarkdownHighlighter::iniHighlighter(const QString &text) {
 
     for (int i = 0; i < textLen; ++i) {
         //start of a [section]
-        if (text.at(i) == '[') {
+        if (text.at(i) == QChar('[')) {
             QTextCharFormat sectionFormat = _formats[CodeType];
-            int sectionEnd = text.indexOf(']', i);
+            int sectionEnd = text.indexOf(QChar(']'), i);
             //if an end bracket isn't found, we apply red underline to show error
             if (sectionEnd == -1) {
                 sectionFormat.setUnderlineStyle(QTextCharFormat::DotLine);
@@ -1438,7 +1439,7 @@ void MarkdownHighlighter::iniHighlighter(const QString &text) {
         }
 
         //comment ';'
-        else if (text.at(i) == ';') {
+        else if (text.at(i) == QChar(';')) {
             setFormat(i, textLen, _formats[CodeComment]);
             i = textLen;
             break;
@@ -1447,7 +1448,7 @@ void MarkdownHighlighter::iniHighlighter(const QString &text) {
         //key-val
         else if (text.at(i).isLetter()) {
             QTextCharFormat format = _formats[CodeKeyWord];
-            int equalsPos = text.indexOf('=', i);
+            int equalsPos = text.indexOf(QChar('='), i);
             if (equalsPos == -1) {
                 format.setUnderlineColor(Qt::red);
                 format.setUnderlineStyle(QTextCharFormat::DotLine);
@@ -1458,8 +1459,8 @@ void MarkdownHighlighter::iniHighlighter(const QString &text) {
             if (i >= textLen) break;
         }
         //skip everything after '=' (except comment)
-        else if (text.at(i) == '=') {
-            int findComment = text.indexOf(';', i);
+        else if (text.at(i) == QChar('=')) {
+            int findComment = text.indexOf(QChar(';'), i);
             if (findComment == -1) break;
             i = findComment - 1;
         }
@@ -1476,7 +1477,7 @@ void MarkdownHighlighter::cssHighlighter(const QString &text)
             if (text[i + 1].isSpace() || text[i+1].isNumber()) continue;
             int space = text.indexOf(QLatin1Char(' '), i);
             if (space < 0) {
-                space = text.indexOf('{');
+                space = text.indexOf(QChar('{'));
                 if (space < 0) {
                     space = textLen;
                 }
@@ -1500,10 +1501,10 @@ void MarkdownHighlighter::cssHighlighter(const QString &text)
                 QTextCharFormat f = _formats[CodeBlock];
                 QColor c(color);
                 if (color.startsWith(QLatin1String("rgb"))) {
-                    int t = text.indexOf('(', i);
-                    int rPos = text.indexOf(',', t);
-                    int gPos = text.indexOf(',', rPos+1);
-                    int bPos = text.indexOf(')', gPos);
+                    int t = text.indexOf(QChar('('), i);
+                    int rPos = text.indexOf(QChar(','), t);
+                    int gPos = text.indexOf(QChar(','), rPos+1);
+                    int bPos = text.indexOf(QChar(')'), gPos);
                     if (rPos > -1 && gPos > -1 && bPos > -1) {
                         const QStringRef r = text.midRef(t+1, rPos - (t+1));
                         const QStringRef g = text.midRef(rPos+1, gPos - (rPos + 1));
@@ -1556,7 +1557,7 @@ void MarkdownHighlighter::xmlHighlighter(const QString &text) {
     setFormat(0, textLen, _formats[CodeBlock]);
 
     for (int i = 0; i < textLen; ++i) {
-        if (text[i] == QLatin1Char('<') && text[i+1] != QLatin1Char('!')) {
+        if (i + 1 < textLen && text[i] == QLatin1Char('<') && text[i+1] != QLatin1Char('!')) {
 
             int found = text.indexOf(QLatin1Char('>'), i);
             if (found > 0) {
