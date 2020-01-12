@@ -132,6 +132,7 @@ void MarkdownHighlighter::initHighlightingRules() {
 
         // highlight ordered lists
         rule.pattern = QRegularExpression(QStringLiteral(R"(^\s*\d+\.\s)"));
+        rule.shouldContain[0] = QStringLiteral(". ");
         _highlightingRulesPre.append(rule);
     }
 
