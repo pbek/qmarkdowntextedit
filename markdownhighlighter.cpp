@@ -878,7 +878,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
             break;
         case HighlighterState::CodeYAML:
             isYAML = true;
-            comment = '#';
+            comment = QLatin1Char('#');
             loadYAMLData(types, keywords, builtin, literals, others);
             break;
         case HighlighterState::CodeINI:
@@ -1079,13 +1079,13 @@ int MarkdownHighlighter::highlightStringLiterals(QChar strType, const QString &t
     while (i < text.length()) {
         //look for string end
         //make sure it's not an escape seq
-        if (text.at(i) == strType && text.at(i-1) != '\\') {
+        if (text.at(i) == strType && text.at(i-1) != QLatin1Char('\\')) {
             setFormat(i, 1,  _formats[CodeString]);
             ++i;
             break;
         }
         //look for escape sequence
-        if (text.at(i) == '\\' && (i+1) < text.length()) {
+        if (text.at(i) == QLatin1Char('\\') && (i+1) < text.length()) {
             int len = 0;
             switch(text.at(i+1).toLatin1()) {
             case 'a':
@@ -1216,17 +1216,20 @@ int MarkdownHighlighter::highlightNumericLiterals(const QString &text, int i)
         ++i;
 
     while (i < text.length()) {
-        if (!text.at(i).isNumber() && text.at(i) != QChar('.')) break;
+        if (!text.at(i).isNumber() && text.at(i) != QChar('.') &&
+             text.at(i) != QChar('e')) //exponent
+            break;
         ++i;
     }
 
-    i--;
-
     bool isPostAllowed = false;
-    if (i+1 == text.length()) isPostAllowed = true;
-    else {
+    if (i == text.length()) {
+        //cant have e at the end
+        if (text.at(i - 1) != QChar('e'))
+            isPostAllowed = true;
+    } else {
         //these values are allowed after a number
-        switch(text.at(i + 1).toLatin1()) {
+        switch(text.at(i).toLatin1()) {
         case ']':
         case ')':
         case '}':
@@ -1246,13 +1249,15 @@ int MarkdownHighlighter::highlightNumericLiterals(const QString &text, int i)
         // for 100u, 1.0F
         case 'p':
             if (currentBlockState() == CodeCSS)
-                if (i + 2 < text.length() && text.at(i+2) == QChar('x')) {
+                if (i + 1 < text.length() && text.at(i+1) == QChar('x')) {
+                    if (i + 2 == text.length() || !text.at(i+2).isLetterOrNumber())
                     isPostAllowed = true;
                 }
             break;
         case 'e':
             if (currentBlockState() == CodeCSS)
-                if (i + 2 < text.length() && text.at(i+2) == QChar('m')) {
+                if (i + 1 < text.length() && text.at(i+1) == QChar('m')) {
+                    if (i + 2 == text.length() || !text.at(i+2).isLetterOrNumber())
                     isPostAllowed = true;
                 }
             break;
@@ -1262,15 +1267,18 @@ int MarkdownHighlighter::highlightNumericLiterals(const QString &text, int i)
         case 'U':
         case 'L':
         case 'F':
-            isPostAllowed = true;
-            ++i;
+            if (i + 1 == text.length() || !text.at(i+1).isLetterOrNumber()) {
+                isPostAllowed = true;
+                ++i;
+            }
             break;
         }
     }
     if (isPostAllowed) {
-        int end = ++i;
+        int end = i;
         setFormat(start, end - start, _formats[CodeNumLiteral]);
     }
+    //decrement so that the index is at the last number, not after it
     return --i;
 }
 
