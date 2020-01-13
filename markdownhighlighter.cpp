@@ -1184,6 +1184,11 @@ int MarkdownHighlighter::highlightNumericLiterals(const QString &text, int i)
     else {
         //these values are allowed before a number
         switch(text.at(i - 1).toLatin1()) {
+        //css number
+        case ':':
+            if (currentBlockState() == CodeCSS)
+                isPreAllowed = true;
+            break;
         case '[':
         case '(':
         case '{':
@@ -1461,7 +1466,7 @@ void MarkdownHighlighter::iniHighlighter(const QString &text) {
 
         //comment ';'
         else if (text.at(i) == QChar(';')) {
-            setFormat(i, textLen, _formats[CodeComment]);
+            setFormat(i, textLen - i, _formats[CodeComment]);
             i = textLen;
             break;
         }
