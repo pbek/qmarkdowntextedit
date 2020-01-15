@@ -50,25 +50,24 @@ public:
         return brush.color();
     }
 
-   /**
-    * @brief returns true if c is octal
-    * @param c the char being checked
-    * @returns true if the number is octal, false otherwise
-    */
    inline bool isOctal(const char c) {
        return (c >= '0' && c <= '7');
    }
-
-   /**
-    * @brief returns true if c is hex
-    * @param c the char being checked
-    * @returns true if the number is hex, false otherwise
-    */
    inline bool isHex(const char c) {
-       return (
-           (c >= '0' && c <= '9') ||
-           (c >= 'a' && c <= 'f') ||
-           (c >= 'A' && c <= 'F'));
+       return (c >= '0' && c <= '9') ||
+              (c >= 'a' && c <= 'f') ||
+              (c >= 'A' && c <= 'F');
+   }
+   static inline bool isCodeBlock(const int state) {
+      return state == MarkdownHighlighter::CodeBlock ||
+             state == MarkdownHighlighter::CodeBlockTilde ||
+             state == MarkdownHighlighter::CodeBlockComment ||
+             state == MarkdownHighlighter::CodeBlockTildeComment ||
+             state >= MarkdownHighlighter::CodeCpp;
+   }
+   static inline bool isCodeBlockEnd(const int state) {
+       return state == MarkdownHighlighter::CodeBlockEnd ||
+              state == MarkdownHighlighter::CodeBlockTildeEnd;
    }
 
     // we use some predefined numbers here to be compatible with
@@ -111,6 +110,9 @@ public:
         CodeBuiltIn = 1006,
 
         // internal
+        CodeBlockTildeEnd = 97,
+        CodeBlockTilde = 98,
+        CodeBlockTildeComment,
         CodeBlockEnd = 100,
         HeadlineEnd,
         FrontmatterBlockEnd,
@@ -220,7 +222,9 @@ protected:
     void highlightAdditionalRules(const QVector<HighlightingRule> &rules,
                                   const QString& text);
 
-    void highlightCodeBlock(const QString& text);
+    void highlightCodeFence(const QString &text);
+
+    void highlightCodeBlock(const QString &text, const QString &opener = QStringLiteral("```"));
 
     void highlightSyntax(const QString &text);
 
@@ -260,6 +264,7 @@ protected:
     QTimer *_timer;
     bool _highlightingFinished;
     HighlightingOptions _highlightingOptions;
+    static constexpr int tildeOffset = 300;
 
     void setCurrentBlockMargin(HighlighterState state);
 };

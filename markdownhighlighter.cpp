@@ -583,7 +583,7 @@ void MarkdownHighlighter::highlightMarkdown(const QString& text) {
     }
 
     highlightCommentBlock(text);
-    highlightCodeBlock(text);
+    highlightCodeFence(text);
     highlightFrontmatterBlock(text);
 }
 
@@ -739,14 +739,22 @@ void MarkdownHighlighter::setCurrentBlockMargin(
     myCursor->setBlockFormat(blockFormat);
 }
 
+void MarkdownHighlighter::highlightCodeFence(const QString &text) {
+    if (text.startsWith(QLatin1String("~~~"))) {
+        highlightCodeBlock(text, QStringLiteral("~~~"));
+    } else {
+        highlightCodeBlock(text);
+    }
+}
+
 /**
  * Highlight multi-line code blocks
  *
  * @param text
  */
-void MarkdownHighlighter::highlightCodeBlock(const QString& text) {
+void MarkdownHighlighter::highlightCodeBlock(const QString& text, const QString &opener) {
 
-    if (text.startsWith(QLatin1String("```"))) {
+    if (text.startsWith(opener)) {
 
         //if someone decides to put these on the same line
         //interpret it as inline code, not code block
@@ -756,20 +764,22 @@ void MarkdownHighlighter::highlightCodeBlock(const QString& text) {
             setFormat(text.length() - 3, 3, _formats[HighlighterState::MaskedSyntax]);
             return;
         }
-
-        if (previousBlockState() != CodeBlock && previousBlockState() != CodeBlockComment && previousBlockState() < CodeCpp) {
+        if ((previousBlockState() != CodeBlock && previousBlockState() != CodeBlockTilde) &&
+            (previousBlockState() != CodeBlockComment && previousBlockState() != CodeBlockTildeComment) &&
+            previousBlockState() < CodeCpp) {
             const QString &lang = text.mid(3, text.length()).toLower();
             HighlighterState progLang = _langStringToEnum.value(lang);
 
             if (progLang >= CodeCpp) {
-                setCurrentBlockState(progLang);
+                const int state = text.startsWith(QLatin1String("```")) ? progLang : progLang + tildeOffset;
+                setCurrentBlockState(state);
             } else {
-                setCurrentBlockState(CodeBlock);
+                const int state = opener == QLatin1String("```") ? CodeBlock : CodeBlockTilde;
+                setCurrentBlockState(state);
             }
-        } else if (previousBlockState() == CodeBlock ||
-                   previousBlockState() == CodeBlockComment ||
-                   previousBlockState() >= CodeCpp) {
-            setCurrentBlockState(CodeBlockEnd);
+        } else if (isCodeBlock(previousBlockState())) {
+            const int state = opener == QLatin1String("```") ? CodeBlockEnd : CodeBlockTildeEnd;
+            setCurrentBlockState(state);
         }
 
         // set the font size from the current rule's font format
@@ -777,9 +787,7 @@ void MarkdownHighlighter::highlightCodeBlock(const QString& text) {
         maskedFormat.setFontPointSize(_formats[CodeBlock].fontPointSize());
 
         setFormat(0, text.length(), maskedFormat);
-    } else if (previousBlockState() == CodeBlock ||
-               previousBlockState() == CodeBlockComment ||
-               previousBlockState() >= CodeCpp) {
+    } else if (isCodeBlock(previousBlockState())) {
         setCurrentBlockState(previousBlockState());
         highlightSyntax(text);
     }
@@ -811,86 +819,121 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
     QList<QLatin1String> wordList;
 
     switch (currentBlockState()) {
-        case HighlighterState::CodeCpp :
-        case HighlighterState::CodeCppComment :
-            loadCppData(types, keywords, builtin, literals, others);
-            break;
-        case HighlighterState::CodeJs :
-        case HighlighterState::CodeJsComment :
-            loadJSData(types, keywords, builtin, literals, others);
-            break;
-        case HighlighterState::CodeC :
-        case HighlighterState::CodeCComment :
-            loadCppData(types, keywords, builtin, literals, others);
-            break;
-        case HighlighterState::CodeBash :
-            loadShellData(types, keywords, builtin, literals, others);
-            comment = QLatin1Char('#');
-            break;
-        case HighlighterState::CodePHP :
-        case HighlighterState::CodePHPComment :
-            loadPHPData(types, keywords, builtin, literals, others);
-            break;
-        case HighlighterState::CodeQML :
-        case HighlighterState::CodeQMLComment :
-            loadQMLData(types, keywords, builtin, literals, others);
-            break;
-        case HighlighterState::CodePython :
-            loadPythonData(types, keywords, builtin, literals, others);
-            comment = QLatin1Char('#');
-            break;
-        case HighlighterState::CodeRust :
-        case HighlighterState::CodeRustComment :
-            loadRustData(types, keywords, builtin, literals, others);
-            break;
-        case HighlighterState::CodeJava :
-        case HighlighterState::CodeJavaComment :
-            loadJavaData(types, keywords, builtin, literals, others);
-            break;
-        case HighlighterState::CodeCSharp :
-        case HighlighterState::CodeCSharpComment :
-            loadCSharpData(types, keywords, builtin, literals, others);
-            break;
-        case HighlighterState::CodeGo :
-        case HighlighterState::CodeGoComment :
-            loadGoData(types, keywords, builtin, literals, others);
-            break;
-        case HighlighterState::CodeV :
-        case HighlighterState::CodeVComment :
-            loadVData(types, keywords, builtin, literals, others);
-            break;
-        case HighlighterState::CodeSQL :
-            loadSQLData(types, keywords, builtin, literals, others);
-            break;
-        case HighlighterState::CodeJSON :
-            loadJSONData(types, keywords, builtin, literals, others);
-            break;
-        case HighlighterState::CodeXML :
-            xmlHighlighter(text);
-            return;
-        case HighlighterState::CodeCSS :
-        case HighlighterState::CodeCSSComment :
-            isCSS = true;
-            loadCSSData(types, keywords, builtin, literals, others);
-            break;
-        case HighlighterState::CodeTypeScript:
-        case HighlighterState::CodeTypeScriptComment:
-            loadTypescriptData(types, keywords, builtin, literals, others);
-            break;
-        case HighlighterState::CodeYAML:
-            isYAML = true;
-            comment = QLatin1Char('#');
-            loadYAMLData(types, keywords, builtin, literals, others);
-            break;
-        case HighlighterState::CodeINI:
-            iniHighlighter(text);
-            return;
-        case HighlighterState::CodeTaggerScript:
-             taggerScriptHighlighter(text);
-             return;
-        case HighlighterState::CodeVex:
-            loadVEXData(types, keywords, builtin, literals, others);
-            break;
+    case HighlighterState::CodeCpp:
+    case HighlighterState::CodeCpp + tildeOffset:
+    case HighlighterState::CodeCppComment:
+    case HighlighterState::CodeCppComment + tildeOffset:
+        loadCppData(types, keywords, builtin, literals, others);
+        break;
+    case HighlighterState::CodeJs :
+    case HighlighterState::CodeJs + tildeOffset:
+    case HighlighterState::CodeJsComment :
+    case HighlighterState::CodeJsComment + tildeOffset:
+        loadJSData(types, keywords, builtin, literals, others);
+        break;
+    case HighlighterState::CodeC :
+    case HighlighterState::CodeC + tildeOffset:
+    case HighlighterState::CodeCComment :
+    case HighlighterState::CodeCComment + tildeOffset:
+        loadCppData(types, keywords, builtin, literals, others);
+        break;
+    case HighlighterState::CodeBash :
+    case HighlighterState::CodeBash + tildeOffset:
+        loadShellData(types, keywords, builtin, literals, others);
+        comment = QLatin1Char('#');
+        break;
+    case HighlighterState::CodePHP :
+    case HighlighterState::CodePHP + tildeOffset:
+    case HighlighterState::CodePHPComment :
+    case HighlighterState::CodePHPComment + tildeOffset:
+        loadPHPData(types, keywords, builtin, literals, others);
+        break;
+    case HighlighterState::CodeQML :
+    case HighlighterState::CodeQML + tildeOffset:
+    case HighlighterState::CodeQMLComment :
+    case HighlighterState::CodeQMLComment + tildeOffset:
+        loadQMLData(types, keywords, builtin, literals, others);
+        break;
+    case HighlighterState::CodePython :
+    case HighlighterState::CodePython + tildeOffset:
+        loadPythonData(types, keywords, builtin, literals, others);
+        comment = QLatin1Char('#');
+        break;
+    case HighlighterState::CodeRust :
+    case HighlighterState::CodeRust + tildeOffset:
+    case HighlighterState::CodeRustComment :
+    case HighlighterState::CodeRustComment + tildeOffset:
+        loadRustData(types, keywords, builtin, literals, others);
+        break;
+    case HighlighterState::CodeJava :
+    case HighlighterState::CodeJava + tildeOffset:
+    case HighlighterState::CodeJavaComment :
+    case HighlighterState::CodeJavaComment + tildeOffset:
+        loadJavaData(types, keywords, builtin, literals, others);
+        break;
+    case HighlighterState::CodeCSharp :
+    case HighlighterState::CodeCSharp + tildeOffset:
+    case HighlighterState::CodeCSharpComment :
+    case HighlighterState::CodeCSharpComment + tildeOffset:
+        loadCSharpData(types, keywords, builtin, literals, others);
+        break;
+    case HighlighterState::CodeGo :
+    case HighlighterState::CodeGo + tildeOffset:
+    case HighlighterState::CodeGoComment :
+    case HighlighterState::CodeGoComment + tildeOffset:
+        loadGoData(types, keywords, builtin, literals, others);
+        break;
+    case HighlighterState::CodeV :
+    case HighlighterState::CodeV + tildeOffset:
+    case HighlighterState::CodeVComment :
+    case HighlighterState::CodeVComment + tildeOffset:
+        loadVData(types, keywords, builtin, literals, others);
+        break;
+    case HighlighterState::CodeSQL :
+    case HighlighterState::CodeSQL + tildeOffset:
+        loadSQLData(types, keywords, builtin, literals, others);
+        break;
+    case HighlighterState::CodeJSON :
+    case HighlighterState::CodeJSON + tildeOffset:
+        loadJSONData(types, keywords, builtin, literals, others);
+        break;
+    case HighlighterState::CodeXML :
+    case HighlighterState::CodeXML + tildeOffset:
+        xmlHighlighter(text);
+        return;
+    case HighlighterState::CodeCSS :
+    case HighlighterState::CodeCSS + tildeOffset:
+    case HighlighterState::CodeCSSComment :
+    case HighlighterState::CodeCSSComment + tildeOffset:
+        isCSS = true;
+        loadCSSData(types, keywords, builtin, literals, others);
+        break;
+    case HighlighterState::CodeTypeScript:
+    case HighlighterState::CodeTypeScript + tildeOffset:
+    case HighlighterState::CodeTypeScriptComment:
+    case HighlighterState::CodeTypeScriptComment + tildeOffset:
+        loadTypescriptData(types, keywords, builtin, literals, others);
+        break;
+    case HighlighterState::CodeYAML:
+    case HighlighterState::CodeYAML + tildeOffset:
+        isYAML = true;
+        comment = QLatin1Char('#');
+        loadYAMLData(types, keywords, builtin, literals, others);
+        break;
+    case HighlighterState::CodeINI:
+    case HighlighterState::CodeINI + tildeOffset:
+        iniHighlighter(text);
+        return;
+    case HighlighterState::CodeTaggerScript:
+    case HighlighterState::CodeTaggerScript + tildeOffset:
+        taggerScriptHighlighter(text);
+        return;
+    case HighlighterState::CodeVex:
+    case HighlighterState::CodeVex + tildeOffset:
+    case HighlighterState::CodeVexComment:
+    case HighlighterState::CodeVexComment + tildeOffset:
+        loadVEXData(types, keywords, builtin, literals, others);
+        break;
     default:
         comment = QChar('\a');
         break;

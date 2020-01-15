@@ -1382,12 +1382,9 @@ void QMarkdownTextEdit::paintEvent(QPaintEvent *e) {
         const QRectF r = blockBoundingRect(block).translated(offset);
         const int state = block.userState();
 
-        if (!inBlockArea &&
-               (state == MarkdownHighlighter::CodeBlock ||
-                state == MarkdownHighlighter::CodeBlockComment||
-                state >= MarkdownHighlighter::CodeCpp)) {
+        if (!inBlockArea && MarkdownHighlighter::isCodeBlock(state)) {
             //skip the backticks
-            if (!block.text().startsWith("```")) {
+            if (!block.text().startsWith(QLatin1String("```")) && !block.text().startsWith(QLatin1String("~~~")) ) {
                 blockAreaRect = r;
                 dy = 0.0;
                 inBlockArea = true;
@@ -1399,15 +1396,12 @@ void QMarkdownTextEdit::paintEvent(QPaintEvent *e) {
             // its top clipped by the viewport and will need to be
             // drawn specially.
             const int prevBlockState = block.previous().userState();
-            if(firstVisible &&
-                   (prevBlockState == MarkdownHighlighter::CodeBlock ||
-                    prevBlockState == MarkdownHighlighter::CodeBlockComment ||
-                    prevBlockState >= MarkdownHighlighter::CodeCpp)) {
+            if(firstVisible && MarkdownHighlighter::isCodeBlock(prevBlockState)) {
                 clipTop = true;
             }
         }
         // Else if the block ends a text block area...
-        else if (inBlockArea && state == MarkdownHighlighter::CodeBlockEnd) {
+        else if (inBlockArea && MarkdownHighlighter::isCodeBlockEnd(state)) {
             drawBlock = true;
             inBlockArea = false;
             blockAreaRect.setHeight(dy);
