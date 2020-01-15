@@ -740,9 +740,15 @@ void MarkdownHighlighter::setCurrentBlockMargin(
 }
 
 void MarkdownHighlighter::highlightCodeFence(const QString &text) {
-    if (text.startsWith(QLatin1String("~~~"))) {
-        highlightCodeBlock(text, QStringLiteral("~~~"));
+    //already in tilde block
+    if ((previousBlockState() == CodeBlockTilde || previousBlockState() == CodeBlockTildeComment ||
+         previousBlockState() >= CodeCpp + tildeOffset )) {
+         highlightCodeBlock(text, QStringLiteral("~~~"));
+    //start of a tilde block
+    } else if (previousBlockState() == NoState && text.startsWith(QLatin1String("~~~"))) {
+         highlightCodeBlock(text, QStringLiteral("~~~"));
     } else {
+        //back tick block
         highlightCodeBlock(text);
     }
 }
