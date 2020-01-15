@@ -16,9 +16,9 @@
 
 #include <QPlainTextEdit>
 #include <QEvent>
-#include "markdownhighlighter.h"
 #include "qplaintexteditsearchwidget.h"
 
+class MarkdownHighlighter;
 
 class QMarkdownTextEdit : public QPlainTextEdit
 {
@@ -79,12 +79,12 @@ protected:
     bool _centerCursor = false;
 
     bool eventFilter(QObject *obj, QEvent *event);
-    bool increaseSelectedTextIndention(bool reverse, const QString& indentCharacters = "\t");
-    bool handleTabEntered(bool reverse, const QString& indentCharacters = "\t");
+    bool increaseSelectedTextIndention(bool reverse, const QString& indentCharacters = QChar('\t'));
+    bool handleTabEntered(bool reverse, const QString& indentCharacters = QChar('\t'));
     QMap<QString, QString> parseMarkdownUrlsFromText(const QString& text);
     bool handleReturnEntered();
     bool handleBracketClosing(const QString& openingCharacter,
-                              QString closingCharacter = "");
+                              QString closingCharacter = QLatin1String(""));
     bool bracketClosingCheck(const QString& openingCharacter,
                              QString closingCharacter);
     bool quotationMarkCheck(const QString& quotationCharacter);
