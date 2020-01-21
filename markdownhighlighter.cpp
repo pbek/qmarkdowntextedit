@@ -169,31 +169,12 @@ void MarkdownHighlighter::initHighlightingRules() {
         _highlightingRulesPre.append(rule);
     }
 
-    // highlight horizontal rulers
-    {
-        HighlightingRule rule(HighlighterState::HorizontalRuler);
-        rule.pattern = QRegularExpression(QStringLiteral("^([*\\-_]\\s?){3,}$"));
-        rule.shouldContain[0] = QStringLiteral("---");
-        rule.shouldContain[1] = QStringLiteral("***");
-        rule.shouldContain[2] = QStringLiteral("+++");
-        _highlightingRulesPre.append(rule);
-    }
-
     // highlight tables without starting |
     // we drop that for now, it's far too messy to deal with
 //    rule = HighlightingRule();
 //    rule.pattern = QRegularExpression("^.+? \\| .+? \\| .+$");
 //    rule.state = HighlighterState::Table;
 //    _highlightingRulesPre.append(rule);
-
-    {
-        HighlightingRule rule(HighlighterState::MaskedSyntax);
-        // highlight strike through
-        rule.pattern = QRegularExpression(QStringLiteral(R"(\~{2}(.+?)\~{2})"));
-        rule.shouldContain[0] = QStringLiteral("~");
-        rule.capturingGroup = 1;
-        _highlightingRulesAfter.append(rule);
-    }
 
     // highlight urls
     {
@@ -280,26 +261,10 @@ void MarkdownHighlighter::initHighlightingRules() {
         _highlightingRulesAfter.append(rule);
     }
 
-    // highlight code blocks with four spaces or tabs in front of them
-    // and no list character after that
-    {
-        HighlightingRule rule(HighlighterState::CodeBlock);
-        rule.pattern = QRegularExpression(QStringLiteral("^((\\t)|( {4,})).+$"));
-        rule.shouldContain[0] = QChar('\t');
-        rule.shouldContain[1] = QStringLiteral("    ");
-        rule.disableIfCurrentStateIsSet = true;
-        _highlightingRulesAfter.append(rule);
-    }
-
     // highlight inline comments
     {
-        HighlightingRule rule(HighlighterState::Comment);
-        rule.pattern = QRegularExpression(QStringLiteral(R"(<!\-\-(.+?)\-\->)"));
-        rule.shouldContain[0] = QStringLiteral("<!--");
-        rule.capturingGroup = 1;
-        _highlightingRulesAfter.append(rule);
-
         // highlight comments for Rmarkdown for academic papers
+        HighlightingRule rule(HighlighterState::Comment);
         rule.pattern = QRegularExpression(QStringLiteral(R"(^\[.+?\]: # \(.+?\)$)"));
         rule.shouldContain[0] = QStringLiteral("]: # (");
         _highlightingRulesAfter.append(rule);
@@ -534,10 +499,14 @@ void MarkdownHighlighter::highlightMarkdown(const QString& text) {
     if (!text.isEmpty() && !isBlockCodeBlock) {
         highlightAdditionalRules(_highlightingRulesPre, text);
 
+        highlightThematicBreak(text);
+
         // needs to be called after the horizontal ruler highlighting
         highlightHeadline(text);
 
         highlightAdditionalRules(_highlightingRulesAfter, text);
+
+        highlightIndentedCodeBlock(text);
 
         highlightInlineRules(text);
     }
@@ -698,6 +667,26 @@ void MarkdownHighlighter::setCurrentBlockMargin(
     // this prevents "undo" in headlines!
     QTextCursor* myCursor = new QTextCursor(currentBlock());
     myCursor->setBlockFormat(blockFormat);
+}
+
+/**
+ * @brief highlight code blocks with four spaces or tabs in front of them
+ * and no list character after that
+ * @param text
+ */
+void MarkdownHighlighter::highlightIndentedCodeBlock(const QString &text) {
+    if (text.isEmpty() || (!text.startsWith("    ") && !text.startsWith('\t')))
+        return;
+    //previous line must be empty according to CommonMark
+    //https://spec.commonmark.org/0.29/#indented-code-block
+    if (!currentBlock().previous().text().trimmed().isEmpty())
+        return;
+    //should not be the start of a list
+    if (text.trimmed().startsWith(QLatin1String("- ")) ||
+            text.trimmed().startsWith(QLatin1String("+ ")) ||
+            text.trimmed().startsWith(QLatin1String("* ")))
+        return;
+    highlightSyntax(text);
 }
 
 void MarkdownHighlighter::highlightCodeFence(const QString &text) {
@@ -902,7 +891,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
             loadVEXData(types, keywords, builtin, literals, others);
             break;
         default:
-            comment = QChar('\a');
+            comment = QChar('\0');
             break;
         }
 
@@ -945,7 +934,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
 
     for (int i=0; i< textLen; ++i) {
 
-        if (currentBlockState() % 2 != 0) goto Comment;
+        if (currentBlockState() != -1 && currentBlockState() % 2 != 0) goto Comment;
 
         while (i < textLen && !text[i].isLetter()) {
             if (text[i].isSpace()) {
@@ -1683,6 +1672,9 @@ void MarkdownHighlighter::highlightCommentBlock(QString text) {
         return;
     }
 
+    if (!text.startsWith(startText) && text.contains(startText))
+        return;
+
     if (text.startsWith(startText) ||
             (!text.endsWith(endText) &&
                     (previousBlockState() == HighlighterState::Comment))) {
@@ -1695,6 +1687,37 @@ void MarkdownHighlighter::highlightCommentBlock(QString text) {
     if (highlight) {
         setFormat(0, text.length(), _formats[HighlighterState::Comment]);
     }
+}
+
+/**
+ * @brief Highlights thematic breaks i.e., horizontal ruler <hr/>
+ * @param text
+ */
+void MarkdownHighlighter::highlightThematicBreak(const QString &text)
+{
+    if (text.isEmpty() || text.startsWith(QLatin1String("    ")) || text.startsWith(QLatin1Char('\t')))
+        return;
+    const auto &sText = text.simplified();
+    if (sText.isEmpty())
+        return;
+    if (!sText.startsWith(QLatin1String("---")) && !sText.startsWith(QLatin1String("___")) &&
+            !sText.startsWith(QLatin1String("***")))
+        return;
+    const QChar c = sText.at(0);
+    bool hasSameChars = true;
+    for (int i = 0; i < sText.length(); ++i) {
+        if (c != sText.at(i))
+            hasSameChars = false;
+    }
+
+    QTextCharFormat f = _formats[HorizontalRuler];
+    if (c == QLatin1Char('-'))
+        f.setFontLetterSpacing(80);
+    else if (c == QLatin1Char('_'))
+        f.setFontUnderline(true);
+
+    if (hasSameChars)
+        setFormat(0, text.length(), f);
 }
 
 /**
@@ -1811,8 +1834,12 @@ void MarkdownHighlighter::highlightInlineRules(const QString &text)
     for (int i = 0; i < text.length(); ++i) {
         if (text.at(i) == QLatin1Char('`') || text.at(i) == QLatin1Char('~')) {
             i = highlightInlineSpans(text, i, text.at(i));
-        }
-        else if (!isEmStrongDone &&
+        } else if (text.at(i) == QLatin1Char('<') && i + 3 < text.length() &&
+                   text.at(i + 1) == QLatin1Char('!') && text.at(i + 2) == QLatin1Char('-') &&
+                   text.at(i + 3) == QLatin1Char('-')
+                   ) {
+            highlightInlineComment(text, i);
+        } else if (!isEmStrongDone &&
                  (text.at(i) == QLatin1Char('*') || text.at(i) == QLatin1Char('_'))) {
             highlightEmAndStrong(text, i);
             isEmStrongDone = true;
@@ -2075,6 +2102,29 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text, const int po
         setFormat(masked.at(i).first, masked.at(i).second, maskedFmt);
     }
     masked.squeeze();
+}
+
+/**
+ * @brief highlight inline comments in markdown <!-- comment -->
+ * @param text
+ * @param pos
+ * @return position after the comment
+ */
+int MarkdownHighlighter::highlightInlineComment(const QString &text, int pos)
+{
+    int start = pos;
+    pos += 4;
+
+    if (pos >= text.length())
+        return pos;
+
+    int commentEnd = text.indexOf(QLatin1String("-->"), pos);
+    if (commentEnd == -1)
+        return pos;
+
+    commentEnd += 3;
+    setFormat(start, commentEnd - start, _formats[Comment]);
+    return commentEnd - 1;
 }
 
 int collectEmDelims(const QString &text, int curPos, QList<Delimiter> &delims) {

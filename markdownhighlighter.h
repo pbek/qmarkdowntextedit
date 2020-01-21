@@ -215,6 +215,10 @@ protected:
 
     void highlightMarkdown(const QString& text);
 
+    /******************************
+     *  BLOCK LEVEL FUNCTIONS
+     ******************************/
+
     void highlightHeadline(const QString& text);
 
     void highlightSubHeadline(const QString &text, HighlighterState state);
@@ -222,11 +226,29 @@ protected:
     void highlightAdditionalRules(const QVector<HighlightingRule> &rules,
                                   const QString& text);
 
+    void highlightFrontmatterBlock(const QString& text);
+
+    void highlightCommentBlock(QString text);
+
+    void highlightThematicBreak(const QString &text);
+
+    /******************************
+     *  INLINE FUNCTIONS
+     ******************************/
+
     void highlightInlineRules(const QString &text);
 
     int highlightInlineSpans(const QString &text, int currentPos, const QChar c);
 
     void highlightEmAndStrong(const QString &text, const int pos);
+
+    int highlightInlineComment(const QString &text, int pos);
+
+    /******************************
+     *  CODE HIGHLIGHTING FUNCTIONS
+     ******************************/
+
+    void highlightIndentedCodeBlock(const QString &text);
 
     void highlightCodeFence(const QString &text);
 
@@ -247,10 +269,6 @@ protected:
     void xmlHighlighter(const QString &text);
 
     void taggerScriptHighlighter(const QString &text);
-
-    void highlightFrontmatterBlock(const QString& text);
-
-    void highlightCommentBlock(QString text);
 
     void addDirtyBlock(const QTextBlock& block);
 
