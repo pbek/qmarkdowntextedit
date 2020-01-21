@@ -228,6 +228,8 @@ protected:
 
     void highlightEmAndStrong(const QString &text, const int pos);
 
+    int highlightInlineComment(const QString &text, int pos);
+
     void highlightCodeFence(const QString &text);
 
     void highlightCodeBlock(const QString &text, const QString &opener = QStringLiteral("```"));

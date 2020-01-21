@@ -285,10 +285,10 @@ void MarkdownHighlighter::initHighlightingRules() {
     // highlight inline comments
     {
         HighlightingRule rule(HighlighterState::Comment);
-        rule.pattern = QRegularExpression(QStringLiteral(R"(<!\-\-(.+?)\-\->)"));
-        rule.shouldContain[0] = QStringLiteral("<!--");
-        rule.capturingGroup = 1;
-        _highlightingRulesAfter.append(rule);
+//        rule.pattern = QRegularExpression(QStringLiteral(R"(<!\-\-(.+?)\-\->)"));
+//        rule.shouldContain[0] = QStringLiteral("<!--");
+//        rule.capturingGroup = 1;
+//        _highlightingRulesAfter.append(rule);
 
         // highlight comments for Rmarkdown for academic papers
         rule.pattern = QRegularExpression(QStringLiteral(R"(^\[.+?\]: # \(.+?\)$)"));
@@ -1674,6 +1674,9 @@ void MarkdownHighlighter::highlightCommentBlock(QString text) {
         return;
     }
 
+    if (!text.startsWith(startText) && text.contains(startText))
+        return;
+
     if (text.startsWith(startText) ||
             (!text.endsWith(endText) &&
                     (previousBlockState() == HighlighterState::Comment))) {
@@ -1802,8 +1805,12 @@ void MarkdownHighlighter::highlightInlineRules(const QString &text)
     for (int i = 0; i < text.length(); ++i) {
         if (text.at(i) == QLatin1Char('`') || text.at(i) == QLatin1Char('~')) {
             i = highlightInlineSpans(text, i, text.at(i));
-        }
-        else if (!isEmStrongDone &&
+        } else if (text.at(i) == QLatin1Char('<') && i + 3 < text.length() &&
+                   text.at(i + 1) == QLatin1Char('!') && text.at(i + 2) == QLatin1Char('-') &&
+                   text.at(i + 3) == QLatin1Char('-')
+                   ) {
+            highlightInlineComment(text, i);
+        } else if (!isEmStrongDone &&
                  (text.at(i) == QLatin1Char('*') || text.at(i) == QLatin1Char('_'))) {
             highlightEmAndStrong(text, i);
             isEmStrongDone = true;
@@ -2066,6 +2073,23 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text, const int po
         setFormat(masked.at(i).first, masked.at(i).second, maskedFmt);
     }
     masked.squeeze();
+}
+
+int MarkdownHighlighter::highlightInlineComment(const QString &text, int pos)
+{
+    int start = pos;
+    pos += 4;
+
+    if (pos >= text.length())
+        return pos;
+
+    int commentEnd = text.indexOf(QLatin1String("-->"), pos);
+    if (commentEnd == -1)
+        return pos;
+
+    commentEnd += 3;
+    setFormat(start, commentEnd - start, _formats[Comment]);
+    return commentEnd;
 }
 
 int collectEmDelims(const QString &text, int curPos, QList<Delimiter> &delims) {
