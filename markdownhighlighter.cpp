@@ -169,16 +169,6 @@ void MarkdownHighlighter::initHighlightingRules() {
         _highlightingRulesPre.append(rule);
     }
 
-    // highlight horizontal rulers
-    {
-        HighlightingRule rule(HighlighterState::HorizontalRuler);
-        rule.pattern = QRegularExpression(QStringLiteral("^([*\\-_]\\s?){3,}$"));
-        rule.shouldContain[0] = QStringLiteral("---");
-        rule.shouldContain[1] = QStringLiteral("***");
-        rule.shouldContain[2] = QStringLiteral("+++");
-        _highlightingRulesPre.append(rule);
-    }
-
     // highlight tables without starting |
     // we drop that for now, it's far too messy to deal with
 //    rule = HighlightingRule();
@@ -509,6 +499,8 @@ void MarkdownHighlighter::highlightMarkdown(const QString& text) {
     if (!text.isEmpty() && !isBlockCodeBlock) {
         highlightAdditionalRules(_highlightingRulesPre, text);
 
+        highlightThematicBreak(text);
+
         // needs to be called after the horizontal ruler highlighting
         highlightHeadline(text);
 
@@ -685,6 +677,11 @@ void MarkdownHighlighter::setCurrentBlockMargin(
 void MarkdownHighlighter::highlightIndentedCodeBlock(const QString &text) {
     if (text.isEmpty() || (!text.startsWith("    ") && !text.startsWith('\t')))
         return;
+    //previous line must be empty according to CommonMark
+    //https://spec.commonmark.org/0.29/#indented-code-block
+    if (!currentBlock().previous().text().trimmed().isEmpty())
+        return;
+    //should not be the start of a list
     if (text.trimmed().startsWith(QLatin1String("- ")) ||
             text.trimmed().startsWith(QLatin1String("+ ")) ||
             text.trimmed().startsWith(QLatin1String("* ")))
@@ -1690,6 +1687,37 @@ void MarkdownHighlighter::highlightCommentBlock(QString text) {
     if (highlight) {
         setFormat(0, text.length(), _formats[HighlighterState::Comment]);
     }
+}
+
+/**
+ * @brief Highlights thematic breaks i.e., horizontal ruler <hr/>
+ * @param text
+ */
+void MarkdownHighlighter::highlightThematicBreak(const QString &text)
+{
+    if (text.isEmpty() || text.startsWith(QLatin1String("    ")) || text.startsWith(QLatin1Char('\t')))
+        return;
+    const auto &sText = text.simplified();
+    if (sText.isEmpty())
+        return;
+    if (!sText.startsWith(QLatin1String("---")) && !sText.startsWith(QLatin1String("___")) &&
+            !sText.startsWith(QLatin1String("***")))
+        return;
+    const QChar c = sText.at(0);
+    bool hasSameChars = true;
+    for (int i = 0; i < sText.length(); ++i) {
+        if (c != sText.at(i))
+            hasSameChars = false;
+    }
+
+    QTextCharFormat f = _formats[HorizontalRuler];
+    if (c == QLatin1Char('-'))
+        f.setFontLetterSpacing(80);
+    else if (c == QLatin1Char('_'))
+        f.setFontUnderline(true);
+
+    if (hasSameChars)
+        setFormat(0, text.length(), f);
 }
 
 /**
