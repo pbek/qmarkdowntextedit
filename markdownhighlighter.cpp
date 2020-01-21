@@ -186,15 +186,6 @@ void MarkdownHighlighter::initHighlightingRules() {
 //    rule.state = HighlighterState::Table;
 //    _highlightingRulesPre.append(rule);
 
-    {
-        HighlightingRule rule(HighlighterState::MaskedSyntax);
-        // highlight strike through
-        rule.pattern = QRegularExpression(QStringLiteral(R"(\~{2}(.+?)\~{2})"));
-        rule.shouldContain[0] = QStringLiteral("~");
-        rule.capturingGroup = 1;
-        _highlightingRulesAfter.append(rule);
-    }
-
     // highlight urls
     {
         HighlightingRule rule(HighlighterState::Link);
