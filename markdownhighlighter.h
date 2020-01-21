@@ -32,7 +32,8 @@ Q_OBJECT
 public:
     enum HighlightingOption{
         None = 0,
-        FullyHighlightedBlockQuote = 0x01
+        FullyHighlightedBlockQuote = 0x01,
+        Underline = 0x02
     };
     Q_DECLARE_FLAGS(HighlightingOptions, HighlightingOption)
 

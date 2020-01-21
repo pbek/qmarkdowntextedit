@@ -2066,9 +2066,15 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text, const int po
                 ++k; //look for first letter after the delim chain
             //per character highlighting
             int boldLen = endDelim.pos - startDelim.pos;
+            bool underline = false;
+            if (startDelim.marker == QLatin1Char('_') && _highlightingOptions.testFlag(Underline))
+                underline = true;
             while (k != (startDelim.pos + boldLen)) {
                 QTextCharFormat fmt = QSyntaxHighlighter::format(k);
-                fmt.setFontWeight(QFont::Bold);
+                if (underline)
+                    fmt.setFontUnderline(true);
+                else
+                    fmt.setFontWeight(QFont::Bold);
                 setFormat(k, 1, fmt);
                 k++;
             }
@@ -2081,10 +2087,16 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text, const int po
             int k = startDelim.pos;
             while(text.at(k) == startDelim.marker)
                 ++k;
+            bool underline = false;
+            if (startDelim.marker == QLatin1Char('_') && _highlightingOptions.testFlag(Underline))
+                underline = true;
             int itLen = endDelim.pos - startDelim.pos;
             while (k != (startDelim.pos + itLen)) {
                 QTextCharFormat fmt = QSyntaxHighlighter::format(k);
-                fmt.setFontItalic(true);
+                if (underline)
+                    fmt.setFontUnderline(true);
+                else
+                    fmt.setFontItalic(true);
                 setFormat(k, 1, fmt);
                 k++;
             }
