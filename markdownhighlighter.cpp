@@ -1817,7 +1817,10 @@ void MarkdownHighlighter::highlightInlineRules(const QString &text)
     bool isEmStrongDone = false;
 
     for (int i = 0; i < text.length(); ++i) {
-        if (!isEmStrongDone &&
+        if (text.at(i) == QLatin1Char('`') || text.at(i) == QLatin1Char('~')) {
+            i = highlightInlineSpans(text, i, text.at(i));
+        }
+        else if (!isEmStrongDone &&
                  (text.at(i) == QLatin1Char('*') || text.at(i) == QLatin1Char('_'))) {
             highlightEmAndStrong(text, i);
             isEmStrongDone = true;
@@ -1825,7 +1828,75 @@ void MarkdownHighlighter::highlightInlineRules(const QString &text)
     }
 }
 
+/** @brief highlight inline code spans -> `code`
+ *
+ * ---- TESTS ----
+`foo`
+-> <code>foo</code>
+`` foo ` bar ``
+-> <code>foo ` bar</code>
+` `` `
+-> <code>``</code>
+`foo\`bar`
+-><code>foo\</code>bar`
+``foo`bar``
+-><code>foo`bar</code>
+` foo `` bar `
+<code>foo `` bar</code>
+*/
+int MarkdownHighlighter::highlightInlineSpans(const QString &text, int currentPos, const QChar c)
+{
+    if (currentPos + 1 >= text.length())
+        return currentPos;
 
+    for (int i = currentPos; i < text.length(); ++i) {
+        if (text.at(i) != c)
+            continue;
+
+        //found a backtick
+        int len = 0;
+        int pos = i;
+
+        if (i != 0 && text.at(i - 1) == QChar('\\'))
+            continue;
+
+        //keep moving forward in backtick sequence;
+        while(pos < text.length() && text.at(pos) == c) {
+            ++len;
+            ++pos;
+        }
+
+        const QStringRef seq = text.midRef(i, len);
+        int start = i;
+        i += len;
+        int next = text.indexOf(seq, i);
+        if (next == -1) {
+            return currentPos + len;
+        }
+        if (next + len < text.length() && text.at(next + len) == c)
+            continue;
+
+        QTextCharFormat fmt = QSyntaxHighlighter::format(start + 1);
+        QTextCharFormat inlineFmt = _formats[NoState];
+        if (c != QLatin1Char('~'))
+            inlineFmt = _formats[InlineCodeBlock];
+        inlineFmt.setFontUnderline(fmt.fontUnderline());
+        inlineFmt.setUnderlineStyle(fmt.underlineStyle());
+        inlineFmt.setFontPointSize(fmt.fontPointSize());
+        inlineFmt.setFontItalic(fmt.fontItalic());
+        if (c == QLatin1Char('~'))
+            inlineFmt.setFontStrikeOut(true);
+        setFormat(start + 1, next - start, inlineFmt);
+        //highlight backticks as masked
+        setFormat(start, len, _formats[MaskedSyntax]);
+        setFormat(next, len, _formats[MaskedSyntax]);
+
+        i = next + len;
+        currentPos = i;
+    }
+
+    return currentPos;
+}
 
 struct Delimiter {
     int pos;
