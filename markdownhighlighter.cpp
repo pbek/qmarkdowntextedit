@@ -527,7 +527,11 @@ void MarkdownHighlighter::highlightBlock(const QString &text) {
 }
 
 void MarkdownHighlighter::highlightMarkdown(const QString& text) {
-    if (!text.isEmpty()) {
+    const bool isBlockCodeBlock = isCodeBlock(previousBlockState()) ||
+                            text.startsWith(QLatin1String("```")) ||
+                            text.startsWith(QLatin1String("~~~"));
+
+    if (!text.isEmpty() && !isBlockCodeBlock) {
         highlightAdditionalRules(_highlightingRulesPre, text);
 
         // needs to be called after the horizontal ruler highlighting
@@ -539,7 +543,8 @@ void MarkdownHighlighter::highlightMarkdown(const QString& text) {
     }
 
     highlightCommentBlock(text);
-    highlightCodeFence(text);
+    if (isBlockCodeBlock)
+        highlightCodeFence(text);
     highlightFrontmatterBlock(text);
 }
 
