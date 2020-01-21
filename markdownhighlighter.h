@@ -230,6 +230,8 @@ protected:
 
     int highlightInlineComment(const QString &text, int pos);
 
+    void highlightIndentedCodeBlock(const QString &text);
+
     void highlightCodeFence(const QString &text);
 
     void highlightCodeBlock(const QString &text, const QString &opener = QStringLiteral("```"));

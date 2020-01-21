@@ -271,26 +271,10 @@ void MarkdownHighlighter::initHighlightingRules() {
         _highlightingRulesAfter.append(rule);
     }
 
-    // highlight code blocks with four spaces or tabs in front of them
-    // and no list character after that
-    {
-        HighlightingRule rule(HighlighterState::CodeBlock);
-        rule.pattern = QRegularExpression(QStringLiteral("^((\\t)|( {4,})).+$"));
-        rule.shouldContain[0] = QChar('\t');
-        rule.shouldContain[1] = QStringLiteral("    ");
-        rule.disableIfCurrentStateIsSet = true;
-        _highlightingRulesAfter.append(rule);
-    }
-
     // highlight inline comments
     {
-        HighlightingRule rule(HighlighterState::Comment);
-//        rule.pattern = QRegularExpression(QStringLiteral(R"(<!\-\-(.+?)\-\->)"));
-//        rule.shouldContain[0] = QStringLiteral("<!--");
-//        rule.capturingGroup = 1;
-//        _highlightingRulesAfter.append(rule);
-
         // highlight comments for Rmarkdown for academic papers
+        HighlightingRule rule(HighlighterState::Comment);
         rule.pattern = QRegularExpression(QStringLiteral(R"(^\[.+?\]: # \(.+?\)$)"));
         rule.shouldContain[0] = QStringLiteral("]: # (");
         _highlightingRulesAfter.append(rule);
@@ -530,6 +514,8 @@ void MarkdownHighlighter::highlightMarkdown(const QString& text) {
 
         highlightAdditionalRules(_highlightingRulesAfter, text);
 
+        highlightIndentedCodeBlock(text);
+
         highlightInlineRules(text);
     }
 
@@ -689,6 +675,21 @@ void MarkdownHighlighter::setCurrentBlockMargin(
     // this prevents "undo" in headlines!
     QTextCursor* myCursor = new QTextCursor(currentBlock());
     myCursor->setBlockFormat(blockFormat);
+}
+
+/**
+ * @brief highlight code blocks with four spaces or tabs in front of them
+ * and no list character after that
+ * @param text
+ */
+void MarkdownHighlighter::highlightIndentedCodeBlock(const QString &text) {
+    if (text.isEmpty() || (!text.startsWith("    ") && !text.startsWith('\t')))
+        return;
+    if (text.trimmed().startsWith(QLatin1String("- ")) ||
+            text.trimmed().startsWith(QLatin1String("+ ")) ||
+            text.trimmed().startsWith(QLatin1String("* ")))
+        return;
+    highlightSyntax(text);
 }
 
 void MarkdownHighlighter::highlightCodeFence(const QString &text) {
@@ -893,7 +894,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
             loadVEXData(types, keywords, builtin, literals, others);
             break;
         default:
-            comment = QChar('\a');
+            comment = QChar('\0');
             break;
         }
 
@@ -936,7 +937,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
 
     for (int i=0; i< textLen; ++i) {
 
-        if (currentBlockState() % 2 != 0) goto Comment;
+        if (currentBlockState() != -1 && currentBlockState() % 2 != 0) goto Comment;
 
         while (i < textLen && !text[i].isLetter()) {
             if (text[i].isSpace()) {
@@ -2075,6 +2076,12 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text, const int po
     masked.squeeze();
 }
 
+/**
+ * @brief highlight inline comments in markdown <!-- comment -->
+ * @param text
+ * @param pos
+ * @return position after the comment
+ */
 int MarkdownHighlighter::highlightInlineComment(const QString &text, int pos)
 {
     int start = pos;
@@ -2089,7 +2096,7 @@ int MarkdownHighlighter::highlightInlineComment(const QString &text, int pos)
 
     commentEnd += 3;
     setFormat(start, commentEnd - start, _formats[Comment]);
-    return commentEnd;
+    return commentEnd - 1;
 }
 
 int collectEmDelims(const QString &text, int curPos, QList<Delimiter> &delims) {
