@@ -2006,6 +2006,7 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text, const int po
         if (text.at(i) != QLatin1Char('_') && text.at(i) != QLatin1Char('*'))
             continue;
         i = collectEmDelims(text, i, delims);
+        --i;
     }
 
     //2. Balance pairs
