@@ -2053,7 +2053,10 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text, const int po
 
     //4. Apply masked syntax
     for (int i = 0; i < masked.length(); ++i) {
-        setFormat(masked.at(i).first, masked.at(i).second, _formats[MaskedSyntax]);
+        QTextCharFormat maskedFmt = _formats[MaskedSyntax];
+        MarkdownHighlighter::HighlighterState state = static_cast<HighlighterState>(currentBlockState());
+        maskedFmt.setFontPointSize(_formats[state].fontPointSize());
+        setFormat(masked.at(i).first, masked.at(i).second, maskedFmt);
     }
     masked.squeeze();
 }
