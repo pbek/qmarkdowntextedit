@@ -2006,6 +2006,7 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text, const int po
         if (text.at(i) != QLatin1Char('_') && text.at(i) != QLatin1Char('*'))
             continue;
         i = collectEmDelims(text, i, delims);
+        --i;
     }
 
     //2. Balance pairs
@@ -2036,9 +2037,14 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text, const int po
             int k = startDelim.pos;
             while(text.at(k) == startDelim.marker)
                 ++k; //look for first letter after the delim chain
-            QTextCharFormat fmt = QSyntaxHighlighter::format(k);
-            fmt.setFontWeight(QFont::Bold);
-            setFormat(startDelim.pos, endDelim.pos - startDelim.pos, fmt);
+            //per character highlighting
+            int boldLen = endDelim.pos - startDelim.pos;
+            while (k != (startDelim.pos + boldLen)) {
+                QTextCharFormat fmt = QSyntaxHighlighter::format(k);
+                fmt.setFontWeight(QFont::Bold);
+                setFormat(k, 1, fmt);
+                k++;
+            }
             masked.append({startDelim.pos - 1, 2});
             masked.append({endDelim.pos, 2});
             i--;
@@ -2048,9 +2054,13 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text, const int po
             int k = startDelim.pos;
             while(text.at(k) == startDelim.marker)
                 ++k;
-            QTextCharFormat fmt = QSyntaxHighlighter::format(k);
-            fmt.setFontItalic(true);
-            setFormat(startDelim.pos, endDelim.pos - startDelim.pos, fmt);
+            int itLen = endDelim.pos - startDelim.pos;
+            while (k != (startDelim.pos + itLen)) {
+                QTextCharFormat fmt = QSyntaxHighlighter::format(k);
+                fmt.setFontItalic(true);
+                setFormat(k, 1, fmt);
+                k++;
+            }
             masked.append({startDelim.pos, 1});
             masked.append({endDelim.pos, 1});
         }
@@ -2060,7 +2070,8 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text, const int po
     for (int i = 0; i < masked.length(); ++i) {
         QTextCharFormat maskedFmt = _formats[MaskedSyntax];
         MarkdownHighlighter::HighlighterState state = static_cast<HighlighterState>(currentBlockState());
-        maskedFmt.setFontPointSize(_formats[state].fontPointSize());
+        if (_formats[state].fontPointSize() > 0)
+            maskedFmt.setFontPointSize(_formats[state].fontPointSize());
         setFormat(masked.at(i).first, masked.at(i).second, maskedFmt);
     }
     masked.squeeze();
