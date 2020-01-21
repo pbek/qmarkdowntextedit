@@ -1882,7 +1882,8 @@ int MarkdownHighlighter::highlightInlineSpans(const QString &text, int currentPo
             inlineFmt = _formats[InlineCodeBlock];
         inlineFmt.setFontUnderline(fmt.fontUnderline());
         inlineFmt.setUnderlineStyle(fmt.underlineStyle());
-        inlineFmt.setFontPointSize(fmt.fontPointSize());
+        if (fmt.fontPointSize() > 0)
+            inlineFmt.setFontPointSize(fmt.fontPointSize());
         inlineFmt.setFontItalic(fmt.fontItalic());
         if (c == QLatin1Char('~'))
             inlineFmt.setFontStrikeOut(true);
