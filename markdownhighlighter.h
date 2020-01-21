@@ -222,6 +222,12 @@ protected:
     void highlightAdditionalRules(const QVector<HighlightingRule> &rules,
                                   const QString& text);
 
+    void highlightInlineRules(const QString &text);
+
+    int highlightInlineSpans(const QString &text, int currentPos, const QChar c);
+
+    void highlightEmAndStrong(const QString &text, const int pos);
+
     void highlightCodeFence(const QString &text);
 
     void highlightCodeBlock(const QString &text, const QString &opener = QStringLiteral("```"));
