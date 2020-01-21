@@ -1705,18 +1705,7 @@ void MarkdownHighlighter::setHeadingStyles(MarkdownHighlighter::HighlighterState
     MarkdownHighlighter::HighlighterState state = static_cast<HighlighterState>(currentBlockState());
     QTextCharFormat f = _formats[state];
 
-    if (rule == HighlighterState::Italic) {
-        f.setFontItalic(true);
-        setFormat(match.capturedStart(capturedGroup),
-                  match.capturedLength(capturedGroup),
-                  f);
-        return;
-    } else if (rule == HighlighterState::Bold) {
-        setFormat(match.capturedStart(capturedGroup),
-                  match.capturedLength(capturedGroup),
-                  f);
-        return;
-    }  else if (rule == HighlighterState::Link) {
+    if (rule == HighlighterState::Link) {
         QTextCharFormat link = _formats[Link];
         link.setFontPointSize(f.fontPointSize());
         if (capturedGroup == 1) {
@@ -1784,8 +1773,7 @@ void MarkdownHighlighter::highlightAdditionalRules(
                     currentMaskedFormat.setFontPointSize(format.fontPointSize());
                 }
 
-                if ((currentBlockState() >= H1 && currentBlockState() <= H6) &&
-                        rule.state != InlineCodeBlock) {
+                if (currentBlockState() >= H1 && currentBlockState() <= H6) {
                     //setHeadingStyles(format, match, maskedGroup);
 
                 } else {
@@ -1796,8 +1784,7 @@ void MarkdownHighlighter::highlightAdditionalRules(
                 }
             }
 
-            if ((currentBlockState() >= H1 && currentBlockState() <= H6) &&
-                    rule.state != InlineCodeBlock) {
+            if (currentBlockState() >= H1 && currentBlockState() <= H6) {
                 setHeadingStyles(rule.state, match, capturingGroup);
 
             } else {
@@ -1828,7 +1815,7 @@ void MarkdownHighlighter::highlightInlineRules(const QString &text)
     }
 }
 
-/** @brief highlight inline code spans -> `code`
+/** @brief highlight inline code spans -> `code` and highlight strikethroughs
  *
  * ---- TESTS ----
 `foo`
