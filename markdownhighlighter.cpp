@@ -717,13 +717,15 @@ void MarkdownHighlighter::highlightIndentedCodeBlock(const QString &text) {
         return;
     //previous line must be empty according to CommonMark
     //https://spec.commonmark.org/0.29/#indented-code-block
-    if (!currentBlock().previous().text().trimmed().isEmpty())
+    if (!currentBlock().previous().text().trimmed().isEmpty() && previousBlockState() != CodeBlockIndented)
         return;
     //should not be the start of a list
     if (text.trimmed().startsWith(QLatin1String("- ")) ||
             text.trimmed().startsWith(QLatin1String("+ ")) ||
             text.trimmed().startsWith(QLatin1String("* ")))
         return;
+
+    setCurrentBlockState(CodeBlockIndented);
     highlightSyntax(text);
 }
 
