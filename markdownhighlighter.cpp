@@ -518,75 +518,113 @@ void MarkdownHighlighter::highlightMarkdown(const QString& text) {
 }
 
 /**
+ * @brief gets indentation(spaces) of text
+ * @param text
+ * @return 1, if 1 space, 2 if 2 spaces, 3 if 3 spaces. Otherwise 0
+ */
+uint8_t getIndentation(const QString &text) {
+    uint8_t spaces = 0;
+    if (text.at(0) == QLatin1Char(' ')) {
+        spaces = 1;
+        if (1 < text.length() && text.at(1) == QLatin1Char(' ')) {
+            spaces = 2;
+            if (2 < text.length() && text.at(2) == QLatin1Char(' '))
+                spaces = 3;
+        }
+    }
+    return spaces;
+}
+
+/**
  * Highlight headlines
  *
  * @param text
  */
 void MarkdownHighlighter::highlightHeadline(const QString& text) {
-    bool headingFound = text.at(0) == QChar('#');
-    int headingLevel = 0;
+    //three spaces indentation is allowed in headings
+    const uint8_t spacesOffset = getIndentation(text);
+    if (spacesOffset >= text.length())
+        return;
+    bool headingFound = false;
+    if (spacesOffset == 1)
+        headingFound = text.at(1) == QChar('#');
+    else if (spacesOffset == 2)
+        headingFound = text.at(2) == QChar('#');
+    else if (spacesOffset == 3)
+        headingFound = text.at(3) == QChar('#');
+    else
+        headingFound = text.at(0) == QChar('#');
 
     if (headingFound) {
-        int i = 1;
+        int headingLevel = 0;
+        int i = spacesOffset;
         if (i >= text.length())
             return;
-        while(i < text.length() && text.at(i) == QChar('#') && i < 6)
+        while(i < text.length() && text.at(i) == QChar('#') && i < (spacesOffset + 6))
             ++i;
 
         if (i < text.length() && text.at(i) == QChar(' '))
-            headingLevel = i;
+            headingLevel = i - spacesOffset;
+
+        if (headingLevel > 0) {
+            const auto state = HighlighterState(HighlighterState::H1 + headingLevel - 1);
+
+            setFormat(0, text.length(), _formats[state]);
+
+            // set a margin for the current block
+            setCurrentBlockMargin(state);
+
+            setCurrentBlockState(state);
+            return;
+        }
     }
 
-    if (headingLevel > 0) {
-        const auto state = HighlighterState(HighlighterState::H1 + headingLevel - 1);
 
-        setFormat(0, text.length(), _formats[state]);
-
-        // set a margin for the current block
-        setCurrentBlockMargin(state);
-
-        setCurrentBlockState(state);
-        return;
-    }
-
-
-    auto hasOnlyHeadChars = [](const QString &txt, const QChar c) -> bool {
+    auto hasOnlyHeadChars = [](const QString &txt, const QChar c, uint8_t spaces = 0) -> bool {
         if (txt.isEmpty()) return false;
-        for (int i = 0; i < txt.length(); ++i) {
+        for (int i = spaces; i < txt.length(); ++i) {
             if (txt.at(i) != c)
                 return false;
         }
         return true;
     };
 
-    // take care of ==== and ---- headlines
-    const bool pattern1 = hasOnlyHeadChars(text, QLatin1Char('='));
-    if (pattern1) {
-        highlightSubHeadline(text, H1);
-        return;
+    if (text.at(spacesOffset) == QLatin1Char('=')) {
+        // take care of ==== and ---- headlines
+        const bool pattern1 = hasOnlyHeadChars(text, QLatin1Char('='), spacesOffset);
+        if (pattern1) {
+            highlightSubHeadline(text, H1);
+            return;
+        }
+    }
+    else if (text.at(spacesOffset) == QLatin1Char('-')) {
+        const bool pattern2 = hasOnlyHeadChars(text, QLatin1Char('-'), spacesOffset);
+        if (pattern2) {
+            highlightSubHeadline(text, H2);
+            return;
+        }
     }
 
-    const bool pattern2 = hasOnlyHeadChars(text, QLatin1Char('-'));
-    if (pattern2) {
-        highlightSubHeadline(text, H2);
+    const QString &nextBlockText = currentBlock().next().text();
+    if (nextBlockText.isEmpty())
         return;
-    }
+    const uint8_t nextSpaces = getIndentation(nextBlockText);
 
-    //check next block for ====
-    QTextBlock nextBlock = currentBlock().next();
-    const QString &nextBlockText = nextBlock.text();
-    const bool nextHasEqualChars = hasOnlyHeadChars(nextBlockText, QLatin1Char('='));
-    if (nextHasEqualChars) {
-        setFormat(0, text.length(), _formats[HighlighterState::H1]);
-        setCurrentBlockState(HighlighterState::H1);
-        currentBlock().setUserState(HighlighterState::H1);
+    if (nextBlockText.at(nextSpaces) == QLatin1Char('=')) {
+        const bool nextHasEqualChars = hasOnlyHeadChars(nextBlockText, QLatin1Char('='), nextSpaces);
+        if (nextHasEqualChars) {
+            setFormat(0, text.length(), _formats[HighlighterState::H1]);
+            setCurrentBlockState(HighlighterState::H1);
+            currentBlock().setUserState(HighlighterState::H1);
+        }
     }
-    //check next block for ----
-    const bool nextHasMinusChars = hasOnlyHeadChars(nextBlockText, QLatin1Char('-'));
-    if (nextHasMinusChars) {
-        setFormat(0, text.length(), _formats[HighlighterState::H2]);
-        setCurrentBlockState(HighlighterState::H2);
-        currentBlock().setUserState(HighlighterState::H2);
+    else if (nextBlockText.at(nextSpaces) == QLatin1Char('-')) {
+        const bool nextHasMinusChars = hasOnlyHeadChars(nextBlockText, QLatin1Char('-'), nextSpaces);
+        if (nextHasMinusChars) {
+            setFormat(0, text.length(), _formats[HighlighterState::H2]);
+            setCurrentBlockState(HighlighterState::H2);
+            currentBlock().setUserState(HighlighterState::H2);
+        }
     }
 }
 
@@ -594,7 +632,7 @@ void MarkdownHighlighter::highlightSubHeadline(const QString &text, HighlighterS
 {
     const QTextCharFormat &maskedFormat = _formats[HighlighterState::MaskedSyntax];
     QTextBlock previousBlock = currentBlock().previous();
-    bool prevEmpty = previousBlock.text().isEmpty();
+    bool prevEmpty = previousBlock.text().trimmed().isEmpty();
 
     if (prevEmpty)
         return;
@@ -675,17 +713,19 @@ void MarkdownHighlighter::setCurrentBlockMargin(
  * @param text
  */
 void MarkdownHighlighter::highlightIndentedCodeBlock(const QString &text) {
-    if (text.isEmpty() || (!text.startsWith("    ") && !text.startsWith('\t')))
+    if (text.isEmpty() || (!text.startsWith(QLatin1String("    ")) && !text.startsWith(QLatin1Char('\t'))))
         return;
     //previous line must be empty according to CommonMark
     //https://spec.commonmark.org/0.29/#indented-code-block
-    if (!currentBlock().previous().text().trimmed().isEmpty())
+    if (!currentBlock().previous().text().trimmed().isEmpty() && previousBlockState() != CodeBlockIndented)
         return;
     //should not be the start of a list
     if (text.trimmed().startsWith(QLatin1String("- ")) ||
             text.trimmed().startsWith(QLatin1String("+ ")) ||
             text.trimmed().startsWith(QLatin1String("* ")))
         return;
+
+    setCurrentBlockState(CodeBlockIndented);
     highlightSyntax(text);
 }
 
@@ -695,7 +735,7 @@ void MarkdownHighlighter::highlightCodeFence(const QString &text) {
          previousBlockState() >= CodeCpp + tildeOffset )) {
          highlightCodeBlock(text, QStringLiteral("~~~"));
     //start of a tilde block
-    } else if (previousBlockState() == NoState && text.startsWith(QLatin1String("~~~"))) {
+    } else if (currentBlockState() == NoState && text.startsWith(QLatin1String("~~~"))) {
          highlightCodeBlock(text, QStringLiteral("~~~"));
     } else {
         //back tick block
@@ -1700,13 +1740,14 @@ void MarkdownHighlighter::highlightThematicBreak(const QString &text)
     const auto &sText = text.simplified();
     if (sText.isEmpty())
         return;
-    if (!sText.startsWith(QLatin1String("---")) && !sText.startsWith(QLatin1String("___")) &&
-            !sText.startsWith(QLatin1String("***")))
+
+    if (!sText.startsWith(QLatin1Char('-')) && !sText.startsWith(QLatin1Char('_')) &&
+            !sText.startsWith(QLatin1Char('*')))
         return;
     const QChar c = sText.at(0);
     bool hasSameChars = true;
     for (int i = 0; i < sText.length(); ++i) {
-        if (c != sText.at(i))
+        if (c != sText.at(i) && sText.at(i) != QLatin1Char(' '))
             hasSameChars = false;
     }
 
