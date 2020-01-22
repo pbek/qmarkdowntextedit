@@ -111,6 +111,7 @@ public:
         CodeBuiltIn = 1006,
 
         // internal
+        CodeBlockIndented = 96,
         CodeBlockTildeEnd = 97,
         CodeBlockTilde = 98,
         CodeBlockTildeComment,

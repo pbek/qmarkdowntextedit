@@ -735,7 +735,7 @@ void MarkdownHighlighter::highlightCodeFence(const QString &text) {
          previousBlockState() >= CodeCpp + tildeOffset )) {
          highlightCodeBlock(text, QStringLiteral("~~~"));
     //start of a tilde block
-    } else if (previousBlockState() == NoState && text.startsWith(QLatin1String("~~~"))) {
+    } else if (currentBlockState() == NoState && text.startsWith(QLatin1String("~~~"))) {
          highlightCodeBlock(text, QStringLiteral("~~~"));
     } else {
         //back tick block
