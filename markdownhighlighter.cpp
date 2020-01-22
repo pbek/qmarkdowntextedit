@@ -1738,13 +1738,14 @@ void MarkdownHighlighter::highlightThematicBreak(const QString &text)
     const auto &sText = text.simplified();
     if (sText.isEmpty())
         return;
-    if (!sText.startsWith(QLatin1String("---")) && !sText.startsWith(QLatin1String("___")) &&
-            !sText.startsWith(QLatin1String("***")))
+
+    if (!sText.startsWith(QLatin1Char('-')) && !sText.startsWith(QLatin1Char('_')) &&
+            !sText.startsWith(QLatin1Char('*')))
         return;
     const QChar c = sText.at(0);
     bool hasSameChars = true;
     for (int i = 0; i < sText.length(); ++i) {
-        if (c != sText.at(i))
+        if (c != sText.at(i) && sText.at(i) != QLatin1Char(' '))
             hasSameChars = false;
     }
 
