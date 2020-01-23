@@ -715,10 +715,12 @@ void MarkdownHighlighter::setCurrentBlockMargin(
 void MarkdownHighlighter::highlightIndentedCodeBlock(const QString &text) {
     if (text.isEmpty() || (!text.startsWith(QLatin1String("    ")) && !text.startsWith(QLatin1Char('\t'))))
         return;
-    //previous line must be empty according to CommonMark
+    //previous line must be empty according to CommonMark except if it is a heading
     //https://spec.commonmark.org/0.29/#indented-code-block
-    if (!currentBlock().previous().text().trimmed().isEmpty() && previousBlockState() != CodeBlockIndented)
+    if (!currentBlock().previous().text().trimmed().isEmpty() && previousBlockState() != CodeBlockIndented
+         && (previousBlockState() < H1 || previousBlockState() > H6) && previousBlockState() != HeadlineEnd)
         return;
+
     //should not be the start of a list
     if (text.trimmed().startsWith(QLatin1String("- ")) ||
             text.trimmed().startsWith(QLatin1String("+ ")) ||
@@ -726,7 +728,7 @@ void MarkdownHighlighter::highlightIndentedCodeBlock(const QString &text) {
         return;
 
     setCurrentBlockState(CodeBlockIndented);
-    highlightSyntax(text);
+    setFormat(0, text.length(), _formats[CodeBlock]);
 }
 
 void MarkdownHighlighter::highlightCodeFence(const QString &text) {
