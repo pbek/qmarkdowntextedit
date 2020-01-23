@@ -715,10 +715,12 @@ void MarkdownHighlighter::setCurrentBlockMargin(
 void MarkdownHighlighter::highlightIndentedCodeBlock(const QString &text) {
     if (text.isEmpty() || (!text.startsWith(QLatin1String("    ")) && !text.startsWith(QLatin1Char('\t'))))
         return;
-    //previous line must be empty according to CommonMark
+    //previous line must be empty according to CommonMark except if it is a heading
     //https://spec.commonmark.org/0.29/#indented-code-block
-    if (!currentBlock().previous().text().trimmed().isEmpty() && previousBlockState() != CodeBlockIndented)
+    if (!currentBlock().previous().text().trimmed().isEmpty() && previousBlockState() != CodeBlockIndented
+         && (previousBlockState() < H1 || previousBlockState() > H6) && previousBlockState() != HeadlineEnd)
         return;
+
     //should not be the start of a list
     if (text.trimmed().startsWith(QLatin1String("- ")) ||
             text.trimmed().startsWith(QLatin1String("+ ")) ||
@@ -726,7 +728,7 @@ void MarkdownHighlighter::highlightIndentedCodeBlock(const QString &text) {
         return;
 
     setCurrentBlockState(CodeBlockIndented);
-    highlightSyntax(text);
+    setFormat(0, text.length(), _formats[CodeBlock]);
 }
 
 void MarkdownHighlighter::highlightCodeFence(const QString &text) {
@@ -735,7 +737,7 @@ void MarkdownHighlighter::highlightCodeFence(const QString &text) {
          previousBlockState() >= CodeCpp + tildeOffset )) {
          highlightCodeBlock(text, QStringLiteral("~~~"));
     //start of a tilde block
-    } else if (currentBlockState() == NoState && text.startsWith(QLatin1String("~~~"))) {
+    } else if ((previousBlockState() != CodeBlock && previousBlockState() < CodeCpp) && text.startsWith(QLatin1String("~~~"))) {
          highlightCodeBlock(text, QStringLiteral("~~~"));
     } else {
         //back tick block
@@ -2112,6 +2114,9 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text, const int po
                 underline = true;
             while (k != (startDelim.pos + boldLen)) {
                 QTextCharFormat fmt = QSyntaxHighlighter::format(k);
+                //if we are in plains text, use the format's specified color
+                if (fmt.foreground() == QTextCharFormat().foreground())
+                    fmt.setForeground(_formats[Bold].foreground());
                 if (underline)
                     fmt.setFontUnderline(true);
                 else
@@ -2134,6 +2139,8 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text, const int po
             int itLen = endDelim.pos - startDelim.pos;
             while (k != (startDelim.pos + itLen)) {
                 QTextCharFormat fmt = QSyntaxHighlighter::format(k);
+                if (fmt.foreground() == QTextCharFormat().foreground())
+                    fmt.setForeground(_formats[Italic].foreground());
                 if (underline)
                     fmt.setFontUnderline(true);
                 else
