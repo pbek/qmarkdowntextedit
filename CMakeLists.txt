@@ -22,16 +22,13 @@ qt5_add_resources(RESOURCE_ADDED ${RESOURCE_FILES})
 
 set(SOURCE_FILES
     markdownhighlighter.cpp
-    markdownhighlighter.h
     main.cpp
     mainwindow.cpp
-    mainwindow.h
     mainwindow.ui
     qmarkdowntextedit.cpp
-    qmarkdowntextedit.h
+    qownlanguagedata.cpp
     qplaintexteditsearchwidget.ui
     qplaintexteditsearchwidget.cpp
-    qplaintexteditsearchwidget.h
     )
 
 add_executable(qmarkdowntextedit ${SOURCE_FILES} ${RESOURCE_ADDED})
