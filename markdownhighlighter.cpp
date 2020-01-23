@@ -2114,6 +2114,9 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text, const int po
                 underline = true;
             while (k != (startDelim.pos + boldLen)) {
                 QTextCharFormat fmt = QSyntaxHighlighter::format(k);
+                //if we are in plains text, use the format's specified color
+                if (fmt.foreground() == QTextCharFormat().foreground())
+                    fmt.setForeground(_formats[Bold].foreground());
                 if (underline)
                     fmt.setFontUnderline(true);
                 else
@@ -2136,6 +2139,8 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text, const int po
             int itLen = endDelim.pos - startDelim.pos;
             while (k != (startDelim.pos + itLen)) {
                 QTextCharFormat fmt = QSyntaxHighlighter::format(k);
+                if (fmt.foreground() == QTextCharFormat().foreground())
+                    fmt.setForeground(_formats[Italic].foreground());
                 if (underline)
                     fmt.setFontUnderline(true);
                 else
