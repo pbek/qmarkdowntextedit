@@ -51,22 +51,22 @@ public:
         return brush.color();
     }
 
-   static inline bool isOctal(const char c) {
+   static constexpr inline bool isOctal(const char c) {
        return (c >= '0' && c <= '7');
    }
-   static inline bool isHex(const char c) {
+   static constexpr inline bool isHex(const char c) {
        return (c >= '0' && c <= '9') ||
               (c >= 'a' && c <= 'f') ||
               (c >= 'A' && c <= 'F');
    }
-   static inline bool isCodeBlock(const int state) {
+   static constexpr inline bool isCodeBlock(const int state) {
       return state == MarkdownHighlighter::CodeBlock ||
              state == MarkdownHighlighter::CodeBlockTilde ||
              state == MarkdownHighlighter::CodeBlockComment ||
              state == MarkdownHighlighter::CodeBlockTildeComment ||
              state >= MarkdownHighlighter::CodeCpp;
    }
-   static inline bool isCodeBlockEnd(const int state) {
+   static constexpr inline bool isCodeBlockEnd(const int state) {
        return state == MarkdownHighlighter::CodeBlockEnd ||
               state == MarkdownHighlighter::CodeBlockTildeEnd;
    }
@@ -235,6 +235,14 @@ protected:
     void highlightCommentBlock(const QString &text);
 
     void highlightThematicBreak(const QString &text);
+
+    void highlightLists(const QString &text);
+
+//    void highlightOrdereredList();
+
+//    void highlightUnOrdereredList();
+
+//    void highlightCheckedList();
 
     /******************************
      *  INLINE FUNCTIONS

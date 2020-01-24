@@ -120,45 +120,6 @@ void MarkdownHighlighter::initHighlightingRules() {
         _highlightingRulesPre.append(rule);
     }
 
-    // highlight lists
-    {
-        // highlight unordered lists
-        HighlightingRule rule(HighlighterState::List);
-        rule.pattern = QRegularExpression(QStringLiteral("^\\s*[-*+]\\s"));
-        rule.shouldContain[0] = QStringLiteral("- ");
-        rule.shouldContain[1] = QStringLiteral("* ");
-        rule.shouldContain[2] = QStringLiteral("+ ");
-        rule.useStateAsCurrentBlockState = true;
-        _highlightingRulesPre.append(rule);
-
-        // highlight ordered lists
-        rule.pattern = QRegularExpression(QStringLiteral(R"(^\s*\d+\.\s)"));
-        rule.shouldContain[0] = QStringLiteral(". ");
-        _highlightingRulesPre.append(rule);
-    }
-
-    // highlight checked checkboxes
-    {
-        HighlightingRule rule(HighlighterState::CheckBoxChecked);
-        rule.pattern = QRegularExpression(R"(^\s*[+|\-|\*] (\[x\])(\s+))");
-        rule.shouldContain[0] = QStringLiteral("- [x]");
-        rule.shouldContain[1] = QStringLiteral("* [x]");
-        rule.shouldContain[2] = QStringLiteral("+ [x]");
-        rule.capturingGroup = 1;
-        _highlightingRulesPre.append(rule);
-    }
-
-    // highlight unchecked checkboxes
-    {
-        HighlightingRule rule(HighlighterState::CheckBoxUnChecked);
-        rule.pattern = QRegularExpression(R"(^\s*[+|\-|\*] (\[( |)\])(\s+))");
-        rule.shouldContain[0] = QStringLiteral("- [");
-        rule.shouldContain[1] = QStringLiteral("* [");
-        rule.shouldContain[2] = QStringLiteral("+ [");
-        rule.capturingGroup = 1;
-        _highlightingRulesPre.append(rule);
-    }
-
     // highlight block quotes
     {
         HighlightingRule rule(HighlighterState::BlockQuote);
@@ -316,6 +277,15 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize) {
     format = QTextCharFormat();
     format.setForeground(QBrush(QColor(163, 0, 123)));
     _formats[List] = format;
+
+    // set character format for checkbox
+    format = QTextCharFormat();
+    format.setForeground(QBrush(QColor(123, 100, 223)));
+    _formats[CheckBoxUnChecked] = format;
+    // set character format for checkced checkbox
+    format = QTextCharFormat();
+    format.setForeground(QBrush(QColor(223, 50, 123)));
+    _formats[CheckBoxChecked] = format;
 
     // set character format for links
     format = QTextCharFormat();
@@ -508,6 +478,8 @@ void MarkdownHighlighter::highlightMarkdown(const QString& text) {
         highlightAdditionalRules(_highlightingRulesAfter, text);
 
         highlightIndentedCodeBlock(text);
+
+        highlightLists(text);
 
         highlightInlineRules(text);
     }
@@ -722,7 +694,7 @@ void MarkdownHighlighter::highlightIndentedCodeBlock(const QString &text) {
          && (previousBlockState() < H1 || previousBlockState() > H6) && previousBlockState() != HeadlineEnd)
         return;
 
-    //should not be the start of a list
+    //should not be in a list
     if (text.trimmed().startsWith(QLatin1String("- ")) ||
             text.trimmed().startsWith(QLatin1String("+ ")) ||
             text.trimmed().startsWith(QLatin1String("* ")))
@@ -1769,6 +1741,71 @@ void MarkdownHighlighter::highlightThematicBreak(const QString &text)
 
     if (hasSameChars)
         setFormat(0, text.length(), f);
+}
+
+/**
+ * @brief Highlight lists in markdown
+ * @param text - current text block
+ */
+void MarkdownHighlighter::highlightLists(const QString &text)
+{
+    int spaces = 0;
+    while (spaces < text.length() && text.at(spaces) == QLatin1Char(' '))
+        ++spaces;
+
+    if (spaces >= text.length())
+        return;
+
+    //check for start of list
+    if (text.at(spaces) != QLatin1Char('-') &&
+            text.at(spaces) != QLatin1Char('+') &&
+            text.at(spaces) != QLatin1Char('*') &&
+            !text.at(spaces).isNumber()) { //ordered
+        return;
+    }
+
+    /* Orderered List */
+    if (text.at(spaces).isNumber()) {
+        int number = spaces;
+        while (number < text.length() && text.at(number).isNumber())
+            ++number;
+
+        if (number + 1 >= text.length())
+            return;
+        //there should be a '.' or ')' after a number
+        if (text.at(number) == QLatin1Char('.') || text.at(number) == QLatin1Char(')'))
+            if (text.at(number + 1) == QLatin1Char(' ')) {
+                setCurrentBlockState(List);
+                setFormat(spaces, number - spaces + 1, _formats[List]);
+            }
+        return;
+    }
+
+    //check for a space after it
+    if (spaces + 1 < text.length() && text.at(spaces + 1) != QLatin1Char(' '))
+        return;
+
+    //check if we are in checkbox list
+    if (spaces + 2 < text.length() && text.at(spaces + 2) == QLatin1Char('[')) {
+        if (spaces + 4 >= text.length())
+            return;
+        const int start = spaces + 2;
+        constexpr int length = 3;
+        //checked checkbox
+        if (text.at(spaces + 3) == QLatin1Char('x') && text.at(spaces + 4) == QLatin1Char(']')) {
+            setFormat(start, length, _formats[CheckBoxChecked]);
+        }
+        //unchecked checkbox
+        else if (text.at(spaces + 3) == QLatin1Char(' ') && text.at(spaces + 4) == QLatin1Char(']')) {
+            setFormat(start, length, _formats[CheckBoxUnChecked]);
+        }
+        setFormat(spaces, 1, _formats[List]);
+        return;
+    }
+
+    /* Unorderered List */
+    setCurrentBlockState(List);
+    setFormat(spaces, 1, _formats[List]);
 }
 
 /**
