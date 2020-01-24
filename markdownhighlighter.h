@@ -41,7 +41,7 @@ public:
                         HighlightingOptions highlightingOptions =
                         HighlightingOption::None);
 
-    inline QColor codeBlockBackgroundColor() const {
+    static inline QColor codeBlockBackgroundColor() {
         const QBrush brush = _formats[CodeBlock].background();
 
         if (!brush.isOpaque()) {
@@ -51,10 +51,10 @@ public:
         return brush.color();
     }
 
-   inline bool isOctal(const char c) {
+   static inline bool isOctal(const char c) {
        return (c >= '0' && c <= '7');
    }
-   inline bool isHex(const char c) {
+   static inline bool isHex(const char c) {
        return (c >= '0' && c <= '9') ||
               (c >= 'a' && c <= 'f') ||
               (c >= 'A' && c <= 'F');
@@ -177,8 +177,8 @@ public:
 //        CodeBlockEnd
 //    };
 
-    void setTextFormats(QHash<HighlighterState, QTextCharFormat> formats);
-    void setTextFormat(HighlighterState state, QTextCharFormat format);
+    static void setTextFormats(QHash<HighlighterState, QTextCharFormat> formats);
+    static void setTextFormat(HighlighterState state, QTextCharFormat format);
     void clearDirtyBlocks();
     void setHighlightingOptions(const HighlightingOptions options);
     void initHighlightingRules();
@@ -194,7 +194,6 @@ protected:
         HighlightingRule() = default;
 
         QRegularExpression pattern;
-        HighlighterState state = NoState;
         /*
          * waqar144:
          * Dear programmer,
@@ -205,6 +204,7 @@ protected:
          * Dated: 5-Jan-2020
          */
         QString shouldContain[3];
+        HighlighterState state = NoState;
         uint8_t capturingGroup = 0;
         uint8_t maskedGroup = 0;
         bool useStateAsCurrentBlockState = false;
@@ -213,7 +213,9 @@ protected:
 
     void highlightBlock(const QString &text) Q_DECL_OVERRIDE;
 
-    void initTextFormats(int defaultFontSize = 12);
+    static void initTextFormats(int defaultFontSize = 12);
+
+    static void initCodeLangs();
 
     void highlightMarkdown(const QString& text);
 
@@ -230,7 +232,7 @@ protected:
 
     void highlightFrontmatterBlock(const QString& text);
 
-    void highlightCommentBlock(QString text);
+    void highlightCommentBlock(const QString &text);
 
     void highlightThematicBreak(const QString &text);
 
@@ -280,13 +282,11 @@ protected:
                      const QRegularExpressionMatch &match,
                      const int capturedGroup);
 
-    static void initCodeLangs();
-
     QVector<HighlightingRule> _highlightingRulesPre;
     QVector<HighlightingRule> _highlightingRulesAfter;
     static QHash<QString, HighlighterState> _langStringToEnum;
     QVector<QTextBlock> _dirtyTextBlocks;
-    QHash<HighlighterState, QTextCharFormat> _formats;
+    static QHash<HighlighterState, QTextCharFormat> _formats;
     QTimer *_timer;
     bool _highlightingFinished;
     HighlightingOptions _highlightingOptions;

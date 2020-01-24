@@ -26,6 +26,7 @@
 #include "qownlanguagedata.h"
 
 QHash<QString, MarkdownHighlighter::HighlighterState> MarkdownHighlighter::_langStringToEnum;
+QHash<MarkdownHighlighter::HighlighterState, QTextCharFormat> MarkdownHighlighter::_formats;
 
 /**
  * Markdown syntax highlighting
@@ -1379,7 +1380,7 @@ void MarkdownHighlighter::taggerScriptHighlighter(const QString &text) {
 
         //highlight escape chars
         if (text.at(i) == QChar('\\')) {
-            setFormat(i,2, _formats[CodeOther]);
+            setFormat(i, 2, _formats[CodeOther]);
             i++;
         }
     }
@@ -1702,32 +1703,32 @@ void MarkdownHighlighter::highlightFrontmatterBlock(const QString& text) {
  *
  * @param text
  */
-void MarkdownHighlighter::highlightCommentBlock(QString text) {
+void MarkdownHighlighter::highlightCommentBlock(const QString &text) {
     bool highlight = false;
-    text = text.trimmed();
-    QString startText = QStringLiteral("<!--");
-    QString endText = QStringLiteral("-->");
+    const QString &trimmedText = text.trimmed();
+    const QString &startText = QStringLiteral("<!--");
+    const QString &endText = QStringLiteral("-->");
 
     // we will skip this case because that is an inline comment and causes
     // troubles here
-    if (text.startsWith(startText) && text.contains(endText)) {
+    if (trimmedText.startsWith(startText) && trimmedText.contains(endText)) {
         return;
     }
 
-    if (!text.startsWith(startText) && text.contains(startText))
+    if (!trimmedText.startsWith(startText) && trimmedText.contains(startText))
         return;
 
-    if (text.startsWith(startText) ||
-            (!text.endsWith(endText) &&
+    if (trimmedText.startsWith(startText) ||
+            (!trimmedText.endsWith(endText) &&
                     (previousBlockState() == HighlighterState::Comment))) {
         setCurrentBlockState(HighlighterState::Comment);
         highlight = true;
-    } else if (text.endsWith(endText)) {
+    } else if (trimmedText.endsWith(endText)) {
         highlight = true;
     }
 
     if (highlight) {
-        setFormat(0, text.length(), _formats[HighlighterState::Comment]);
+        setFormat(0, trimmedText.length(), _formats[HighlighterState::Comment]);
     }
 }
 
@@ -1748,10 +1749,17 @@ void MarkdownHighlighter::highlightThematicBreak(const QString &text)
         return;
     const QChar c = sText.at(0);
     bool hasSameChars = true;
+    int len = 0;
     for (int i = 0; i < sText.length(); ++i) {
-        if (c != sText.at(i) && sText.at(i) != QLatin1Char(' '))
+        if (c != sText.at(i) && sText.at(i) != QLatin1Char(' ')) {
             hasSameChars = false;
+            break;
+        }
+        if (sText.at(i) != QLatin1Char(' '))
+            ++len;
     }
+    if (len < 3)
+        return;
 
     QTextCharFormat f = _formats[HorizontalRuler];
     if (c == QLatin1Char('-'))
@@ -1929,9 +1937,9 @@ int MarkdownHighlighter::highlightInlineSpans(const QString &text, int currentPo
         }
 
         const QStringRef seq = text.midRef(i, len);
-        int start = i;
+        const int start = i;
         i += len;
-        int next = text.indexOf(seq, i);
+        const int next = text.indexOf(seq, i);
         if (next == -1) {
             return currentPos + len;
         }
@@ -1964,15 +1972,15 @@ int MarkdownHighlighter::highlightInlineSpans(const QString &text, int currentPo
 struct Delimiter {
     int pos;
     int len;
-    int jump;
     int end;
+    uint8_t jump;
     bool open;
     bool close;
-    QChar marker;
+    char marker;
 };
 
-bool isMDAsciiPunct(QChar ch) {
-    switch (ch.toLatin1()) {
+inline bool isMDAsciiPunct(const char ch) noexcept {
+    switch (ch) {
     case 0x21/* ! */:
     case 0x22/* " */:
     case 0x23/* # */:
@@ -2029,8 +2037,8 @@ void scanDelims(const QString &text, const int start, const bool canSplitWord,
 
     const QChar nextChar = pos + 1 < textLen ? text.at(pos) : QChar('\0');
 
-    const bool isLastPunct =  isMDAsciiPunct(lastChar) || lastChar.isPunct();
-    const bool isNextPunct = isMDAsciiPunct(nextChar) || nextChar.isPunct();
+    const bool isLastPunct =  isMDAsciiPunct(lastChar.toLatin1()) || lastChar.isPunct();
+    const bool isNextPunct = isMDAsciiPunct(nextChar.toLatin1()) || nextChar.isPunct();
 
     //treat line end and start as whitespace
     const bool isLastWhiteSpace = lastChar.isNull() ? true : lastChar.isSpace();
@@ -2063,15 +2071,15 @@ void scanDelims(const QString &text, const int start, const bool canSplitWord,
 }
 
 /* Forward declarations */
-int collectEmDelims(const QString &text, int curPos, QList<Delimiter> &delims);
-void balancePairs(QList<Delimiter> &delims);
+int collectEmDelims(const QString &text, int curPos, QVector<Delimiter> &delims);
+void balancePairs(QVector<Delimiter> &delims);
 
 /**
  * @brief highlights Em/Strong in text editor
  */
 void MarkdownHighlighter::highlightEmAndStrong(const QString &text, const int pos){
     //1. collect all em/strong delimiters
-    QList<Delimiter> delims;
+    QVector<Delimiter> delims;
     for (int i = pos; i < text.length(); ++i) {
         if (text.at(i) != QLatin1Char('_') && text.at(i) != QLatin1Char('*'))
             continue;
@@ -2083,8 +2091,8 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text, const int po
     balancePairs(delims);
 
     //start,length -> helper for applying masking later
-    QVector<QPair<int, int>> masked;
-    masked.reserve(delims.size());
+    QVector<QPair<const int, const int>> masked;
+    masked.reserve(delims.size() / 2);
 
     //3. final processing & highlighting
     for (int i = delims.length() - 1; i >= 0; --i) {
@@ -2108,10 +2116,10 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text, const int po
             while(text.at(k) == startDelim.marker)
                 ++k; //look for first letter after the delim chain
             //per character highlighting
-            int boldLen = endDelim.pos - startDelim.pos;
-            bool underline = false;
-            if (startDelim.marker == QLatin1Char('_') && _highlightingOptions.testFlag(Underline))
-                underline = true;
+            const int boldLen = endDelim.pos - startDelim.pos;
+            const bool underline = _highlightingOptions.testFlag(Underline) &&
+                    startDelim.marker == QLatin1Char('_')
+                     ? true : false;
             while (k != (startDelim.pos + boldLen)) {
                 QTextCharFormat fmt = QSyntaxHighlighter::format(k);
                 //if we are in plains text, use the format's specified color
@@ -2133,10 +2141,10 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text, const int po
             int k = startDelim.pos;
             while(text.at(k) == startDelim.marker)
                 ++k;
-            bool underline = false;
-            if (startDelim.marker == QLatin1Char('_') && _highlightingOptions.testFlag(Underline))
-                underline = true;
-            int itLen = endDelim.pos - startDelim.pos;
+            const bool underline = _highlightingOptions.testFlag(Underline) &&
+                    startDelim.marker == QLatin1Char('_')
+                     ? true : false;
+            const int itLen = endDelim.pos - startDelim.pos;
             while (k != (startDelim.pos + itLen)) {
                 QTextCharFormat fmt = QSyntaxHighlighter::format(k);
                 if (fmt.foreground() == QTextCharFormat().foreground())
@@ -2172,7 +2180,7 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text, const int po
  */
 int MarkdownHighlighter::highlightInlineComment(const QString &text, int pos)
 {
-    int start = pos;
+    const int start = pos;
     pos += 4;
 
     if (pos >= text.length())
@@ -2187,8 +2195,8 @@ int MarkdownHighlighter::highlightInlineComment(const QString &text, int pos)
     return commentEnd - 1;
 }
 
-int collectEmDelims(const QString &text, int curPos, QList<Delimiter> &delims) {
-    const QChar marker = text.at(curPos);
+int collectEmDelims(const QString &text, int curPos, QVector<Delimiter> &delims) {
+    const char marker = text.at(curPos).toLatin1();
 
     if (marker != QLatin1Char('_') && marker != QLatin1Char('*'))
         return curPos;
@@ -2201,8 +2209,8 @@ int collectEmDelims(const QString &text, int curPos, QList<Delimiter> &delims) {
         Delimiter d = {
             .pos = curPos + i,
             .len = length,
-            .jump = i,
             .end = -1,
+            .jump = (uint8_t)i,
             .open = canOpen,
             .close = canClose,
             .marker = marker
@@ -2212,7 +2220,7 @@ int collectEmDelims(const QString &text, int curPos, QList<Delimiter> &delims) {
     return curPos + length;
 }
 
-void balancePairs(QList<Delimiter> &delims) {
+void balancePairs(QVector<Delimiter> &delims) {
     for (int i = 0; i < delims.length(); ++i) {
         const auto &lastDelim = delims.at(i);
 
@@ -2225,7 +2233,7 @@ void balancePairs(QList<Delimiter> &delims) {
             const auto &curDelim = delims.at(j);
             if (curDelim.open && curDelim.marker == lastDelim.marker &&
                 curDelim.end < 0) {
-                bool oddMatch = (curDelim.close || lastDelim.open) &&
+                const bool oddMatch = (curDelim.close || lastDelim.open) &&
                         curDelim.len != -1 &&
                         lastDelim.len != -1 &&
                         (curDelim.len + lastDelim.len) % 3 == 0;
