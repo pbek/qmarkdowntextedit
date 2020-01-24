@@ -1196,9 +1196,10 @@ bool QMarkdownTextEdit::handleReturnEntered() {
 
     // if return is pressed and there is just an ordered list symbol then we want to
     // remove the list symbol
-    regex = QRegularExpression(R"(^(\s*)(\d+\.)(\s+)$)");
+    regex = QRegularExpression(R"(^(\s*)(\d+[\.|\)])(\s+)$)");
     iterator = regex.globalMatch(currentLineText);
     if (iterator.hasNext()) {
+        qDebug () << cursor.selectedText();
         cursor.removeSelectedText();
         return true;
     }
@@ -1241,17 +1242,18 @@ bool QMarkdownTextEdit::handleReturnEntered() {
     }
 
     // check for ordered lists and increment the list number in the next line
-    regex = QRegularExpression(R"(^(\s*)(\d+)\.(\s+))");
+    regex = QRegularExpression(R"(^(\s*)(\d+)([\.|\)])(\s+))");
     iterator = regex.globalMatch(currentLineText);
     if (iterator.hasNext()) {
         QRegularExpressionMatch match = iterator.next();
         QString whitespaces = match.captured(1);
         uint listNumber = match.captured(2).toUInt();
-        QString whitespaceCharacter = match.captured(3);
+        QString listMarker = match.captured(3);
+        QString whitespaceCharacter = match.captured(4);
 
         cursor.setPosition(position);
         cursor.insertText("\n" + whitespaces + QString::number(listNumber + 1) +
-        "." + whitespaceCharacter);
+        listMarker + whitespaceCharacter);
 
         // scroll to the cursor if we are at the bottom of the document
         ensureCursorVisible();
