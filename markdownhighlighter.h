@@ -275,11 +275,10 @@ protected:
                      const QRegularExpressionMatch &match,
                      const int capturedGroup);
 
-    QVector<HighlightingRule> _highlightingRulesPre;
-    QVector<HighlightingRule> _highlightingRulesAfter;
+    QVector<HighlightingRule> _highlightingRules;
+    static QHash<HighlighterState, QTextCharFormat> _formats;
     static QHash<QString, HighlighterState> _langStringToEnum;
     QVector<QTextBlock> _dirtyTextBlocks;
-    static QHash<HighlighterState, QTextCharFormat> _formats;
     QTimer *_timer;
     bool _highlightingFinished;
     HighlightingOptions _highlightingOptions;
