@@ -194,16 +194,7 @@ protected:
         HighlightingRule() = default;
 
         QRegularExpression pattern;
-        /*
-         * waqar144:
-         * Dear programmer,
-         * shouldContain[3] is an array of 3 and it may seem that if we don't use an array here
-         * but a simple string (since most of the rules have only one check), it will be faster.
-         * It won't be faster. It will be slower.
-         * The resulting struct is larger in size - 40, as opposed to 24 with a single string.
-         * Dated: 5-Jan-2020
-         */
-        QString shouldContain[3];
+        QString shouldContain;
         HighlighterState state = NoState;
         uint8_t capturingGroup = 0;
         uint8_t maskedGroup = 0;
@@ -238,23 +229,17 @@ protected:
 
     void highlightLists(const QString &text);
 
-//    void highlightOrdereredList();
-
-//    void highlightUnOrdereredList();
-
-//    void highlightCheckedList();
-
     /******************************
      *  INLINE FUNCTIONS
      ******************************/
 
     void highlightInlineRules(const QString &text);
 
-    int highlightInlineSpans(const QString &text, int currentPos, const QChar c);
+    Q_REQUIRED_RESULT int highlightInlineSpans(const QString &text, int currentPos, const QChar c);
 
     void highlightEmAndStrong(const QString &text, const int pos);
 
-    int highlightInlineComment(const QString &text, int pos);
+    Q_REQUIRED_RESULT int highlightInlineComment(const QString &text, int pos);
 
     /******************************
      *  CODE HIGHLIGHTING FUNCTIONS
@@ -268,9 +253,9 @@ protected:
 
     void highlightSyntax(const QString &text);
 
-    int highlightNumericLiterals(const QString& text, int i);
+    Q_REQUIRED_RESULT int highlightNumericLiterals(const QString& text, int i);
 
-    int highlightStringLiterals(QChar strType, const QString& text, int i);
+    Q_REQUIRED_RESULT int highlightStringLiterals(QChar strType, const QString& text, int i);
 
     void ymlHighlighter(const QString &text);
 

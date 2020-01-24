@@ -116,7 +116,7 @@ void MarkdownHighlighter::initHighlightingRules() {
     {
         HighlightingRule rule(HighlighterState::MaskedSyntax);
         rule.pattern = QRegularExpression(QStringLiteral(R"(^\[.+?\]: \w+://.+$)"));
-        rule.shouldContain[0] = QStringLiteral("://");
+        rule.shouldContain = QStringLiteral("://");
         _highlightingRulesPre.append(rule);
     }
 
@@ -127,7 +127,7 @@ void MarkdownHighlighter::initHighlightingRules() {
                     _highlightingOptions.testFlag(
                         HighlightingOption::FullyHighlightedBlockQuote) ?
                         QStringLiteral("^\\s*(>\\s*.+)") : QStringLiteral("^\\s*(>\\s*)+"));
-        rule.shouldContain[0] = QStringLiteral("> ");
+        rule.shouldContain = QStringLiteral("> ");
         _highlightingRulesPre.append(rule);
     }
 
@@ -145,43 +145,43 @@ void MarkdownHighlighter::initHighlightingRules() {
         // highlight urls without any other markup
         rule.pattern = QRegularExpression(QStringLiteral(R"(\b\w+?:\/\/[^\s>]+)"));
         rule.capturingGroup = 0;
-        rule.shouldContain[0] = QStringLiteral("://");
+        rule.shouldContain = QStringLiteral("://");
         _highlightingRulesAfter.append(rule);
 
         // highlight urls with <> but without any . in it
         rule.pattern = QRegularExpression(QStringLiteral(R"(<(\w+?:\/\/[^\s]+)>)"));
         rule.capturingGroup = 1;
-        rule.shouldContain[0] = QStringLiteral("://");
+        rule.shouldContain = QStringLiteral("://");
         _highlightingRulesAfter.append(rule);
 
         // highlight links with <> that have a .in it
         //    rule.pattern = QRegularExpression("<(.+?:\\/\\/.+?)>");
         rule.pattern = QRegularExpression(QStringLiteral("<([^\\s`][^`]*?\\.[^`]*?[^\\s`])>"));
         rule.capturingGroup = 1;
-        rule.shouldContain[0] = QStringLiteral("<");
+        rule.shouldContain = QStringLiteral("<");
         _highlightingRulesAfter.append(rule);
 
         // highlight urls with title
         //    rule.pattern = QRegularExpression("\\[(.+?)\\]\\(.+?://.+?\\)");
         //    rule.pattern = QRegularExpression("\\[(.+?)\\]\\(.+\\)\\B");
         rule.pattern = QRegularExpression(QStringLiteral(R"(\[([^\[\]]+)\]\((\S+|.+?)\)\B)"));
-        rule.shouldContain[0] = QStringLiteral("](");
+        rule.shouldContain = QStringLiteral("](");
         _highlightingRulesAfter.append(rule);
 
         // highlight urls with empty title
         //    rule.pattern = QRegularExpression("\\[\\]\\((.+?://.+?)\\)");
         rule.pattern = QRegularExpression(QStringLiteral(R"(\[\]\((.+?)\))"));
-        rule.shouldContain[0] = QStringLiteral("[](");
+        rule.shouldContain = QStringLiteral("[](");
         _highlightingRulesAfter.append(rule);
 
         // highlight email links
         rule.pattern = QRegularExpression(QStringLiteral("<(.+?@.+?)>"));
-        rule.shouldContain[0] = QStringLiteral("@");
+        rule.shouldContain = QStringLiteral("@");
         _highlightingRulesAfter.append(rule);
 
         // highlight reference links
         rule.pattern = QRegularExpression(QStringLiteral(R"(\[(.+?)\]\[.+?\])"));
-        rule.shouldContain[0] = QStringLiteral("[");
+        rule.shouldContain = QStringLiteral("[");
         _highlightingRulesAfter.append(rule);
     }
 
@@ -190,13 +190,13 @@ void MarkdownHighlighter::initHighlightingRules() {
         // highlight images with text
         HighlightingRule rule(HighlighterState::Image);
         rule.pattern = QRegularExpression(QStringLiteral(R"(!\[(.+?)\]\(.+?\))"));
-        rule.shouldContain[0] = QStringLiteral("![");
+        rule.shouldContain = QStringLiteral("![");
         rule.capturingGroup = 1;
         _highlightingRulesAfter.append(rule);
 
         // highlight images without text
         rule.pattern = QRegularExpression(QStringLiteral(R"(!\[\]\((.+?)\))"));
-        rule.shouldContain[0] = QStringLiteral("![]");
+        rule.shouldContain = QStringLiteral("![]");
         _highlightingRulesAfter.append(rule);
     }
 
@@ -204,13 +204,13 @@ void MarkdownHighlighter::initHighlightingRules() {
     {
         HighlightingRule rule(HighlighterState::Link);
         rule.pattern = QRegularExpression(QStringLiteral(R"(\[!\[(.+?)\]\(.+?\)\]\(.+?\))"));
-        rule.shouldContain[0] = QStringLiteral("[![");
+        rule.shouldContain = QStringLiteral("[![");
         rule.capturingGroup = 1;
         _highlightingRulesAfter.append(rule);
 
         // highlight images links without text
         rule.pattern = QRegularExpression(QStringLiteral(R"(\[!\[\]\(.+?\)\]\((.+?)\))"));
-        rule.shouldContain[0] = QStringLiteral("[![](");
+        rule.shouldContain = QStringLiteral("[![](");
         _highlightingRulesAfter.append(rule);
     }
 
@@ -218,7 +218,7 @@ void MarkdownHighlighter::initHighlightingRules() {
     {
         HighlightingRule rule(HighlighterState::TrailingSpace);
         rule.pattern = QRegularExpression(QStringLiteral("( +)$"));
-        rule.shouldContain[0] = QString(" \0"); //waqar144: dont use QStringLiteral here.
+        rule.shouldContain = QString(" \0"); //waqar144: dont use QStringLiteral here.
         rule.capturingGroup = 1;
         _highlightingRulesAfter.append(rule);
     }
@@ -228,14 +228,14 @@ void MarkdownHighlighter::initHighlightingRules() {
         // highlight comments for Rmarkdown for academic papers
         HighlightingRule rule(HighlighterState::Comment);
         rule.pattern = QRegularExpression(QStringLiteral(R"(^\[.+?\]: # \(.+?\)$)"));
-        rule.shouldContain[0] = QStringLiteral("]: # (");
+        rule.shouldContain = QStringLiteral("]: # (");
         _highlightingRulesAfter.append(rule);
     }
 
     // highlight tables with starting |
     {
         HighlightingRule rule(HighlighterState::Table);
-        rule.shouldContain[0] = QStringLiteral("|");
+        rule.shouldContain = QStringLiteral("|");
         rule.pattern = QRegularExpression(QStringLiteral("^\\|.+?\\|$"));
         _highlightingRulesAfter.append(rule);
     }
@@ -1850,16 +1850,7 @@ void MarkdownHighlighter::highlightAdditionalRules(
             continue;
         }
 
-        bool contains = false;
-        if (text.contains(rule.shouldContain[0])) {
-            contains = true;
-        }
-        if ( (!contains && !rule.shouldContain[1].isEmpty()) && text.contains(rule.shouldContain[1])){
-            contains = true;
-        }
-        if ( (!contains && !rule.shouldContain[2].isEmpty()) && text.contains(rule.shouldContain[2])){
-            contains = true;
-        }
+        const bool contains = text.contains(rule.shouldContain) ? true : false;
         if (!contains)
             continue;
 
@@ -1926,7 +1917,7 @@ void MarkdownHighlighter::highlightInlineRules(const QString &text)
                    text.at(i + 1) == QLatin1Char('!') && text.at(i + 2) == QLatin1Char('-') &&
                    text.at(i + 3) == QLatin1Char('-')
                    ) {
-            highlightInlineComment(text, i);
+            i = highlightInlineComment(text, i);
         } else if (!isEmStrongDone &&
                  (text.at(i) == QLatin1Char('*') || text.at(i) == QLatin1Char('_'))) {
             highlightEmAndStrong(text, i);
