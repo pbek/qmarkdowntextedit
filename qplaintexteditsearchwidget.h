@@ -33,7 +33,7 @@ public:
     };
 
     explicit QPlainTextEditSearchWidget(QPlainTextEdit *parent = nullptr);
-    bool doSearch(bool searchDown = true, bool allowRestartAtTop = true);
+    bool doSearch(bool searchDown = true, bool allowRestartAtTop = true, bool updateUI = true);
     void setDarkMode(bool enabled);
     ~QPlainTextEditSearchWidget();
     void setSearchText(QString &searchText);
@@ -44,6 +44,9 @@ private:
     Ui::QPlainTextEditSearchWidget *ui;
     int _searchResultCount;
     int _currentSearchResult;
+    QList<QTextEdit::ExtraSelection> _searchExtraSelections;
+    void updateSearchExtraSelections();
+    void setSearchExtraSelections() const;
 
 protected:
     QPlainTextEdit *_textEdit;
