@@ -41,7 +41,7 @@ public:
                         HighlightingOptions highlightingOptions =
                         HighlightingOption::None);
 
-    inline QColor codeBlockBackgroundColor() const {
+    static inline QColor codeBlockBackgroundColor() {
         const QBrush brush = _formats[CodeBlock].background();
 
         if (!brush.isOpaque()) {
@@ -51,22 +51,22 @@ public:
         return brush.color();
     }
 
-   inline bool isOctal(const char c) {
+   static constexpr inline bool isOctal(const char c) {
        return (c >= '0' && c <= '7');
    }
-   inline bool isHex(const char c) {
+   static constexpr inline bool isHex(const char c) {
        return (c >= '0' && c <= '9') ||
               (c >= 'a' && c <= 'f') ||
               (c >= 'A' && c <= 'F');
    }
-   static inline bool isCodeBlock(const int state) {
+   static constexpr inline bool isCodeBlock(const int state) {
       return state == MarkdownHighlighter::CodeBlock ||
              state == MarkdownHighlighter::CodeBlockTilde ||
              state == MarkdownHighlighter::CodeBlockComment ||
              state == MarkdownHighlighter::CodeBlockTildeComment ||
              state >= MarkdownHighlighter::CodeCpp;
    }
-   static inline bool isCodeBlockEnd(const int state) {
+   static constexpr inline bool isCodeBlockEnd(const int state) {
        return state == MarkdownHighlighter::CodeBlockEnd ||
               state == MarkdownHighlighter::CodeBlockTildeEnd;
    }
@@ -177,8 +177,8 @@ public:
 //        CodeBlockEnd
 //    };
 
-    void setTextFormats(QHash<HighlighterState, QTextCharFormat> formats);
-    void setTextFormat(HighlighterState state, QTextCharFormat format);
+    static void setTextFormats(QHash<HighlighterState, QTextCharFormat> formats);
+    static void setTextFormat(HighlighterState state, QTextCharFormat format);
     void clearDirtyBlocks();
     void setHighlightingOptions(const HighlightingOptions options);
     void initHighlightingRules();
@@ -194,17 +194,8 @@ protected:
         HighlightingRule() = default;
 
         QRegularExpression pattern;
+        QString shouldContain;
         HighlighterState state = NoState;
-        /*
-         * waqar144:
-         * Dear programmer,
-         * shouldContain[3] is an array of 3 and it may seem that if we don't use an array here
-         * but a simple string (since most of the rules have only one check), it will be faster.
-         * It won't be faster. It will be slower.
-         * The resulting struct is larger in size - 40, as opposed to 24 with a single string.
-         * Dated: 5-Jan-2020
-         */
-        QString shouldContain[3];
         uint8_t capturingGroup = 0;
         uint8_t maskedGroup = 0;
         bool useStateAsCurrentBlockState = false;
@@ -213,7 +204,9 @@ protected:
 
     void highlightBlock(const QString &text) Q_DECL_OVERRIDE;
 
-    void initTextFormats(int defaultFontSize = 12);
+    static void initTextFormats(int defaultFontSize = 12);
+
+    static void initCodeLangs();
 
     void highlightMarkdown(const QString& text);
 
@@ -230,9 +223,11 @@ protected:
 
     void highlightFrontmatterBlock(const QString& text);
 
-    void highlightCommentBlock(QString text);
+    void highlightCommentBlock(const QString &text);
 
     void highlightThematicBreak(const QString &text);
+
+    void highlightLists(const QString &text);
 
     /******************************
      *  INLINE FUNCTIONS
@@ -240,11 +235,15 @@ protected:
 
     void highlightInlineRules(const QString &text);
 
-    int highlightInlineSpans(const QString &text, int currentPos, const QChar c);
+    Q_REQUIRED_RESULT int highlightInlineSpans(const QString &text, int currentPos, const QChar c);
 
     void highlightEmAndStrong(const QString &text, const int pos);
 
-    int highlightInlineComment(const QString &text, int pos);
+    Q_REQUIRED_RESULT int highlightInlineComment(const QString &text, int pos);
+
+    void setHeadingStyles(MarkdownHighlighter::HighlighterState rule,
+                     const QRegularExpressionMatch &match,
+                     const int capturedGroup);
 
     /******************************
      *  CODE HIGHLIGHTING FUNCTIONS
@@ -258,9 +257,9 @@ protected:
 
     void highlightSyntax(const QString &text);
 
-    int highlightNumericLiterals(const QString& text, int i);
+    Q_REQUIRED_RESULT int highlightNumericLiterals(const QString& text, int i);
 
-    int highlightStringLiterals(QChar strType, const QString& text, int i);
+    Q_REQUIRED_RESULT int highlightStringLiterals(QChar strType, const QString& text, int i);
 
     void ymlHighlighter(const QString &text);
 
@@ -276,21 +275,12 @@ protected:
 
     void reHighlightDirtyBlocks();
 
-    void setHeadingStyles(MarkdownHighlighter::HighlighterState rule,
-                     const QRegularExpressionMatch &match,
-                     const int capturedGroup);
-
-    static void initCodeLangs();
-
-    QVector<HighlightingRule> _highlightingRulesPre;
-    QVector<HighlightingRule> _highlightingRulesAfter;
+    QVector<HighlightingRule> _highlightingRules;
+    static QHash<HighlighterState, QTextCharFormat> _formats;
     static QHash<QString, HighlighterState> _langStringToEnum;
     QVector<QTextBlock> _dirtyTextBlocks;
-    QHash<HighlighterState, QTextCharFormat> _formats;
     QTimer *_timer;
     bool _highlightingFinished;
     HighlightingOptions _highlightingOptions;
     static constexpr int tildeOffset = 300;
-
-    void setCurrentBlockMargin(HighlighterState state);
 };
