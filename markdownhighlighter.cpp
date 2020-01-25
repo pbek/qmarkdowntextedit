@@ -2103,7 +2103,7 @@ void balancePairs(QVector<Delimiter> &delims);
 /**
  * @brief highlights Em/Strong in text editor
  */
-void MarkdownHighlighter::highlightEmAndStrong(const QString &text, const int pos){
+void MarkdownHighlighter::highlightEmAndStrong(const QString &text, const int pos) {
     //1. collect all em/strong delimiters
     QVector<Delimiter> delims;
     for (int i = pos; i < text.length(); ++i) {
@@ -2117,7 +2117,7 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text, const int po
     balancePairs(delims);
 
     //start,length -> helper for applying masking later
-    QVector<QPair<const int, const int>> masked;
+    QVector<QPair<int, int>> masked;
     masked.reserve(delims.size() / 2);
 
     //3. final processing & highlighting
@@ -2156,11 +2156,11 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text, const int po
                 else
                     fmt.setFontWeight(QFont::Bold);
                 setFormat(k, 1, fmt);
-                k++;
+                ++k;
             }
             masked.append({startDelim.pos - 1, 2});
             masked.append({endDelim.pos, 2});
-            i--;
+            --i;
         } else {
 //            qDebug () << "Em: " << startDelim.pos << endDelim.pos;
 //            qDebug () << "Em Txt: " << text.mid(startDelim.pos, endDelim.pos - startDelim.pos);
@@ -2180,7 +2180,7 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text, const int po
                 else
                     fmt.setFontItalic(true);
                 setFormat(k, 1, fmt);
-                k++;
+                ++k;
             }
             masked.append({startDelim.pos, 1});
             masked.append({endDelim.pos, 1});
@@ -2204,8 +2204,7 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text, const int po
  * @param pos
  * @return position after the comment
  */
-int MarkdownHighlighter::highlightInlineComment(const QString &text, int pos)
-{
+int MarkdownHighlighter::highlightInlineComment(const QString &text, int pos) {
     const int start = pos;
     pos += 4;
 
