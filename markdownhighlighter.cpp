@@ -578,6 +578,9 @@ void MarkdownHighlighter::highlightHeadline(const QString& text) {
         return;
     const uint8_t nextSpaces = getIndentation(nextBlockText);
 
+    if (nextSpaces >= nextBlockText.length())
+        return;
+
     if (nextBlockText.at(nextSpaces) == QLatin1Char('=')) {
         const bool nextHasEqualChars = hasOnlyHeadChars(nextBlockText, QLatin1Char('='), nextSpaces);
         if (nextHasEqualChars) {
