@@ -518,32 +518,29 @@ void MarkdownHighlighter::highlightHeadline(const QString& text) {
         return;
     bool headingFound = false;
     if (spacesOffset == 1)
-        headingFound = text.at(1) == QChar('#');
+        headingFound = text.at(1) == QLatin1Char('#');
     else if (spacesOffset == 2)
-        headingFound = text.at(2) == QChar('#');
+        headingFound = text.at(2) == QLatin1Char('#');
     else if (spacesOffset == 3)
-        headingFound = text.at(3) == QChar('#');
+        headingFound = text.at(3) == QLatin1Char('#');
     else
-        headingFound = text.at(0) == QChar('#');
+        headingFound = text.at(0) == QLatin1Char('#');
 
     if (headingFound) {
         int headingLevel = 0;
         int i = spacesOffset;
         if (i >= text.length())
             return;
-        while(i < text.length() && text.at(i) == QChar('#') && i < (spacesOffset + 6))
+        while(i < text.length() && text.at(i) == QLatin1Char('#') && i < (spacesOffset + 6))
             ++i;
 
-        if (i < text.length() && text.at(i) == QChar(' '))
+        if (i < text.length() && text.at(i) == QLatin1Char(' '))
             headingLevel = i - spacesOffset;
 
         if (headingLevel > 0) {
             const auto state = HighlighterState(HighlighterState::H1 + headingLevel - 1);
 
             setFormat(0, text.length(), _formats[state]);
-
-            // set a margin for the current block
-            setCurrentBlockMargin(state);
 
             setCurrentBlockState(state);
             return;
@@ -586,7 +583,6 @@ void MarkdownHighlighter::highlightHeadline(const QString& text) {
         if (nextHasEqualChars) {
             setFormat(0, text.length(), _formats[HighlighterState::H1]);
             setCurrentBlockState(HighlighterState::H1);
-            currentBlock().setUserState(HighlighterState::H1);
         }
     }
     else if (nextBlockText.at(nextSpaces) == QLatin1Char('-')) {
@@ -594,7 +590,6 @@ void MarkdownHighlighter::highlightHeadline(const QString& text) {
         if (nextHasMinusChars) {
             setFormat(0, text.length(), _formats[HighlighterState::H2]);
             setCurrentBlockState(HighlighterState::H2);
-            currentBlock().setUserState(HighlighterState::H2);
         }
     }
 }
@@ -618,9 +613,6 @@ void MarkdownHighlighter::highlightSubHeadline(const QString &text, HighlighterS
         setFormat(0, text.length(), currentMaskedFormat);
         setCurrentBlockState(HeadlineEnd);
 
-        // set a margin for the current block
-        setCurrentBlockMargin(state);
-
         // we want to re-highlight the previous block
         // this must not done directly, but with a queue, otherwise it
         // will crash
@@ -632,50 +624,6 @@ void MarkdownHighlighter::highlightSubHeadline(const QString &text, HighlighterS
             previousBlock.setUserState(state);
         }
     }
-}
-
-
-/**
- * Sets a margin for the current block
- *
- * @param state
- */
-void MarkdownHighlighter::setCurrentBlockMargin(
-        MarkdownHighlighter::HighlighterState state) {
-    // this is currently disabled because it causes multiple problems:
-    // - it prevents "undo" in headlines
-    //   https://github.com/pbek/QOwnNotes/issues/520
-    // - invisible lines at the end of a note
-    //   https://github.com/pbek/QOwnNotes/issues/667
-    // - a crash when reaching the invisible lines when the current line is
-    //   highlighted
-    //   https://github.com/pbek/QOwnNotes/issues/701
-    return;
-
-    qreal margin;
-
-    switch (state) {
-        case HighlighterState::H1:
-            margin = 5;
-            break;
-        case HighlighterState::H2:
-        case HighlighterState::H3:
-        case HighlighterState::H4:
-        case HighlighterState::H5:
-        case HighlighterState::H6:
-            margin = 3;
-            break;
-        default:
-            return;
-    }
-
-    QTextBlockFormat blockFormat = currentBlock().blockFormat();
-    blockFormat.setTopMargin(2);
-    blockFormat.setBottomMargin(margin);
-
-    // this prevents "undo" in headlines!
-    QTextCursor* myCursor = new QTextCursor(currentBlock());
-    myCursor->setBlockFormat(blockFormat);
 }
 
 /**

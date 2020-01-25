@@ -241,6 +241,10 @@ protected:
 
     Q_REQUIRED_RESULT int highlightInlineComment(const QString &text, int pos);
 
+    void setHeadingStyles(MarkdownHighlighter::HighlighterState rule,
+                     const QRegularExpressionMatch &match,
+                     const int capturedGroup);
+
     /******************************
      *  CODE HIGHLIGHTING FUNCTIONS
      ******************************/
@@ -271,10 +275,6 @@ protected:
 
     void reHighlightDirtyBlocks();
 
-    void setHeadingStyles(MarkdownHighlighter::HighlighterState rule,
-                     const QRegularExpressionMatch &match,
-                     const int capturedGroup);
-
     QVector<HighlightingRule> _highlightingRules;
     static QHash<HighlighterState, QTextCharFormat> _formats;
     static QHash<QString, HighlighterState> _langStringToEnum;
@@ -283,6 +283,4 @@ protected:
     bool _highlightingFinished;
     HighlightingOptions _highlightingOptions;
     static constexpr int tildeOffset = 300;
-
-    void setCurrentBlockMargin(HighlighterState state);
 };
