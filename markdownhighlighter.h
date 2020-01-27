@@ -164,6 +164,8 @@ public:
         CodeTaggerScript = 238,
         CodeVex = 240,
         CodeVexComment = 241,
+        CodeCMake = 242,
+        CodeMake = 244
     };
     Q_ENUMS(HighlighterState)
 

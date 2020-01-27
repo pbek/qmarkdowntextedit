@@ -397,6 +397,7 @@ void MarkdownHighlighter::initCodeLangs()
         {QLatin1String("cxx"),         MarkdownHighlighter::CodeCpp},
         {QLatin1String("c++"),         MarkdownHighlighter::CodeCpp},
         {QLatin1String("c#"),          MarkdownHighlighter::CodeCSharp},
+        {QLatin1String("cmake"),       MarkdownHighlighter::CodeCMake},
         {QLatin1String("csharp"),      MarkdownHighlighter::CodeCSharp},
         {QLatin1String("css"),         MarkdownHighlighter::CodeCSS},
         {QLatin1String("go"),          MarkdownHighlighter::CodeCSharp},
@@ -406,6 +407,7 @@ void MarkdownHighlighter::initCodeLangs()
         {QLatin1String("javascript"),  MarkdownHighlighter::CodeJava},
         {QLatin1String("js"),          MarkdownHighlighter::CodeJs},
         {QLatin1String("json"),        MarkdownHighlighter::CodeJSON},
+        {QLatin1String("make"),        MarkdownHighlighter::CodeMake},
         {QLatin1String("php"),         MarkdownHighlighter::CodePHP},
         {QLatin1String("py"),          MarkdownHighlighter::CodePython},
         {QLatin1String("python"),      MarkdownHighlighter::CodePython},
@@ -853,6 +855,16 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
         case HighlighterState::CodeVexComment:
         case HighlighterState::CodeVexComment + tildeOffset:
             loadVEXData(types, keywords, builtin, literals, others);
+            break;
+        case HighlighterState::CodeCMake:
+        case HighlighterState::CodeCMake + tildeOffset:
+            loadCMakeData(types, keywords, builtin, literals, others);
+            comment = QLatin1Char('#');
+            break;
+        case HighlighterState::CodeMake:
+        case HighlighterState::CodeMake + tildeOffset:
+            loadMakeData(types, keywords, builtin, literals, others);
+            comment = QLatin1Char('#');
             break;
         default:
             comment = QChar('\0');
