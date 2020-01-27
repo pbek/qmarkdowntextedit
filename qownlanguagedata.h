@@ -189,9 +189,27 @@ void loadYAMLData(QMultiHash<char, QLatin1String> &types,
              QMultiHash<char, QLatin1String> &other);
 
 /********************************************************/
-/***   YAML DATA  ***************************************/
+/***   VEX DATA  ****************************************/
 /********************************************************/
 void loadVEXData(QMultiHash<char, QLatin1String> &types,
+             QMultiHash<char, QLatin1String> &keywords,
+             QMultiHash<char, QLatin1String> &builtin,
+             QMultiHash<char, QLatin1String> &literals,
+             QMultiHash<char, QLatin1String> &other);
+
+/********************************************************/
+/***   CMake DATA  **************************************/
+/********************************************************/
+void loadCMakeData(QMultiHash<char, QLatin1String> &types,
+             QMultiHash<char, QLatin1String> &keywords,
+             QMultiHash<char, QLatin1String> &builtin,
+             QMultiHash<char, QLatin1String> &literals,
+             QMultiHash<char, QLatin1String> &other);
+
+/********************************************************/
+/***   Make DATA  ***************************************/
+/********************************************************/
+void loadMakeData(QMultiHash<char, QLatin1String> &types,
              QMultiHash<char, QLatin1String> &keywords,
              QMultiHash<char, QLatin1String> &builtin,
              QMultiHash<char, QLatin1String> &literals,
