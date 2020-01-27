@@ -1748,8 +1748,6 @@ void MarkdownHighlighter::highlightLists(const QString &text)
         else if (text.at(spaces + 3) == QLatin1Char(' ') && text.at(spaces + 4) == QLatin1Char(']')) {
             setFormat(start, length, _formats[CheckBoxUnChecked]);
         }
-        setFormat(spaces, 1, _formats[List]);
-        return;
     }
 
     /* Unorderered List */
