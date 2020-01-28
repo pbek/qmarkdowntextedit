@@ -2195,13 +2195,13 @@ int collectEmDelims(const QString &text, int curPos, QVector<Delimiter> &delims)
     scanDelims(text, curPos, marker == QLatin1Char('*'), canOpen, canClose, length);
     for (int i = 0; i < length; ++i) {
         Delimiter d = {
-            .pos = curPos + i,
-            .len = length,
-            .end = -1,
-            .jump = (uint8_t)i,
-            .open = canOpen,
-            .close = canClose,
-            .marker = marker
+            curPos + i,
+            length,
+            -1,
+            (uint8_t)i,
+            canOpen,
+            canClose,
+            marker
         };
         delims.append(d);
     }
