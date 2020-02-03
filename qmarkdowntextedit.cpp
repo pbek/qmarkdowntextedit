@@ -604,7 +604,7 @@ bool QMarkdownTextEdit::handleBracketClosing(const QChar openingCharacter,
         // User wants: '**'.
         // Not the start of a list, probably bold text. We autocomplete with
         // extra closingCharacter and cursorSubtract to 'catchup'.
-        else if (text == QLatin1Char('*')) {
+        else if (text == QLatin1String("*")) {
             cursor.insertText(QStringLiteral("*"));
             cursorSubtract = 2;
         }
