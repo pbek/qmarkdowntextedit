@@ -78,15 +78,15 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
     _searchWidget = new QPlainTextEditSearchWidget(this);
     this->layout()->addWidget(_searchWidget);
 
-    QObject::connect(this, SIGNAL(textChanged()),
-                     this, SLOT(adjustRightMargin()));
-    QObject::connect(this, SIGNAL(cursorPositionChanged()),
-                     this, SLOT(centerTheCursor()));
+    connect(this, &QPlainTextEdit::textChanged,
+            this, &QMarkdownTextEdit::adjustRightMargin);
+    connect(this, &QPlainTextEdit::cursorPositionChanged,
+            this, &QMarkdownTextEdit::centerTheCursor);
 
     updateSettings();
 
     // workaround for disabled signals up initialization
-    QTimer::singleShot(300, this, SLOT(adjustRightMargin()));
+    QTimer::singleShot(300, this, &QMarkdownTextEdit::adjustRightMargin);
 }
 
 /**
@@ -605,7 +605,6 @@ bool QMarkdownTextEdit::handleBracketClosing(const QChar openingCharacter,
         // Not the start of a list, probably bold text. We autocomplete with
         // extra closingCharacter and cursorSubtract to 'catchup'.
         else if (text == QLatin1Char('*')) {
-            cursor.beginEditBlock();
             cursor.insertText(QStringLiteral("*"));
             cursorSubtract = 2;
         }
