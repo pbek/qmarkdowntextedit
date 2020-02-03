@@ -1711,7 +1711,7 @@ void MarkdownHighlighter::highlightThematicBreak(const QString &text)
 void MarkdownHighlighter::highlightLists(const QString &text)
 {
     int spaces = 0;
-    while (spaces < text.length() && text.at(spaces) == QLatin1Char(' '))
+    while (spaces < text.length() && text.at(spaces).isSpace())
         ++spaces;
 
     if (spaces >= text.length())
@@ -1734,18 +1734,17 @@ void MarkdownHighlighter::highlightLists(const QString &text)
         if (number + 1 >= text.length())
             return;
         //there should be a '.' or ')' after a number
-        if (text.at(number) == QLatin1Char('.') || text.at(number) == QLatin1Char(')'))
-            if (text.at(number + 1) == QLatin1Char(' ')) {
+        if ((text.at(number) == QLatin1Char('.') || text.at(number) == QLatin1Char(')'))
+            && (text.at(number + 1) == QLatin1Char(' '))) {
                 setCurrentBlockState(List);
                 setFormat(spaces, number - spaces + 1, _formats[List]);
-            }
+        }
         return;
     }
 
     //check for a space after it
     if (spaces + 1 < text.length() && text.at(spaces + 1) != QLatin1Char(' '))
         return;
-
     //check if we are in checkbox list
     if (spaces + 2 < text.length() && text.at(spaces + 2) == QLatin1Char('[')) {
         if (spaces + 4 >= text.length())
@@ -1759,6 +1758,10 @@ void MarkdownHighlighter::highlightLists(const QString &text)
         //unchecked checkbox
         else if (text.at(spaces + 3) == QLatin1Char(' ') && text.at(spaces + 4) == QLatin1Char(']')) {
             setFormat(start, length, _formats[CheckBoxUnChecked]);
+        }
+        //unchecked checkbox with no space bw brackets
+        else if (text.at(spaces + 3) == QLatin1Char(']')) {
+            setFormat(start, 2, _formats[CheckBoxUnChecked]);
         }
     }
 
