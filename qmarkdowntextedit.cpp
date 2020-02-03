@@ -212,7 +212,7 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
         } else if (keyEvent->key() == Qt::Key_Return &&
                    keyEvent->modifiers().testFlag(Qt::ControlModifier)) {
             QTextCursor cursor = this->textCursor();
-            cursor.movePosition(QTextCursor::EndOfLine);
+            cursor.movePosition(QTextCursor::EndOfBlock);
             cursor.insertText(QStringLiteral("\n"));
             setTextCursor(cursor);
             return true;
@@ -238,7 +238,7 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
                         cursor.deletePreviousChar();
                     else
                         cursor.removeSelectedText();
-                    cursor.movePosition(QTextCursor::StartOfLine);
+                    cursor.movePosition(QTextCursor::StartOfBlock);
                     setTextCursor(cursor);
                 }
                 qApp->clipboard()->setText(text);
@@ -250,7 +250,7 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
                 QRegExp(QStringLiteral("[^\n]*\n$")).exactMatch(qApp->clipboard()->text())) {
                 QTextCursor cursor = this->textCursor();
                 if (!cursor.hasSelection()) {
-                    cursor.movePosition(QTextCursor::StartOfLine);
+                    cursor.movePosition(QTextCursor::StartOfBlock);
                     setTextCursor(cursor);
                 }
             }
@@ -282,7 +282,7 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             // jump to the end of the line
             QTextCursor cursor = textCursor();
             if (cursor.position() >= document()->lastBlock().position()) {
-                cursor.movePosition(QTextCursor::EndOfLine);
+                cursor.movePosition(QTextCursor::EndOfBlock);
                 setTextCursor(cursor);
             }
             return false;
@@ -295,7 +295,7 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             int endOfFirstLinePos = block.position() + block.length();
 
             if (cursor.position() <= endOfFirstLinePos) {
-                cursor.movePosition(QTextCursor::StartOfLine);
+                cursor.movePosition(QTextCursor::StartOfBlock);
                 setTextCursor(cursor);
             }
             return false;
@@ -1097,8 +1097,8 @@ void QMarkdownTextEdit::duplicateText() {
         int position = cursor.position();
 
         // select the whole line
-        cursor.movePosition(QTextCursor::StartOfLine);
-        cursor.movePosition(QTextCursor::EndOfLine, QTextCursor::KeepAnchor);
+        cursor.movePosition(QTextCursor::StartOfBlock);
+        cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
 
         int positionDiff = cursor.position() - position;
         selectedText = "\n" + cursor.selectedText();
@@ -1290,7 +1290,7 @@ bool QMarkdownTextEdit::handleTabEntered(bool reverse, const QString& indentChar
 
     // only check for lists if we haven't a text selected
     if (cursor.selectedText().isEmpty()) {
-        cursor.movePosition(QTextCursor::StartOfLine, QTextCursor::KeepAnchor);
+        cursor.movePosition(QTextCursor::StartOfBlock, QTextCursor::KeepAnchor);
         QString currentLineText = cursor.selectedText();
 
         // check if we want to indent or un-indent an ordered list
