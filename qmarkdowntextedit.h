@@ -73,8 +73,6 @@ protected:
     QPlainTextEditSearchWidget *_searchWidget;
     QWidget *_searchFrame;
     AutoTextOptions _autoTextOptions;
-    QStringList _openingCharacters;
-    QStringList _closingCharacters;
     bool _mouseButtonDown = false;
     bool _centerCursor = false;
 

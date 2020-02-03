@@ -33,11 +33,13 @@
 #include <QClipboard>
 #include <utility>
 
+static constexpr std::array<char, 9> _openingCharacters = {'(', '[', '{', '<', '*', '"', '\'', '_', '~'};
+static constexpr std::array<char, 9> _closingCharacters = {')', ']', '}', '>', '*', '"', '\'', '_', '~'};
+
 
 QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
-        : QPlainTextEdit(parent),
-        _openingCharacters{"(", "[", "{", "<", "*", "\"", "'", "_", "~"},
-        _closingCharacters{")", "]", "}", ">", "*", "\"", "'", "_", "~"} {
+        : QPlainTextEdit(parent) {
+
     installEventFilter(this);
     viewport()->installEventFilter(this);
     _autoTextOptions = AutoTextOption::BracketClosing;
@@ -754,7 +756,7 @@ bool QMarkdownTextEdit::handleBracketRemoval() {
     }
 
     int position = cursor.position();
-    int positionInBlock = position - cursor.block().position();
+    const int positionInBlock = cursor.positionInBlock();
 
     // return if backspace was pressed at the beginning of a block
     if (positionInBlock == 0) {
@@ -762,31 +764,56 @@ bool QMarkdownTextEdit::handleBracketRemoval() {
     }
 
     // get the current text from the block
-    QString text = cursor.block().text();
-    QString charInFront = text.at(positionInBlock - 1);
-    int openingCharacterIndex = _openingCharacters.indexOf(charInFront);
+    const QString text = cursor.block().text();
 
-    // return if the character in front of the cursor is no opening character
-    if (openingCharacterIndex == -1) {
-        return false;
+    int characterIndex = -1;
+    char charToRemove;
+
+    //current char
+    const char charInFront = text.at(positionInBlock - 1).toLatin1();
+    //is it opener?
+    auto it = std::find(_openingCharacters.cbegin(), _openingCharacters.cend(), charInFront);
+    const bool isOpener = it == _openingCharacters.cend() ? false : true;
+    if (isOpener) {
+        characterIndex = it - _openingCharacters.cbegin();
+        charToRemove = _closingCharacters.at(characterIndex);
+    } else {
+        //is it closer?
+        auto it = std::find(_closingCharacters.cbegin(), _closingCharacters.cend(), charInFront);
+        const bool isCloser = it == _closingCharacters.cend() ? false : true;
+        if (isCloser) {
+            characterIndex = it - _closingCharacters.cbegin();
+            charToRemove = _openingCharacters.at(characterIndex);
+        } else {
+            return false;
+        }
     }
 
-    QString closingCharacter = _closingCharacters.at(openingCharacterIndex);
-
-    // remove everything in front of the cursor
-    text.remove(0, positionInBlock);
-    int closingCharacterIndex = text.indexOf(closingCharacter);
-
-    // return if no closing character was found in the text after the cursor
-    if (closingCharacterIndex == -1) {
-        return false;
+    int charToRemoveIndex = -1;
+    if (isOpener) {
+        charToRemoveIndex = text.indexOf(charToRemove, positionInBlock);
+        if (charToRemoveIndex == -1 && charToRemove == charInFront) {
+            //maybe its '*'
+            /* it will mess up cases where there are multiple '*' in the same line
+             * This can probably be handled correctly by using the algorithms(pair matching/balancing)
+             * from highlighter but that would be overkill here
+             */
+            goto LookBackwards;
+        } else if (charToRemoveIndex == -1) {
+            return false;
+        }
+        cursor.setPosition(position + (charToRemoveIndex - positionInBlock));
+        cursor.deleteChar();
+    } else {
+        LookBackwards:
+        charToRemoveIndex = text.lastIndexOf(charToRemove, positionInBlock - 2);
+        if (charToRemoveIndex == -1)
+            return false;
+        const int pos = position - (positionInBlock - charToRemoveIndex);
+        cursor.setPosition(pos);
+        cursor.deleteChar();
+        position -= 1;
     }
-
-    // removing the closing character
-    cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor,
-                   closingCharacterIndex);
-    cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor);
-    cursor.removeSelectedText();
 
     // moving the cursor back to the old position so the previous character
     // can be removed
