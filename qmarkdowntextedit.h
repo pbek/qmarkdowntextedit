@@ -81,8 +81,8 @@ protected:
     bool handleTabEntered(bool reverse, const QString& indentCharacters = QChar('\t'));
     QMap<QString, QString> parseMarkdownUrlsFromText(const QString& text);
     bool handleReturnEntered();
-    bool handleBracketClosing(const QString& openingCharacter,
-                              QString closingCharacter = QLatin1String(""));
+    bool handleBracketClosing(const QChar openingCharacter,
+                              QChar closingCharacter = QChar());
     bool bracketClosingCheck(const QString& openingCharacter,
                              QString closingCharacter);
     bool quotationMarkCheck(const QChar quotationCharacter);
@@ -93,5 +93,5 @@ signals:
     void urlClicked(QString url);
 
 private:
-    bool handleBracketClosingUsed;
+    bool _handleBracketClosingUsed;
 };
