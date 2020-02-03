@@ -85,7 +85,7 @@ protected:
                               QString closingCharacter = QLatin1String(""));
     bool bracketClosingCheck(const QString& openingCharacter,
                              QString closingCharacter);
-    bool quotationMarkCheck(const QString& quotationCharacter);
+    bool quotationMarkCheck(const QChar quotationCharacter);
     void focusOutEvent(QFocusEvent *event);
     void paintEvent(QPaintEvent *e);
 

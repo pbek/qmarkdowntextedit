@@ -166,7 +166,7 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
         } else if (keyEvent->key() == Qt::Key_Asterisk) {
             return handleBracketClosing(QStringLiteral("*"));
         } else if (keyEvent->key() == Qt::Key_QuoteDbl) {
-            return quotationMarkCheck(QStringLiteral("\""));
+            return quotationMarkCheck(QLatin1Char('"'));
             // apostrophe bracket closing is temporary disabled because
             // apostrophes are used in different contexts
 //        } else if (keyEvent->key() == Qt::Key_Apostrophe) {
@@ -177,7 +177,7 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
 //            return handleBracketClosing("_");
         }
         else if (keyEvent->key() == Qt::Key_QuoteLeft) {
-            return quotationMarkCheck(QStringLiteral("`"));
+            return quotationMarkCheck(QLatin1Char('`'));
         } else if (keyEvent->key() == Qt::Key_AsciiTilde) {
             return handleBracketClosing(QStringLiteral("~"));
 #ifdef Q_OS_MAC
@@ -583,13 +583,8 @@ bool QMarkdownTextEdit::handleBracketClosing(const QString& openingCharacter,
         // if not text was selected check if we are inside the text
         int positionInBlock = cursor.position() - cursor.block().position();
 
-        // only allow the closing if the cursor was at the end of a block
-        // we are making a special allowance for openingCharacter == *
-        if ((positionInBlock != text.count()) &&
-            !((openingCharacter == QLatin1String("*")) &&
-              (positionInBlock == (text.count() - 1)))) {
+        if (!text.at(positionInBlock).isSpace())
             return false;
-        }
     }
 
     // Remove whitespace at start of string (e.g. in multilevel-lists).
@@ -704,25 +699,25 @@ bool QMarkdownTextEdit::bracketClosingCheck(const QString& openingCharacter,
  * @param quotationCharacter
  * @return
  */
-bool QMarkdownTextEdit::quotationMarkCheck(const QString& quotationCharacter) {
+bool QMarkdownTextEdit::quotationMarkCheck(const QChar quotationCharacter) {
     // check if bracket closing or read-only are enabled
     if (!(_autoTextOptions & AutoTextOption::BracketClosing) || isReadOnly()) {
         return false;
     }
 
     QTextCursor cursor = textCursor();
-    int positionInBlock = cursor.position() - cursor.block().position();
+    const int positionInBlock = cursor.position() - cursor.block().position();
 
     // get the current text from the block
-    QString text = cursor.block().text();
-    int textLength = text.length();
+    const QString &text = cursor.block().text();
+    const int textLength = text.length();
 
     // if we are at the end of the line we just want to enter the character
     if (positionInBlock >= textLength) {
         return handleBracketClosing(quotationCharacter);
     }
 
-    QString currentChar = text.at(positionInBlock);
+    const QChar currentChar = text.at(positionInBlock);
 
     // if the current character is not the quotation character we just want to
     // enter the character
