@@ -645,10 +645,13 @@ void MarkdownHighlighter::highlightIndentedCodeBlock(const QString &text) {
          && (previousBlockState() < H1 || previousBlockState() > H6) && previousBlockState() != HeadlineEnd)
         return;
 
+    const QString &trimmed = text.trimmed();
+
     //should not be in a list
-    if (text.trimmed().startsWith(QLatin1String("- ")) ||
-            text.trimmed().startsWith(QLatin1String("+ ")) ||
-            text.trimmed().startsWith(QLatin1String("* ")))
+    if (trimmed.startsWith(QLatin1String("- ")) ||
+            trimmed.startsWith(QLatin1String("+ ")) ||
+            trimmed.startsWith(QLatin1String("* ")) ||
+            (trimmed.length() >= 1 && trimmed.at(0).isNumber()))
         return;
 
     setCurrentBlockState(CodeBlockIndented);
@@ -1725,7 +1728,7 @@ void MarkdownHighlighter::highlightLists(const QString &text)
         return;
     }
 
-    /* Orderered List */
+    /* Ordered List */
     if (text.at(spaces).isNumber()) {
         int number = spaces;
         while (number < text.length() && text.at(number).isNumber())
@@ -1765,7 +1768,7 @@ void MarkdownHighlighter::highlightLists(const QString &text)
         }
     }
 
-    /* Unorderered List */
+    /* Unordered List */
     setCurrentBlockState(List);
     setFormat(spaces, 1, _formats[List]);
 }
