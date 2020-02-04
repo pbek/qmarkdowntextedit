@@ -33,11 +33,12 @@
 #include <QClipboard>
 #include <utility>
 
+static const QByteArray _openingCharacters = QByteArrayLiteral("([{<*\"'_~");
+static const QByteArray _closingCharacters = QByteArrayLiteral(")]}>*\"'_~");
 
 QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
-        : QPlainTextEdit(parent),
-        _openingCharacters{"(", "[", "{", "<", "*", "\"", "'", "_", "~"},
-        _closingCharacters{")", "]", "}", ">", "*", "\"", "'", "_", "~"} {
+        : QPlainTextEdit(parent) {
+
     installEventFilter(this);
     viewport()->installEventFilter(this);
     _autoTextOptions = AutoTextOption::BracketClosing;
@@ -52,7 +53,7 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
     QFont font = this->font();
 
     // set the tab stop to the width of 4 spaces in the editor
-    const int tabStop = 4;
+    constexpr int tabStop = 4;
     QFontMetrics metrics(font);
 
 #if QT_VERSION < QT_VERSION_CHECK(5,11,0)
@@ -76,15 +77,15 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
     _searchWidget = new QPlainTextEditSearchWidget(this);
     this->layout()->addWidget(_searchWidget);
 
-    QObject::connect(this, SIGNAL(textChanged()),
-                     this, SLOT(adjustRightMargin()));
-    QObject::connect(this, SIGNAL(cursorPositionChanged()),
-                     this, SLOT(centerTheCursor()));
+    connect(this, &QPlainTextEdit::textChanged,
+            this, &QMarkdownTextEdit::adjustRightMargin);
+    connect(this, &QPlainTextEdit::cursorPositionChanged,
+            this, &QMarkdownTextEdit::centerTheCursor);
 
     updateSettings();
 
     // workaround for disabled signals up initialization
-    QTimer::singleShot(300, this, SLOT(adjustRightMargin()));
+    QTimer::singleShot(300, this, &QMarkdownTextEdit::adjustRightMargin);
 }
 
 /**
@@ -111,7 +112,7 @@ void QMarkdownTextEdit::setHighlightingEnabled(bool enabled) {
  */
 void QMarkdownTextEdit::adjustRightMargin() {
     QMargins margins = layout()->contentsMargins();
-    int rightMargin = document()->size().height() >
+    const int rightMargin = document()->size().height() >
                       viewport()->size().height() ? 24 : 0;
     margins.setRight(rightMargin);
     layout()->setContentsMargins(margins);
@@ -162,9 +163,9 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
         } else if (keyEvent->key() == Qt::Key_Backspace) {
             return handleBracketRemoval();
         } else if (keyEvent->key() == Qt::Key_Asterisk) {
-            return handleBracketClosing(QStringLiteral("*"));
+            return handleBracketClosing(QLatin1Char('*'));
         } else if (keyEvent->key() == Qt::Key_QuoteDbl) {
-            return quotationMarkCheck(QStringLiteral("\""));
+            return quotationMarkCheck(QLatin1Char('"'));
             // apostrophe bracket closing is temporary disabled because
             // apostrophes are used in different contexts
 //        } else if (keyEvent->key() == Qt::Key_Apostrophe) {
@@ -175,35 +176,35 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
 //            return handleBracketClosing("_");
         }
         else if (keyEvent->key() == Qt::Key_QuoteLeft) {
-            return quotationMarkCheck(QStringLiteral("`"));
+            return quotationMarkCheck(QLatin1Char('`'));
         } else if (keyEvent->key() == Qt::Key_AsciiTilde) {
-            return handleBracketClosing(QStringLiteral("~"));
+            return handleBracketClosing(QLatin1Char('~'));
 #ifdef Q_OS_MAC
         } else if (keyEvent->modifiers().testFlag(Qt::AltModifier) &&
                     keyEvent->key() == Qt::Key_ParenLeft) {
             // bracket closing for US keyboard on macOS
-            return handleBracketClosing(QStringLiteral("{"), QStringLiteral("}"));
+            return handleBracketClosing(QLatin1Char('{'), QLatin1Char('}'));
 #endif
         } else if (keyEvent->key() == Qt::Key_ParenLeft) {
-            return handleBracketClosing(QStringLiteral("("), QStringLiteral(")"));
+            return handleBracketClosing(QLatin1Char('('), QLatin1Char(')'));
         } else if (keyEvent->key() == Qt::Key_BraceLeft) {
-            return handleBracketClosing(QStringLiteral("{"), QStringLiteral("}"));
+            return handleBracketClosing(QLatin1Char('{'), QLatin1Char('}'));
         } else if (keyEvent->key() == Qt::Key_BracketLeft) {
-            return handleBracketClosing(QStringLiteral("["), QStringLiteral("]"));
+            return handleBracketClosing(QLatin1Char('['), QLatin1Char(']'));
         } else if (keyEvent->key() == Qt::Key_Less) {
-            return handleBracketClosing(QStringLiteral("<"), QStringLiteral(">"));
+            return handleBracketClosing(QLatin1Char('<'), QLatin1Char('>'));
 #ifdef Q_OS_MAC
         } else if (keyEvent->modifiers().testFlag(Qt::AltModifier) &&
                    keyEvent->key() == Qt::Key_ParenRight) {
             // bracket closing for US keyboard on macOS
-            return bracketClosingCheck("{", "}");
+            return bracketClosingCheck(QLatin1Char('{'), QLatin1Char('}'));
 #endif
         } else if (keyEvent->key() == Qt::Key_ParenRight) {
-            return bracketClosingCheck(QStringLiteral("("), QStringLiteral(")"));
+            return bracketClosingCheck(QLatin1Char('('), QLatin1Char(')'));
         } else if (keyEvent->key() == Qt::Key_BraceRight) {
-            return bracketClosingCheck(QStringLiteral("{"), QStringLiteral("}"));
+            return bracketClosingCheck(QLatin1Char('{'), QLatin1Char('}'));
         } else if (keyEvent->key() == Qt::Key_BracketRight) {
-            return bracketClosingCheck(QStringLiteral("["), QStringLiteral("]"));
+            return bracketClosingCheck(QLatin1Char('['), QLatin1Char(']'));
         } else if (keyEvent->key() == Qt::Key_Return &&
         keyEvent->modifiers().testFlag(Qt::ShiftModifier)) {
             QTextCursor cursor = this->textCursor();
@@ -438,7 +439,7 @@ void QMarkdownTextEdit::undo()
 
     //if text is selected and bracket closing was used
     //we retain our selection
-    if (handleBracketClosingUsed) {
+    if (_handleBracketClosingUsed) {
         //get the selection
         int selectionEnd = cursor.selectionEnd();
         int selectionStart = cursor.selectionStart();
@@ -448,7 +449,7 @@ void QMarkdownTextEdit::undo()
         cursor.setPosition(selectionStart-1);
         cursor.setPosition(selectionEnd-1, QTextCursor::KeepAnchor);
         this->setTextCursor(cursor);
-        handleBracketClosingUsed = false;
+        _handleBracketClosingUsed = false;
         return;
     //else if text was selected but bracket closing wasn't used
     //do normal undo
@@ -542,8 +543,8 @@ void QMarkdownTextEdit::focusOutEvent(QFocusEvent *event) {
  * @param closingCharacter
  * @return
  */
-bool QMarkdownTextEdit::handleBracketClosing(const QString& openingCharacter,
-                                             QString closingCharacter) {
+bool QMarkdownTextEdit::handleBracketClosing(const QChar openingCharacter,
+                                             QChar closingCharacter) {
     // check if bracket closing or read-only are enabled
     if (!(_autoTextOptions & AutoTextOption::BracketClosing) || isReadOnly()) {
         return false;
@@ -554,40 +555,35 @@ bool QMarkdownTextEdit::handleBracketClosing(const QString& openingCharacter,
     // get the current text from the block (inserted character not included)
     QString text = cursor.block().text();
 
-    if (closingCharacter.isEmpty()) {
+    if (closingCharacter.isNull()) {
         closingCharacter = openingCharacter;
     }
 
-    QString selectedText = cursor.selectedText();
+    const QString selectedText = cursor.selectedText();
 
     // When user currently has text selected, we prepend the openingCharacter
     // and append the closingCharacter. E.g. 'text' -> '(text)'. We keep the
     // current selectedText selected.
     if (!selectedText.isEmpty()) {
         // Insert. The selectedText is overwritten.
-        QString newText = openingCharacter + selectedText + closingCharacter;
+        const QString newText = openingCharacter + selectedText + closingCharacter;
         cursor.insertText(newText);
 
         // Re-select the selectedText.
-        int selectionEnd = cursor.position() - 1;
-        int selectionStart = selectionEnd - selectedText.length();
+        const int selectionEnd = cursor.position() - 1;
+        const int selectionStart = selectionEnd - selectedText.length();
 
         cursor.setPosition(selectionStart);
         cursor.setPosition(selectionEnd, QTextCursor::KeepAnchor);
         this->setTextCursor(cursor);
-        handleBracketClosingUsed = true;
+        _handleBracketClosingUsed = true;
         return true;
     } else {
         // if not text was selected check if we are inside the text
         int positionInBlock = cursor.position() - cursor.block().position();
 
-        // only allow the closing if the cursor was at the end of a block
-        // we are making a special allowance for openingCharacter == *
-        if ((positionInBlock != text.count()) &&
-            !((openingCharacter == QLatin1String("*")) &&
-              (positionInBlock == (text.count() - 1)))) {
+        if (!(text.isEmpty() || positionInBlock >= text.length()) && !text.at(positionInBlock).isSpace())
             return false;
-        }
     }
 
     // Remove whitespace at start of string (e.g. in multilevel-lists).
@@ -595,11 +591,10 @@ bool QMarkdownTextEdit::handleBracketClosing(const QString& openingCharacter,
 
     // Default positions to move the cursor back.
     int cursorSubtract = 1;
-
     // Special handling for `*` opening character, as this could be:
     // - start of a list (or sublist);
     // - start of a bold text;
-    if (openingCharacter == QStringLiteral("*")) {
+    if (openingCharacter == QLatin1Char('*')) {
         // User wants: '*'.
         // This could be the start of a list, don't autocomplete.
         if (text.isEmpty()) {
@@ -608,8 +603,8 @@ bool QMarkdownTextEdit::handleBracketClosing(const QString& openingCharacter,
         // User wants: '**'.
         // Not the start of a list, probably bold text. We autocomplete with
         // extra closingCharacter and cursorSubtract to 'catchup'.
-        else if (text == QStringLiteral("*")) {
-            closingCharacter = QStringLiteral("**");
+        else if (text == QLatin1String("*")) {
+            cursor.insertText(QStringLiteral("*"));
             cursorSubtract = 2;
         }
         // User wants: '* *'.
@@ -620,17 +615,19 @@ bool QMarkdownTextEdit::handleBracketClosing(const QString& openingCharacter,
     }
 
     // Auto completion for ``` pair
-    if (openingCharacter == QStringLiteral("`")) {
+    if (openingCharacter == QLatin1Char('`')) {
         if (QRegExp(QStringLiteral("[^`]*``")).exactMatch(text)) {
-            cursor.insertText(openingCharacter);
-            cursor.insertText(openingCharacter);
+            cursor.insertText(QStringLiteral("``"));
             cursorSubtract = 3;
         }
     }
 
+    cursor.beginEditBlock();
     cursor.insertText(openingCharacter);
     cursor.insertText(closingCharacter);
     cursor.setPosition(cursor.position() - cursorSubtract);
+    cursor.endEditBlock();
+
     setTextCursor(cursor);
     return true;
 }
@@ -642,34 +639,34 @@ bool QMarkdownTextEdit::handleBracketClosing(const QString& openingCharacter,
  * @param closingCharacter
  * @return
  */
-bool QMarkdownTextEdit::bracketClosingCheck(const QString& openingCharacter,
-                                            QString closingCharacter) {
+bool QMarkdownTextEdit::bracketClosingCheck(const QChar openingCharacter,
+                                            QChar closingCharacter) {
     // check if bracket closing or read-only are enabled
     if (!(_autoTextOptions & AutoTextOption::BracketClosing) || isReadOnly()) {
         return false;
     }
 
-    if (closingCharacter.isEmpty()) {
+    if (closingCharacter.isNull()) {
         closingCharacter = openingCharacter;
     }
 
     QTextCursor cursor = textCursor();
-    int positionInBlock = cursor.position() - cursor.block().position();
+    const int positionInBlock = cursor.positionInBlock();
 
     // get the current text from the block
-    QString text = cursor.block().text();
-    int textLength = text.length();
+    const QString text = cursor.block().text();
+    const int textLength = text.length();
 
     // if we are at the end of the line we just want to enter the character
     if (positionInBlock >= textLength) {
         return false;
     }
 
-    QString currentChar = text.at(positionInBlock);
+    const QChar currentChar = text.at(positionInBlock);
 
-    if (closingCharacter == openingCharacter) {
+//    if (closingCharacter == openingCharacter) {
 
-    }
+//    }
 
     qDebug() << __func__ << " - 'currentChar': " << currentChar;
 
@@ -680,9 +677,9 @@ bool QMarkdownTextEdit::bracketClosingCheck(const QString& openingCharacter,
         return false;
     }
 
-    QString leftText = text.left(positionInBlock);
-    int openingCharacterCount = leftText.count(openingCharacter);
-    int closingCharacterCount = leftText.count(closingCharacter);
+    const QStringRef leftText = text.leftRef(positionInBlock);
+    const int openingCharacterCount = leftText.count(openingCharacter);
+    const int closingCharacterCount = leftText.count(closingCharacter);
 
     // if there were enough opening characters just enter the character
     if (openingCharacterCount < (closingCharacterCount + 1)) {
@@ -702,25 +699,25 @@ bool QMarkdownTextEdit::bracketClosingCheck(const QString& openingCharacter,
  * @param quotationCharacter
  * @return
  */
-bool QMarkdownTextEdit::quotationMarkCheck(const QString& quotationCharacter) {
+bool QMarkdownTextEdit::quotationMarkCheck(const QChar quotationCharacter) {
     // check if bracket closing or read-only are enabled
     if (!(_autoTextOptions & AutoTextOption::BracketClosing) || isReadOnly()) {
         return false;
     }
 
     QTextCursor cursor = textCursor();
-    int positionInBlock = cursor.position() - cursor.block().position();
+    const int positionInBlock = cursor.position() - cursor.block().position();
 
     // get the current text from the block
-    QString text = cursor.block().text();
-    int textLength = text.length();
+    const QString &text = cursor.block().text();
+    const int textLength = text.length();
 
     // if we are at the end of the line we just want to enter the character
     if (positionInBlock >= textLength) {
         return handleBracketClosing(quotationCharacter);
     }
 
-    QString currentChar = text.at(positionInBlock);
+    const QChar currentChar = text.at(positionInBlock);
 
     // if the current character is not the quotation character we just want to
     // enter the character
@@ -754,7 +751,7 @@ bool QMarkdownTextEdit::handleBracketRemoval() {
     }
 
     int position = cursor.position();
-    int positionInBlock = position - cursor.block().position();
+    const int positionInBlock = cursor.positionInBlock();
 
     // return if backspace was pressed at the beginning of a block
     if (positionInBlock == 0) {
@@ -762,31 +759,53 @@ bool QMarkdownTextEdit::handleBracketRemoval() {
     }
 
     // get the current text from the block
-    QString text = cursor.block().text();
-    QString charInFront = text.at(positionInBlock - 1);
-    int openingCharacterIndex = _openingCharacters.indexOf(charInFront);
+    const QString text = cursor.block().text();
 
-    // return if the character in front of the cursor is no opening character
-    if (openingCharacterIndex == -1) {
-        return false;
+    char charToRemove{};
+
+    //current char
+    const char charInFront = text.at(positionInBlock - 1).toLatin1();
+    //is it opener?
+    int pos = _openingCharacters.indexOf(charInFront);
+    const bool isOpener = pos == -1 ? false : true;
+    if (isOpener) {
+        charToRemove = _closingCharacters.at(pos);
+    } else {
+        //is it closer?
+        pos = _closingCharacters.indexOf(charInFront);
+        const bool isCloser = pos == -1 ? false : true;
+        if (isCloser) {
+            charToRemove = _openingCharacters.at(pos);
+        } else {
+            return false;
+        }
     }
 
-    QString closingCharacter = _closingCharacters.at(openingCharacterIndex);
-
-    // remove everything in front of the cursor
-    text.remove(0, positionInBlock);
-    int closingCharacterIndex = text.indexOf(closingCharacter);
-
-    // return if no closing character was found in the text after the cursor
-    if (closingCharacterIndex == -1) {
-        return false;
+    int charToRemoveIndex = -1;
+    if (isOpener) {
+        charToRemoveIndex = text.indexOf(charToRemove, positionInBlock);
+        if (charToRemoveIndex == -1 && charToRemove == charInFront) {
+            //maybe its '*'
+            /* it will mess up cases where there are multiple '*' in the same line
+             * This can probably be handled correctly by using the algorithms(pair matching/balancing)
+             * from highlighter but that would be overkill here
+             */
+            goto LookBackwards;
+        } else if (charToRemoveIndex == -1) {
+            return false;
+        }
+        cursor.setPosition(position + (charToRemoveIndex - positionInBlock));
+        cursor.deleteChar();
+    } else {
+        LookBackwards:
+        charToRemoveIndex = text.lastIndexOf(charToRemove, positionInBlock - 2);
+        if (charToRemoveIndex == -1)
+            return false;
+        const int pos = position - (positionInBlock - charToRemoveIndex);
+        cursor.setPosition(pos);
+        cursor.deleteChar();
+        position -= 1;
     }
-
-    // removing the closing character
-    cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor,
-                   closingCharacterIndex);
-    cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor);
-    cursor.removeSelectedText();
 
     // moving the cursor back to the old position so the previous character
     // can be removed
@@ -813,7 +832,7 @@ bool QMarkdownTextEdit::increaseSelectedTextIndention(bool reverse, const QStrin
         if (reverse) {
             // un-indent text
 
-            QSettings settings;
+//          QSettings settings;
             const int indentSize = indentCharacters == QStringLiteral("\t") ? 4 : indentCharacters.count();
 
             // remove leading \t or spaces in following lines
@@ -848,7 +867,7 @@ bool QMarkdownTextEdit::increaseSelectedTextIndention(bool reverse, const QStrin
         for (int i = 1; i <= indentSize; i++) {
             // if nothing was selected but we want to reverse the indention check
             // if there is a \t in front or after the cursor and remove it if so
-            int position = cursor.position();
+            const int position = cursor.position();
 
             if (!cursor.atStart()) {
                 // get character in front of cursor
@@ -891,21 +910,21 @@ bool QMarkdownTextEdit::increaseSelectedTextIndention(bool reverse, const QStrin
  */
 bool QMarkdownTextEdit::openLinkAtCursorPosition() {
     QTextCursor cursor = this->textCursor();
-    int clickedPosition = cursor.position();
+    const int clickedPosition = cursor.position();
 
     // select the text in the clicked block and find out on
     // which position we clicked
     cursor.movePosition(QTextCursor::StartOfBlock);
-    int positionFromStart = clickedPosition - cursor.position();
+    const int positionFromStart = clickedPosition - cursor.position();
     cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
 
-    QString selectedText = cursor.selectedText();
+    const QString selectedText = cursor.selectedText();
 
     // find out which url in the selected text was clicked
-    QString urlString = getMarkdownUrlAtPosition(selectedText,
+    const QString urlString = getMarkdownUrlAtPosition(selectedText,
                                                  positionFromStart);
-    QUrl url = QUrl(urlString);
-    bool isRelativeFileUrl = urlString.startsWith(QLatin1String("file://.."));
+    const QUrl url = QUrl(urlString);
+    const bool isRelativeFileUrl = urlString.startsWith(QLatin1String("file://.."));
 
     qDebug() << __func__ << " - 'emit urlClicked( urlString )': "
              << urlString;
@@ -933,7 +952,7 @@ bool QMarkdownTextEdit::openLinkAtCursorPosition() {
  * @return
  */
 bool QMarkdownTextEdit::isValidUrl(const QString& urlString) {
-    QRegularExpressionMatch match =
+    const QRegularExpressionMatch match =
             QRegularExpression(R"(^\w+:\/\/.+)").match(urlString);
     return match.hasMatch();
 }
@@ -1059,19 +1078,17 @@ QString QMarkdownTextEdit::getMarkdownUrlAtPosition(
     QString url;
 
     // get a map of parsed markdown urls with their link texts as key
-    QMap<QString, QString> urlMap = parseMarkdownUrlsFromText(text);
+    const QMap<QString, QString> urlMap = parseMarkdownUrlsFromText(text);
+    QMap<QString,QString>::const_iterator i = urlMap.constBegin();
+    for (; i != urlMap.constEnd(); ++i) {
+        const QString linkText = i.key();
+        const QString urlString = i.value();
 
-    QMapIterator<QString, QString> iterator(urlMap);
-    while (iterator.hasNext()) {
-        iterator.next();
-        QString linkText = iterator.key();
-        QString urlString = iterator.value();
-
-        int foundPositionStart = text.indexOf(linkText);
+        const int foundPositionStart = text.indexOf(linkText);
 
         if (foundPositionStart >= 0) {
             // calculate end position of found linkText
-            int foundPositionEnd = foundPositionStart + linkText.size();
+            const int foundPositionEnd = foundPositionStart + linkText.size();
 
             // check if position is in found string range
             if ((position >= foundPositionStart) &&
@@ -1094,13 +1111,13 @@ void QMarkdownTextEdit::duplicateText() {
 
     // duplicate line if no text was selected
     if (selectedText.isEmpty()) {
-        int position = cursor.position();
+        const int position = cursor.position();
 
         // select the whole line
         cursor.movePosition(QTextCursor::StartOfBlock);
         cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
 
-        int positionDiff = cursor.position() - position;
+        const int positionDiff = cursor.position() - position;
         selectedText = "\n" + cursor.selectedText();
 
         // insert text with new line at end of the selected line
@@ -1112,11 +1129,11 @@ void QMarkdownTextEdit::duplicateText() {
     } else {
         // duplicate selected text
         cursor.setPosition(cursor.selectionEnd());
-        int selectionStart = cursor.position();
+        const int selectionStart = cursor.position();
 
         // insert selected text
         cursor.insertText(selectedText);
-        int selectionEnd = cursor.position();
+        const int selectionEnd = cursor.position();
 
         // select the inserted text
         cursor.setPosition(selectionStart);
@@ -1179,10 +1196,10 @@ bool QMarkdownTextEdit::handleReturnEntered() {
     }
 
     QTextCursor cursor = this->textCursor();
-    int position = cursor.position();
+    const int position = cursor.position();
 
     cursor.movePosition(QTextCursor::StartOfBlock, QTextCursor::KeepAnchor);
-    QString currentLineText = cursor.selectedText();
+    const QString currentLineText = cursor.selectedText();
 
     // if return is pressed and there is just an unordered list symbol then we want to
     // remove the list symbol
@@ -1208,9 +1225,9 @@ bool QMarkdownTextEdit::handleReturnEntered() {
     // We are in a list when we have '* ', '- ' or '+ ', possibly with preceding
     // whitespace. If e.g. user has entered '**text**' and pressed enter - we
     // don't want do anymore list-stuff.
-    QChar char0 = currentLineText.trimmed()[0];
-    QChar char1 = currentLineText.trimmed()[1];
-    bool inList = ((char0 == QLatin1Char('*') || char0 == QLatin1Char('-') || char0 == QLatin1Char('+')) && char1 == QLatin1Char(' '));
+    const QChar char0 = currentLineText.trimmed()[0];
+    const QChar char1 = currentLineText.trimmed()[1];
+    const bool inList = ((char0 == QLatin1Char('*') || char0 == QLatin1Char('-') || char0 == QLatin1Char('+')) && char1 == QLatin1Char(' '));
 
     if (inList) {
         // if the current line starts with a list character (possibly after
@@ -1219,16 +1236,16 @@ bool QMarkdownTextEdit::handleReturnEntered() {
         regex = QRegularExpression(R"(^(\s*)([+|\-|\*] \[(x| |)\]|[+\-\*])(\s+))");
         iterator = regex.globalMatch(currentLineText);
         if (iterator.hasNext()) {
-            QRegularExpressionMatch match = iterator.next();
-            QString whitespaces = match.captured(1);
+            const QRegularExpressionMatch match = iterator.next();
+            const QString whitespaces = match.captured(1);
             QString listCharacter = match.captured(2);
-            QString whitespaceCharacter = match.captured(4);
+            const QString whitespaceCharacter = match.captured(4);
 
             // start new checkbox list item with an unchecked checkbox
             iterator = QRegularExpression(R"(^([+|\-|\*]) \[(x| |)\])").globalMatch(listCharacter);
             if (iterator.hasNext()) {
-                QRegularExpressionMatch match = iterator.next();
-                QString realListCharacter = match.captured(1);
+                const QRegularExpressionMatch match = iterator.next();
+                const QString realListCharacter = match.captured(1);
                 listCharacter = realListCharacter + QStringLiteral(" [ ]");
             }
 
@@ -1245,11 +1262,11 @@ bool QMarkdownTextEdit::handleReturnEntered() {
     regex = QRegularExpression(R"(^(\s*)(\d+)([\.|\)])(\s+))");
     iterator = regex.globalMatch(currentLineText);
     if (iterator.hasNext()) {
-        QRegularExpressionMatch match = iterator.next();
-        QString whitespaces = match.captured(1);
-        uint listNumber = match.captured(2).toUInt();
-        QString listMarker = match.captured(3);
-        QString whitespaceCharacter = match.captured(4);
+        const QRegularExpressionMatch match = iterator.next();
+        const QString whitespaces = match.captured(1);
+        const uint listNumber = match.captured(2).toUInt();
+        const QString listMarker = match.captured(3);
+        const QString whitespaceCharacter = match.captured(4);
 
         cursor.setPosition(position);
         cursor.insertText("\n" + whitespaces + QString::number(listNumber + 1) +
@@ -1264,8 +1281,8 @@ bool QMarkdownTextEdit::handleReturnEntered() {
     regex = QRegularExpression(R"(^(\s+))");
     iterator = regex.globalMatch(currentLineText);
     if (iterator.hasNext()) {
-        QRegularExpressionMatch match = iterator.next();
-        QString whitespaces = match.captured(1);
+        const QRegularExpressionMatch match = iterator.next();
+        const QString whitespaces = match.captured(1);
 
         cursor.setPosition(position);
         cursor.insertText("\n" + whitespaces);
@@ -1291,7 +1308,7 @@ bool QMarkdownTextEdit::handleTabEntered(bool reverse, const QString& indentChar
     // only check for lists if we haven't a text selected
     if (cursor.selectedText().isEmpty()) {
         cursor.movePosition(QTextCursor::StartOfBlock, QTextCursor::KeepAnchor);
-        QString currentLineText = cursor.selectedText();
+        const QString currentLineText = cursor.selectedText();
 
         // check if we want to indent or un-indent an ordered list
         // Valid listCharacters: '+ ', '-' , '* ', '+ [ ] ', '+ [x] ', '- [ ] ', '- [x] ', '* [ ] ', '* [x] '.
@@ -1301,8 +1318,8 @@ bool QMarkdownTextEdit::handleTabEntered(bool reverse, const QString& indentChar
         if (i.hasNext()) {
             QRegularExpressionMatch match = i.next();
             QString whitespaces = match.captured(1);
-            QString listCharacter = match.captured(2);
-            QString whitespaceCharacter = match.captured(4);
+            const QString listCharacter = match.captured(2);
+            const QString whitespaceCharacter = match.captured(4);
 
             // add or remove one tabulator key
             if (reverse) {
@@ -1317,14 +1334,15 @@ bool QMarkdownTextEdit::handleTabEntered(bool reverse, const QString& indentChar
         }
 
         // check if we want to indent or un-indent an ordered list
-        re = QRegularExpression(R"(^(\s*)(\d+)\.(\s+)$)");
+        re = QRegularExpression(R"(^(\s*)(\d+)([\.|\)])(\s+)$)");
         i = re.globalMatch(currentLineText);
 
         if (i.hasNext()) {
-            QRegularExpressionMatch match = i.next();
+            const QRegularExpressionMatch match = i.next();
             QString whitespaces = match.captured(1);
-            QString listCharacter = match.captured(2);
-            QString whitespaceCharacter = match.captured(3);
+            const QString listCharacter = match.captured(2);
+            const QString listMarker = match.captured(3);
+            const QString whitespaceCharacter = match.captured(4);
 
             // add or remove one tabulator key
             if (reverse) {
@@ -1333,7 +1351,7 @@ bool QMarkdownTextEdit::handleTabEntered(bool reverse, const QString& indentChar
                 whitespaces += indentCharacters;
             }
 
-            cursor.insertText(whitespaces + listCharacter + "." +
+            cursor.insertText(whitespaces + listCharacter + listMarker +
             whitespaceCharacter);
             return true;
         }

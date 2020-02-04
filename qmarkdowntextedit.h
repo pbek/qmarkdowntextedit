@@ -73,8 +73,6 @@ protected:
     QPlainTextEditSearchWidget *_searchWidget;
     QWidget *_searchFrame;
     AutoTextOptions _autoTextOptions;
-    QStringList _openingCharacters;
-    QStringList _closingCharacters;
     bool _mouseButtonDown = false;
     bool _centerCursor = false;
 
@@ -83,11 +81,11 @@ protected:
     bool handleTabEntered(bool reverse, const QString& indentCharacters = QChar('\t'));
     QMap<QString, QString> parseMarkdownUrlsFromText(const QString& text);
     bool handleReturnEntered();
-    bool handleBracketClosing(const QString& openingCharacter,
-                              QString closingCharacter = QLatin1String(""));
-    bool bracketClosingCheck(const QString& openingCharacter,
-                             QString closingCharacter);
-    bool quotationMarkCheck(const QString& quotationCharacter);
+    bool handleBracketClosing(const QChar openingCharacter,
+                              QChar closingCharacter = QChar());
+    bool bracketClosingCheck(const QChar openingCharacter,
+                             QChar closingCharacter);
+    bool quotationMarkCheck(const QChar quotationCharacter);
     void focusOutEvent(QFocusEvent *event);
     void paintEvent(QPaintEvent *e);
 
@@ -95,5 +93,5 @@ signals:
     void urlClicked(QString url);
 
 private:
-    bool handleBracketClosingUsed;
+    bool _handleBracketClosingUsed;
 };
