@@ -733,6 +733,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
     QChar comment;
     bool isCSS = false;
     bool isYAML = false;
+    bool isMake = false;
 
 
     QMultiHash<char, QLatin1String> keywords{};
@@ -866,6 +867,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
             break;
         case HighlighterState::CodeMake:
         case HighlighterState::CodeMake + tildeOffset:
+            isMake = true;
             loadMakeData(types, keywords, builtin, literals, others);
             comment = QLatin1Char('#');
             break;
@@ -1042,6 +1044,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
 
     if (isCSS) cssHighlighter(text);
     if (isYAML) ymlHighlighter(text);
+    if (isMake) makeHighlighter(text);
 }
 
 /**
@@ -1601,6 +1604,14 @@ void MarkdownHighlighter::xmlHighlighter(const QString &text) {
             setFormat(pos, cnt, _formats[CodeString]);
         }
     }
+}
+
+void MarkdownHighlighter::makeHighlighter(const QString &text)
+{
+    const int colonPos = text.indexOf(QLatin1Char(':'));
+    if (colonPos == -1)
+        return;
+    setFormat(0, colonPos, _formats[CodeBuiltIn]);
 }
 
 /**
