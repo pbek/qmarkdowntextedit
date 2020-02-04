@@ -33,9 +33,8 @@
 #include <QClipboard>
 #include <utility>
 
-static Q_DECL_CONSTEXPR std::array<char, 9> _openingCharacters{'(', '[', '{', '<', '*', '"', '\'', '_', '~'};
-static Q_DECL_CONSTEXPR std::array<char, 9> _closingCharacters{')', ']', '}', '>', '*', '"', '\'', '_', '~'};
-
+static const QByteArray _openingCharacters = QByteArrayLiteral("([{<*\"'_~");
+static const QByteArray _closingCharacters = QByteArrayLiteral(")]}>*\"'_~");
 
 QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
         : QPlainTextEdit(parent) {
@@ -762,24 +761,21 @@ bool QMarkdownTextEdit::handleBracketRemoval() {
     // get the current text from the block
     const QString text = cursor.block().text();
 
-    int characterIndex = -1;
-    char charToRemove;
+    char charToRemove{};
 
     //current char
     const char charInFront = text.at(positionInBlock - 1).toLatin1();
     //is it opener?
-    auto it = std::find(_openingCharacters.cbegin(), _openingCharacters.cend(), charInFront);
-    const bool isOpener = it == _openingCharacters.cend() ? false : true;
+    int pos = _openingCharacters.indexOf(charInFront);
+    const bool isOpener = pos == -1 ? false : true;
     if (isOpener) {
-        characterIndex = it - _openingCharacters.cbegin();
-        charToRemove = _closingCharacters.at(characterIndex);
+        charToRemove = _closingCharacters.at(pos);
     } else {
         //is it closer?
-        auto it = std::find(_closingCharacters.cbegin(), _closingCharacters.cend(), charInFront);
-        const bool isCloser = it == _closingCharacters.cend() ? false : true;
+        pos = _closingCharacters.indexOf(charInFront);
+        const bool isCloser = pos == -1 ? false : true;
         if (isCloser) {
-            characterIndex = it - _closingCharacters.cbegin();
-            charToRemove = _openingCharacters.at(characterIndex);
+            charToRemove = _openingCharacters.at(pos);
         } else {
             return false;
         }
