@@ -33,8 +33,8 @@
 #include <QClipboard>
 #include <utility>
 
-static constexpr std::array<char, 9> _openingCharacters = {'(', '[', '{', '<', '*', '"', '\'', '_', '~'};
-static constexpr std::array<char, 9> _closingCharacters = {')', ']', '}', '>', '*', '"', '\'', '_', '~'};
+static Q_DECL_CONSTEXPR std::array<char, 9> _openingCharacters{'(', '[', '{', '<', '*', '"', '\'', '_', '~'};
+static Q_DECL_CONSTEXPR std::array<char, 9> _closingCharacters{')', ']', '}', '>', '*', '"', '\'', '_', '~'};
 
 
 QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
