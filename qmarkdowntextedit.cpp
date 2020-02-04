@@ -198,14 +198,14 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
         } else if (keyEvent->modifiers().testFlag(Qt::AltModifier) &&
                    keyEvent->key() == Qt::Key_ParenRight) {
             // bracket closing for US keyboard on macOS
-            return bracketClosingCheck("{", "}");
+            return bracketClosingCheck(QLatin1Char('{'), QLatin1Char('}'));
 #endif
         } else if (keyEvent->key() == Qt::Key_ParenRight) {
-            return bracketClosingCheck(QStringLiteral("("), QStringLiteral(")"));
+            return bracketClosingCheck(QLatin1Char('('), QLatin1Char(')'));
         } else if (keyEvent->key() == Qt::Key_BraceRight) {
-            return bracketClosingCheck(QStringLiteral("{"), QStringLiteral("}"));
+            return bracketClosingCheck(QLatin1Char('{'), QLatin1Char('}'));
         } else if (keyEvent->key() == Qt::Key_BracketRight) {
-            return bracketClosingCheck(QStringLiteral("["), QStringLiteral("]"));
+            return bracketClosingCheck(QLatin1Char('['), QLatin1Char(']'));
         } else if (keyEvent->key() == Qt::Key_Return &&
         keyEvent->modifiers().testFlag(Qt::ShiftModifier)) {
             QTextCursor cursor = this->textCursor();
@@ -640,34 +640,34 @@ bool QMarkdownTextEdit::handleBracketClosing(const QChar openingCharacter,
  * @param closingCharacter
  * @return
  */
-bool QMarkdownTextEdit::bracketClosingCheck(const QString& openingCharacter,
-                                            QString closingCharacter) {
+bool QMarkdownTextEdit::bracketClosingCheck(const QChar openingCharacter,
+                                            QChar closingCharacter) {
     // check if bracket closing or read-only are enabled
     if (!(_autoTextOptions & AutoTextOption::BracketClosing) || isReadOnly()) {
         return false;
     }
 
-    if (closingCharacter.isEmpty()) {
+    if (closingCharacter.isNull()) {
         closingCharacter = openingCharacter;
     }
 
     QTextCursor cursor = textCursor();
-    int positionInBlock = cursor.position() - cursor.block().position();
+    const int positionInBlock = cursor.positionInBlock();
 
     // get the current text from the block
-    QString text = cursor.block().text();
-    int textLength = text.length();
+    const QString text = cursor.block().text();
+    const int textLength = text.length();
 
     // if we are at the end of the line we just want to enter the character
     if (positionInBlock >= textLength) {
         return false;
     }
 
-    QString currentChar = text.at(positionInBlock);
+    const QChar currentChar = text.at(positionInBlock);
 
-    if (closingCharacter == openingCharacter) {
+//    if (closingCharacter == openingCharacter) {
 
-    }
+//    }
 
     qDebug() << __func__ << " - 'currentChar': " << currentChar;
 
@@ -678,9 +678,9 @@ bool QMarkdownTextEdit::bracketClosingCheck(const QString& openingCharacter,
         return false;
     }
 
-    QString leftText = text.left(positionInBlock);
-    int openingCharacterCount = leftText.count(openingCharacter);
-    int closingCharacterCount = leftText.count(closingCharacter);
+    const QStringRef leftText = text.leftRef(positionInBlock);
+    const int openingCharacterCount = leftText.count(openingCharacter);
+    const int closingCharacterCount = leftText.count(closingCharacter);
 
     // if there were enough opening characters just enter the character
     if (openingCharacterCount < (closingCharacterCount + 1)) {

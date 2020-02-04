@@ -83,8 +83,8 @@ protected:
     bool handleReturnEntered();
     bool handleBracketClosing(const QChar openingCharacter,
                               QChar closingCharacter = QChar());
-    bool bracketClosingCheck(const QString& openingCharacter,
-                             QString closingCharacter);
+    bool bracketClosingCheck(const QChar openingCharacter,
+                             QChar closingCharacter);
     bool quotationMarkCheck(const QChar quotationCharacter);
     void focusOutEvent(QFocusEvent *event);
     void paintEvent(QPaintEvent *e);
