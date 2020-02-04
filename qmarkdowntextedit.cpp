@@ -184,7 +184,7 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
         } else if (keyEvent->modifiers().testFlag(Qt::AltModifier) &&
                     keyEvent->key() == Qt::Key_ParenLeft) {
             // bracket closing for US keyboard on macOS
-            return handleBracketClosing(QStringLiteral("{"), QStringLiteral("}"));
+            return handleBracketClosing(QLatin1Char('{'), QLatin1Char('}'));
 #endif
         } else if (keyEvent->key() == Qt::Key_ParenLeft) {
             return handleBracketClosing(QLatin1Char('('), QLatin1Char(')'));
