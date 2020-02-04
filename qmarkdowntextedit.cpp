@@ -54,7 +54,7 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
     QFont font = this->font();
 
     // set the tab stop to the width of 4 spaces in the editor
-    const int tabStop = 4;
+    constexpr int tabStop = 4;
     QFontMetrics metrics(font);
 
 #if QT_VERSION < QT_VERSION_CHECK(5,11,0)
@@ -113,7 +113,7 @@ void QMarkdownTextEdit::setHighlightingEnabled(bool enabled) {
  */
 void QMarkdownTextEdit::adjustRightMargin() {
     QMargins margins = layout()->contentsMargins();
-    int rightMargin = document()->size().height() >
+    const int rightMargin = document()->size().height() >
                       viewport()->size().height() ? 24 : 0;
     margins.setRight(rightMargin);
     layout()->setContentsMargins(margins);
@@ -836,7 +836,7 @@ bool QMarkdownTextEdit::increaseSelectedTextIndention(bool reverse, const QStrin
         if (reverse) {
             // un-indent text
 
-            QSettings settings;
+//          QSettings settings;
             const int indentSize = indentCharacters == QStringLiteral("\t") ? 4 : indentCharacters.count();
 
             // remove leading \t or spaces in following lines
@@ -871,7 +871,7 @@ bool QMarkdownTextEdit::increaseSelectedTextIndention(bool reverse, const QStrin
         for (int i = 1; i <= indentSize; i++) {
             // if nothing was selected but we want to reverse the indention check
             // if there is a \t in front or after the cursor and remove it if so
-            int position = cursor.position();
+            const int position = cursor.position();
 
             if (!cursor.atStart()) {
                 // get character in front of cursor
@@ -914,21 +914,21 @@ bool QMarkdownTextEdit::increaseSelectedTextIndention(bool reverse, const QStrin
  */
 bool QMarkdownTextEdit::openLinkAtCursorPosition() {
     QTextCursor cursor = this->textCursor();
-    int clickedPosition = cursor.position();
+    const int clickedPosition = cursor.position();
 
     // select the text in the clicked block and find out on
     // which position we clicked
     cursor.movePosition(QTextCursor::StartOfBlock);
-    int positionFromStart = clickedPosition - cursor.position();
+    const int positionFromStart = clickedPosition - cursor.position();
     cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
 
-    QString selectedText = cursor.selectedText();
+    const QString selectedText = cursor.selectedText();
 
     // find out which url in the selected text was clicked
-    QString urlString = getMarkdownUrlAtPosition(selectedText,
+    const QString urlString = getMarkdownUrlAtPosition(selectedText,
                                                  positionFromStart);
-    QUrl url = QUrl(urlString);
-    bool isRelativeFileUrl = urlString.startsWith(QLatin1String("file://.."));
+    const QUrl url = QUrl(urlString);
+    const bool isRelativeFileUrl = urlString.startsWith(QLatin1String("file://.."));
 
     qDebug() << __func__ << " - 'emit urlClicked( urlString )': "
              << urlString;
@@ -956,7 +956,7 @@ bool QMarkdownTextEdit::openLinkAtCursorPosition() {
  * @return
  */
 bool QMarkdownTextEdit::isValidUrl(const QString& urlString) {
-    QRegularExpressionMatch match =
+    const QRegularExpressionMatch match =
             QRegularExpression(R"(^\w+:\/\/.+)").match(urlString);
     return match.hasMatch();
 }
@@ -1082,19 +1082,17 @@ QString QMarkdownTextEdit::getMarkdownUrlAtPosition(
     QString url;
 
     // get a map of parsed markdown urls with their link texts as key
-    QMap<QString, QString> urlMap = parseMarkdownUrlsFromText(text);
+    const QMap<QString, QString> urlMap = parseMarkdownUrlsFromText(text);
+    QMap<QString,QString>::const_iterator i = urlMap.constBegin();
+    for (; i != urlMap.constEnd(); ++i) {
+        const QString linkText = i.key();
+        const QString urlString = i.value();
 
-    QMapIterator<QString, QString> iterator(urlMap);
-    while (iterator.hasNext()) {
-        iterator.next();
-        QString linkText = iterator.key();
-        QString urlString = iterator.value();
-
-        int foundPositionStart = text.indexOf(linkText);
+        const int foundPositionStart = text.indexOf(linkText);
 
         if (foundPositionStart >= 0) {
             // calculate end position of found linkText
-            int foundPositionEnd = foundPositionStart + linkText.size();
+            const int foundPositionEnd = foundPositionStart + linkText.size();
 
             // check if position is in found string range
             if ((position >= foundPositionStart) &&
@@ -1117,13 +1115,13 @@ void QMarkdownTextEdit::duplicateText() {
 
     // duplicate line if no text was selected
     if (selectedText.isEmpty()) {
-        int position = cursor.position();
+        const int position = cursor.position();
 
         // select the whole line
         cursor.movePosition(QTextCursor::StartOfLine);
         cursor.movePosition(QTextCursor::EndOfLine, QTextCursor::KeepAnchor);
 
-        int positionDiff = cursor.position() - position;
+        const int positionDiff = cursor.position() - position;
         selectedText = "\n" + cursor.selectedText();
 
         // insert text with new line at end of the selected line
@@ -1135,11 +1133,11 @@ void QMarkdownTextEdit::duplicateText() {
     } else {
         // duplicate selected text
         cursor.setPosition(cursor.selectionEnd());
-        int selectionStart = cursor.position();
+        const int selectionStart = cursor.position();
 
         // insert selected text
         cursor.insertText(selectedText);
-        int selectionEnd = cursor.position();
+        const int selectionEnd = cursor.position();
 
         // select the inserted text
         cursor.setPosition(selectionStart);
@@ -1202,10 +1200,10 @@ bool QMarkdownTextEdit::handleReturnEntered() {
     }
 
     QTextCursor cursor = this->textCursor();
-    int position = cursor.position();
+    const int position = cursor.position();
 
     cursor.movePosition(QTextCursor::StartOfBlock, QTextCursor::KeepAnchor);
-    QString currentLineText = cursor.selectedText();
+    const QString currentLineText = cursor.selectedText();
 
     // if return is pressed and there is just an unordered list symbol then we want to
     // remove the list symbol
@@ -1231,9 +1229,9 @@ bool QMarkdownTextEdit::handleReturnEntered() {
     // We are in a list when we have '* ', '- ' or '+ ', possibly with preceding
     // whitespace. If e.g. user has entered '**text**' and pressed enter - we
     // don't want do anymore list-stuff.
-    QChar char0 = currentLineText.trimmed()[0];
-    QChar char1 = currentLineText.trimmed()[1];
-    bool inList = ((char0 == QLatin1Char('*') || char0 == QLatin1Char('-') || char0 == QLatin1Char('+')) && char1 == QLatin1Char(' '));
+    const QChar char0 = currentLineText.trimmed()[0];
+    const QChar char1 = currentLineText.trimmed()[1];
+    const bool inList = ((char0 == QLatin1Char('*') || char0 == QLatin1Char('-') || char0 == QLatin1Char('+')) && char1 == QLatin1Char(' '));
 
     if (inList) {
         // if the current line starts with a list character (possibly after
@@ -1242,16 +1240,16 @@ bool QMarkdownTextEdit::handleReturnEntered() {
         regex = QRegularExpression(R"(^(\s*)([+|\-|\*] \[(x| |)\]|[+\-\*])(\s+))");
         iterator = regex.globalMatch(currentLineText);
         if (iterator.hasNext()) {
-            QRegularExpressionMatch match = iterator.next();
-            QString whitespaces = match.captured(1);
+            const QRegularExpressionMatch match = iterator.next();
+            const QString whitespaces = match.captured(1);
             QString listCharacter = match.captured(2);
-            QString whitespaceCharacter = match.captured(4);
+            const QString whitespaceCharacter = match.captured(4);
 
             // start new checkbox list item with an unchecked checkbox
             iterator = QRegularExpression(R"(^([+|\-|\*]) \[(x| |)\])").globalMatch(listCharacter);
             if (iterator.hasNext()) {
-                QRegularExpressionMatch match = iterator.next();
-                QString realListCharacter = match.captured(1);
+                const QRegularExpressionMatch match = iterator.next();
+                const QString realListCharacter = match.captured(1);
                 listCharacter = realListCharacter + QStringLiteral(" [ ]");
             }
 
@@ -1268,11 +1266,11 @@ bool QMarkdownTextEdit::handleReturnEntered() {
     regex = QRegularExpression(R"(^(\s*)(\d+)([\.|\)])(\s+))");
     iterator = regex.globalMatch(currentLineText);
     if (iterator.hasNext()) {
-        QRegularExpressionMatch match = iterator.next();
-        QString whitespaces = match.captured(1);
-        uint listNumber = match.captured(2).toUInt();
-        QString listMarker = match.captured(3);
-        QString whitespaceCharacter = match.captured(4);
+        const QRegularExpressionMatch match = iterator.next();
+        const QString whitespaces = match.captured(1);
+        const uint listNumber = match.captured(2).toUInt();
+        const QString listMarker = match.captured(3);
+        const QString whitespaceCharacter = match.captured(4);
 
         cursor.setPosition(position);
         cursor.insertText("\n" + whitespaces + QString::number(listNumber + 1) +
@@ -1287,8 +1285,8 @@ bool QMarkdownTextEdit::handleReturnEntered() {
     regex = QRegularExpression(R"(^(\s+))");
     iterator = regex.globalMatch(currentLineText);
     if (iterator.hasNext()) {
-        QRegularExpressionMatch match = iterator.next();
-        QString whitespaces = match.captured(1);
+        const QRegularExpressionMatch match = iterator.next();
+        const QString whitespaces = match.captured(1);
 
         cursor.setPosition(position);
         cursor.insertText("\n" + whitespaces);
