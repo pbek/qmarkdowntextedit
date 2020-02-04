@@ -742,8 +742,6 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
     QMultiHash<char, QLatin1String> builtin{};
     QMultiHash<char, QLatin1String> literals{};
 
-    QList<QLatin1String> wordList;
-
     switch (currentBlockState()) {
         case HighlighterState::CodeCpp:
         case HighlighterState::CodeCpp + tildeOffset:
@@ -882,24 +880,18 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
     // applying it to the whole block in the beginning
     setFormat(0, textLen, _formats[CodeBlock]);
 
-    auto applyCodeFormat = [this, &wordList](int i, const QMultiHash<char, QLatin1String> &data,
+    auto applyCodeFormat = [this](int i, const QMultiHash<char, QLatin1String> &data,
                         const QString &text, const QTextCharFormat &fmt) -> int {
         // check if we are at the beginning OR if this is the start of a word
         // AND the current char is present in the data structure
         if ( ( i == 0 || !text[i-1].isLetter()) && data.contains(text[i].toLatin1())) {
-            wordList = data.values(text[i].toLatin1());
-#if QT_VERSION >= 0x050700
-            for(const QLatin1String &word : qAsConst(wordList)) {
-#else
-            for(const QLatin1String &word : wordList) {
-#endif
-                if (word == text.midRef(i, word.size())) {
-                    //check if we are at the end of text OR if we have a complete word
-                    if ( i + word.size() == text.length() ||
-                         !text.at(i + word.size()).isLetter()) {
-                        setFormat(i, word.size(), fmt);
-                        i += word.size();
-                    }
+            const QList<QLatin1String> wordList = data.values(text[i].toLatin1());
+            for (const QLatin1String &word : wordList) {
+                if (word == text.midRef(i, word.size()) && // we have a word match
+                        (i + word.size() == text.length() || // check if we are at the end
+                         !text.at(i + word.size()).isLetter())) { //OR if we have a complete word
+                    setFormat(i, word.size(), fmt);
+                    i += word.size();
                 }
             }
         }
@@ -1007,22 +999,16 @@ void MarkdownHighlighter::highlightSyntax(const QString &text)
         if (i == textLen || !text[i].isLetter()) continue;
 
         /* Highlight other stuff (preprocessor etc.) */
-        if (( i == 0 || !text[i-1].isLetter()) && others.contains(text[i].toLatin1())) {
-            wordList = others.values(text[i].toLatin1());
-#if QT_VERSION >= 0x050700
-            for(const QLatin1String &word : qAsConst(wordList)) {
-#else
+        if (( i == 0 || !text.at(i-1).isLetter()) && others.contains(text[i].toLatin1())) {
+            const QList<QLatin1String> wordList = others.values(text[i].toLatin1());
             for(const QLatin1String &word : wordList) {
-#endif
-                if (word == text.midRef(i, word.size()).toLatin1()) {
-                    if ( i + word.size() == textLen ||
-                         !text.at(i + word.size()).isLetter()) {
-                        //for C/C++ we do -1 to highlight the '#' in preprocessor
-                        currentBlockState() == CodeCpp || currentBlockState() == CodeC ?
-                        setFormat(i-1, word.size()+1, formatOther) :
-                                    setFormat(i, word.size(), formatOther);
-                        i += word.size();
-                    }
+                if (word == text.midRef(i, word.size()) && // we have a word match
+                        (i + word.size() == text.length() || // check if we are at the end
+                         !text.at(i + word.size()).isLetter())) { //OR if we have a complete word
+                    currentBlockState() == CodeCpp || currentBlockState() == CodeC ?
+                                setFormat(i - 1, word.size() + 1, formatOther) :
+                                setFormat(i, word.size(), formatOther);
+                    i += word.size();
                 }
             }
         }
