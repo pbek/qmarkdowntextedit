@@ -400,7 +400,7 @@ void MarkdownHighlighter::initCodeLangs()
         {QLatin1String("cmake"),       MarkdownHighlighter::CodeCMake},
         {QLatin1String("csharp"),      MarkdownHighlighter::CodeCSharp},
         {QLatin1String("css"),         MarkdownHighlighter::CodeCSS},
-        {QLatin1String("go"),          MarkdownHighlighter::CodeCSharp},
+        {QLatin1String("go"),          MarkdownHighlighter::CodeGo},
         {QLatin1String("html"),        MarkdownHighlighter::CodeXML},
         {QLatin1String("ini"),         MarkdownHighlighter::CodeINI},
         {QLatin1String("java"),        MarkdownHighlighter::CodeJava},
