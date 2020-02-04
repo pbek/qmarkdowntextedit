@@ -1314,7 +1314,7 @@ bool QMarkdownTextEdit::handleTabEntered(bool reverse, const QString& indentChar
     // only check for lists if we haven't a text selected
     if (cursor.selectedText().isEmpty()) {
         cursor.movePosition(QTextCursor::StartOfLine, QTextCursor::KeepAnchor);
-        QString currentLineText = cursor.selectedText();
+        const QString currentLineText = cursor.selectedText();
 
         // check if we want to indent or un-indent an ordered list
         // Valid listCharacters: '+ ', '-' , '* ', '+ [ ] ', '+ [x] ', '- [ ] ', '- [x] ', '* [ ] ', '* [x] '.
@@ -1324,8 +1324,8 @@ bool QMarkdownTextEdit::handleTabEntered(bool reverse, const QString& indentChar
         if (i.hasNext()) {
             QRegularExpressionMatch match = i.next();
             QString whitespaces = match.captured(1);
-            QString listCharacter = match.captured(2);
-            QString whitespaceCharacter = match.captured(4);
+            const QString listCharacter = match.captured(2);
+            const QString whitespaceCharacter = match.captured(4);
 
             // add or remove one tabulator key
             if (reverse) {
@@ -1340,14 +1340,15 @@ bool QMarkdownTextEdit::handleTabEntered(bool reverse, const QString& indentChar
         }
 
         // check if we want to indent or un-indent an ordered list
-        re = QRegularExpression(R"(^(\s*)(\d+)\.(\s+)$)");
+        re = QRegularExpression(R"(^(\s*)(\d+)([\.|\)])(\s+)$)");
         i = re.globalMatch(currentLineText);
 
         if (i.hasNext()) {
-            QRegularExpressionMatch match = i.next();
+            const QRegularExpressionMatch match = i.next();
             QString whitespaces = match.captured(1);
-            QString listCharacter = match.captured(2);
-            QString whitespaceCharacter = match.captured(3);
+            const QString listCharacter = match.captured(2);
+            const QString listMarker = match.captured(3);
+            const QString whitespaceCharacter = match.captured(4);
 
             // add or remove one tabulator key
             if (reverse) {
@@ -1356,7 +1357,7 @@ bool QMarkdownTextEdit::handleTabEntered(bool reverse, const QString& indentChar
                 whitespaces += indentCharacters;
             }
 
-            cursor.insertText(whitespaces + listCharacter + "." +
+            cursor.insertText(whitespaces + listCharacter + listMarker +
             whitespaceCharacter);
             return true;
         }
