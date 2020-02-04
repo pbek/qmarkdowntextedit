@@ -3977,7 +3977,7 @@ void loadCMakeData(QMultiHash<char, QLatin1String> &types, QMultiHash<char, QLat
 }
 
 /********************************************************/
-/***   CMAKE DATA   ***************************************/
+/***   MAKE DATA   **************************************/
 /********************************************************/
 static bool makeDataInitialized = false;
 static QMultiHash<char, QLatin1String> make_keywords;
@@ -4003,13 +4003,11 @@ void initMakeData() {
         {'u', QLatin1String("unexport")},
         {'v', QLatin1String("vpath")}
     };
-    make_types = {};
-    make_literals = {
-    };
-    make_builtin = {
+    make_types = {
         {'a', QLatin1String("addsuffix")},
         {'a', QLatin1String("abspath")},
         {'a', QLatin1String("and")},
+        {'a', QLatin1String("ar")},
         {'b', QLatin1String("basename")},
         {'c', QLatin1String("call")},
         {'d', QLatin1String("dir")},
@@ -4017,6 +4015,7 @@ void initMakeData() {
         {'e', QLatin1String("eval")},
         {'f', QLatin1String("file")},
         {'f', QLatin1String("filter")},
+        {'f', QLatin1String("find")},
         {'f', QLatin1String("findstring")},
         {'f', QLatin1String("firstword")},
         {'f', QLatin1String("flavor")},
@@ -4024,6 +4023,7 @@ void initMakeData() {
         {'g', QLatin1String("guile")},
         {'i', QLatin1String("if")},
         {'i', QLatin1String("info")},
+        {'i', QLatin1String("install")},
         {'j', QLatin1String("join")},
         {'l', QLatin1String("lastword")},
         {'l', QLatin1String("load")},
@@ -4031,7 +4031,9 @@ void initMakeData() {
         {'o', QLatin1String("or")},
         {'o', QLatin1String("origin")},
         {'p', QLatin1String("patsubst")},
+        {'r', QLatin1String("ranlib")},
         {'r', QLatin1String("realpath")},
+        {'r', QLatin1String("rm")},
         {'s', QLatin1String("shell")},
         {'s', QLatin1String("sort")},
         {'s', QLatin1String("strip")},
@@ -4042,7 +4044,16 @@ void initMakeData() {
         {'w', QLatin1String("wildcard")},
         {'w', QLatin1String("word")}
     };
+    make_literals = {
+        {'t', QLatin1String("true")},
+        {'f', QLatin1String("false")},
+    };
+    make_builtin = {
+    };
     make_other = {
+        {'C', QLatin1String("CFLAGS")},
+        {'L', QLatin1String("LIBS")},
+        {'P', QLatin1String("PREFIX")},
     };
 }
 

@@ -271,6 +271,8 @@ protected:
 
     void xmlHighlighter(const QString &text);
 
+    void makeHighlighter(const QString &text);
+
     void taggerScriptHighlighter(const QString &text);
 
     void addDirtyBlock(const QTextBlock& block);
