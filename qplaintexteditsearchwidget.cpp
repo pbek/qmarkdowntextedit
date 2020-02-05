@@ -141,7 +141,7 @@ void QPlainTextEditSearchWidget::searchLineEditTextChanged(const QString &arg1) 
 
 void QPlainTextEditSearchWidget::updateSearchExtraSelections() {
     _searchExtraSelections.clear();
-    auto textCursor = _textEdit->textCursor();
+    const auto textCursor = _textEdit->textCursor();
     _textEdit->moveCursor(QTextCursor::Start);
     const QColor color = QColor(0, 180, 0, 100);
 
@@ -180,7 +180,7 @@ bool QPlainTextEditSearchWidget::doReplace(bool forAll) {
         return false;
     }
 
-    int searchMode = ui->modeComboBox->currentIndex();
+    const int searchMode = ui->modeComboBox->currentIndex();
     if (searchMode == RegularExpressionMode) {
         QString text = cursor.selectedText();
         text.replace(QRegExp(ui->searchLineEdit->text()),
@@ -191,7 +191,7 @@ bool QPlainTextEditSearchWidget::doReplace(bool forAll) {
     }
 
     if (!forAll) {
-        int position = cursor.position();
+        const int position = cursor.position();
 
         if (!doSearch(true)) {
             // restore the last cursor position if text wasn't found any more
@@ -221,7 +221,7 @@ void QPlainTextEditSearchWidget::doReplaceAll() {
  */
 bool QPlainTextEditSearchWidget::doSearch(
         bool searchDown, bool allowRestartAtTop, bool updateUI) {
-    QString text = ui->searchLineEdit->text();
+    const QString text = ui->searchLineEdit->text();
 
     if (text.isEmpty()) {
         if (updateUI) {
@@ -231,8 +231,8 @@ bool QPlainTextEditSearchWidget::doSearch(
         return false;
     }
 
-    int searchMode = ui->modeComboBox->currentIndex();
-    bool caseSensitive = ui->matchCaseSensitiveButton->isChecked();
+    const int searchMode = ui->modeComboBox->currentIndex();
+    const bool caseSensitive = ui->matchCaseSensitiveButton->isChecked();
 
     QFlags<QTextDocument::FindFlag> options = searchDown ?
                                               QTextDocument::FindFlag(0)
@@ -287,11 +287,10 @@ bool QPlainTextEditSearchWidget::doSearch(
     }
 
     if (updateUI) {
-        QRect rect = _textEdit->cursorRect();
+        const QRect rect = _textEdit->cursorRect();
         QMargins margins = _textEdit->layout()->contentsMargins();
-        int searchWidgetHotArea = _textEdit->height() - this->height();
-        int marginBottom = (rect.y() > searchWidgetHotArea) ? (this->height() +
-                                                               10)
+        const int searchWidgetHotArea = _textEdit->height() - this->height();
+        const int marginBottom = (rect.y() > searchWidgetHotArea) ? (this->height() + 10)
                                                             : 0;
 
         // move the search box a bit up if we would block the search result
@@ -360,7 +359,7 @@ void QPlainTextEditSearchWidget::activate(bool focus) {
 
     // preset the selected text as search text if there is any and there is no
     // other search text
-    QString selectedText = _textEdit->textCursor().selectedText();
+    const QString selectedText = _textEdit->textCursor().selectedText();
     if (!selectedText.isEmpty() && ui->searchLineEdit->text().isEmpty()) {
         ui->searchLineEdit->setText(selectedText);
     }
