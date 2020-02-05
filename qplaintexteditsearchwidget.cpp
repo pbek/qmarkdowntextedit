@@ -20,7 +20,8 @@
 
 QPlainTextEditSearchWidget::QPlainTextEditSearchWidget(QPlainTextEdit *parent) :
     QWidget(parent),
-    ui(new Ui::QPlainTextEditSearchWidget)
+    ui(new Ui::QPlainTextEditSearchWidget),
+    selectionColor(0, 180, 0, 100)
 {
     ui->setupUi(this);
     _textEdit = parent;
@@ -32,20 +33,20 @@ QPlainTextEditSearchWidget::QPlainTextEditSearchWidget(QPlainTextEdit *parent) :
     _currentSearchResult = 0;
     _searchResultCount = 0;
 
-    QObject::connect(ui->closeButton, SIGNAL(clicked()),
-                     this, SLOT(deactivate()));
-    QObject::connect(ui->searchLineEdit, SIGNAL(textChanged(QString)),
-                     this, SLOT(searchLineEditTextChanged(QString)));
-    QObject::connect(ui->searchDownButton, SIGNAL(clicked()),
-                     this, SLOT(doSearchDown()));
-    QObject::connect(ui->searchUpButton, SIGNAL(clicked()),
-                     this, SLOT(doSearchUp()));
-    QObject::connect(ui->replaceToggleButton, SIGNAL(toggled(bool)),
-                     this, SLOT(setReplaceMode(bool)));
-    QObject::connect(ui->replaceButton, SIGNAL(clicked()),
-                     this, SLOT(doReplace()));
-    QObject::connect(ui->replaceAllButton, SIGNAL(clicked()),
-                     this, SLOT(doReplaceAll()));
+    connect(ui->closeButton, &QPushButton::clicked,
+            this, &QPlainTextEditSearchWidget::deactivate);
+    connect(ui->searchLineEdit, &QLineEdit::textChanged,
+            this, &QPlainTextEditSearchWidget::searchLineEditTextChanged);
+    connect(ui->searchDownButton, &QPushButton::clicked,
+            this, &QPlainTextEditSearchWidget::doSearchDown);
+    connect(ui->searchUpButton, &QPushButton::clicked,
+            this, &QPlainTextEditSearchWidget::doSearchUp);
+    connect(ui->replaceToggleButton, &QPushButton::toggled,
+            this, &QPlainTextEditSearchWidget::setReplaceMode);
+    connect(ui->replaceButton, &QPushButton::clicked,
+            this, &QPlainTextEditSearchWidget::doReplace);
+    connect(ui->replaceAllButton, &QPushButton::clicked,
+            this, &QPlainTextEditSearchWidget::doReplaceAll);
 
     installEventFilter(this);
     ui->searchLineEdit->installEventFilter(this);
@@ -141,13 +142,15 @@ void QPlainTextEditSearchWidget::searchLineEditTextChanged(const QString &arg1) 
 
 void QPlainTextEditSearchWidget::updateSearchExtraSelections() {
     _searchExtraSelections.clear();
-    auto textCursor = _textEdit->textCursor();
+    const auto textCursor = _textEdit->textCursor();
     _textEdit->moveCursor(QTextCursor::Start);
-    const QColor color = QColor(0, 180, 0, 100);
+    const QColor color = selectionColor;
+    QTextCharFormat extraFmt;
+    extraFmt.setBackground(color);
 
     while (doSearch(true, false, false)) {
         QTextEdit::ExtraSelection extra = QTextEdit::ExtraSelection();
-        extra.format.setBackground(color);
+        extra.format = extraFmt;
 
         extra.cursor = _textEdit->textCursor();
         _searchExtraSelections.append(extra);
@@ -180,7 +183,7 @@ bool QPlainTextEditSearchWidget::doReplace(bool forAll) {
         return false;
     }
 
-    int searchMode = ui->modeComboBox->currentIndex();
+    const int searchMode = ui->modeComboBox->currentIndex();
     if (searchMode == RegularExpressionMode) {
         QString text = cursor.selectedText();
         text.replace(QRegExp(ui->searchLineEdit->text()),
@@ -191,7 +194,7 @@ bool QPlainTextEditSearchWidget::doReplace(bool forAll) {
     }
 
     if (!forAll) {
-        int position = cursor.position();
+        const int position = cursor.position();
 
         if (!doSearch(true)) {
             // restore the last cursor position if text wasn't found any more
@@ -221,7 +224,7 @@ void QPlainTextEditSearchWidget::doReplaceAll() {
  */
 bool QPlainTextEditSearchWidget::doSearch(
         bool searchDown, bool allowRestartAtTop, bool updateUI) {
-    QString text = ui->searchLineEdit->text();
+    const QString text = ui->searchLineEdit->text();
 
     if (text.isEmpty()) {
         if (updateUI) {
@@ -231,8 +234,8 @@ bool QPlainTextEditSearchWidget::doSearch(
         return false;
     }
 
-    int searchMode = ui->modeComboBox->currentIndex();
-    bool caseSensitive = ui->matchCaseSensitiveButton->isChecked();
+    const int searchMode = ui->modeComboBox->currentIndex();
+    const bool caseSensitive = ui->matchCaseSensitiveButton->isChecked();
 
     QFlags<QTextDocument::FindFlag> options = searchDown ?
                                               QTextDocument::FindFlag(0)
@@ -258,9 +261,8 @@ bool QPlainTextEditSearchWidget::doSearch(
             _textEdit->find(text, options);
 
     if (found) {
-        _currentSearchResult = std::min(searchDown ?
-                ++_currentSearchResult : --_currentSearchResult,
-                _searchResultCount);
+        const int result = searchDown ? ++_currentSearchResult : --_currentSearchResult;
+        _currentSearchResult = std::min(result, _searchResultCount);
 
         updateSearchCountLabelText();
     }
@@ -288,11 +290,10 @@ bool QPlainTextEditSearchWidget::doSearch(
     }
 
     if (updateUI) {
-        QRect rect = _textEdit->cursorRect();
+        const QRect rect = _textEdit->cursorRect();
         QMargins margins = _textEdit->layout()->contentsMargins();
-        int searchWidgetHotArea = _textEdit->height() - this->height();
-        int marginBottom = (rect.y() > searchWidgetHotArea) ? (this->height() +
-                                                               10)
+        const int searchWidgetHotArea = _textEdit->height() - this->height();
+        const int marginBottom = (rect.y() > searchWidgetHotArea) ? (this->height() + 10)
                                                             : 0;
 
         // move the search box a bit up if we would block the search result
@@ -302,16 +303,14 @@ bool QPlainTextEditSearchWidget::doSearch(
         }
 
         // add a background color according if we found the text or not
-        QString colorCode = found ? QStringLiteral("#D5FAE2") :
-                            QStringLiteral("#FAE9EB");
-
-        if (_darkMode) {
-            colorCode = found ? QStringLiteral("#135a13") : QStringLiteral(
-                    "#8d2b36");
-        }
+        const QString bgColorCode = _darkMode ?
+                    (found ? QStringLiteral("#135a13") : QStringLiteral("#8d2b36")) :
+                    found ? QStringLiteral("#D5FAE2") : QStringLiteral("#FAE9EB");
+        const QString fgColorCode = _darkMode ? QStringLiteral("#cccccc") : QStringLiteral("#404040");
 
         ui->searchLineEdit->setStyleSheet(QStringLiteral("* { background: ") +
-                                          colorCode + QStringLiteral("; }"));
+                                          bgColorCode + QStringLiteral("; color: ") +
+                                          fgColorCode + QStringLiteral("; }"));
 
         // restore the search extra selections after the find command
         this->setSearchExtraSelections();
@@ -347,7 +346,7 @@ void QPlainTextEditSearchWidget::setDarkMode(bool enabled) {
     _darkMode = enabled;
 }
 
-void QPlainTextEditSearchWidget::setSearchText(QString &searchText) {
+void QPlainTextEditSearchWidget::setSearchText(const QString &searchText) {
     ui->searchLineEdit->setText(searchText);
 }
 
@@ -361,7 +360,7 @@ void QPlainTextEditSearchWidget::activate(bool focus) {
 
     // preset the selected text as search text if there is any and there is no
     // other search text
-    QString selectedText = _textEdit->textCursor().selectedText();
+    const QString selectedText = _textEdit->textCursor().selectedText();
     if (!selectedText.isEmpty() && ui->searchLineEdit->text().isEmpty()) {
         ui->searchLineEdit->setText(selectedText);
     }
@@ -386,6 +385,11 @@ void QPlainTextEditSearchWidget::updateSearchCountLabelText() {
     ui->searchCountLabel->setText(QString("%1/%2").arg(
             _currentSearchResult == 0 ? QChar('-') : QString::number(_currentSearchResult),
             _searchResultCount == 0 ? QChar('-') : QString::number(_searchResultCount)));
+}
+
+void QPlainTextEditSearchWidget::setSearchSelectionColor(const QColor &color)
+{
+    selectionColor = color;
 }
 
 void QPlainTextEditSearchWidget::on_modeComboBox_currentIndexChanged(int index) {

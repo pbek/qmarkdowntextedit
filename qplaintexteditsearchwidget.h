@@ -36,7 +36,7 @@ public:
     bool doSearch(bool searchDown = true, bool allowRestartAtTop = true, bool updateUI = true);
     void setDarkMode(bool enabled);
     ~QPlainTextEditSearchWidget();
-    void setSearchText(QString &searchText);
+    void setSearchText(const QString &searchText);
     void setSearchMode(SearchMode searchMode);
     void activate(bool focus);
 
@@ -45,6 +45,8 @@ private:
     int _searchResultCount;
     int _currentSearchResult;
     QList<QTextEdit::ExtraSelection> _searchExtraSelections;
+    QColor selectionColor;
+
     void updateSearchExtraSelections();
     void setSearchExtraSelections() const;
 
@@ -68,6 +70,7 @@ public slots:
 protected slots:
     void searchLineEditTextChanged(const QString &arg1);
     void updateSearchCountLabelText();
+    void setSearchSelectionColor(const QColor &color);
 private slots:
     void on_modeComboBox_currentIndexChanged(int index);
     void on_matchCaseSensitiveButton_toggled(bool checked);
