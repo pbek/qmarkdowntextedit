@@ -1959,77 +1959,75 @@ int MarkdownHighlighter::highlightInlineSpans(const QString &text, int currentPo
     return currentPos;
 }
 
+/**
+ * @brief highlight inline comments in markdown <!-- comment -->
+ * @param text
+ * @param pos
+ * @return position after the comment
+ */
+int MarkdownHighlighter::highlightInlineComment(const QString &text, int pos) {
+    const int start = pos;
+    pos += 4;
+
+    if (pos >= text.length())
+        return pos;
+
+    int commentEnd = text.indexOf(QLatin1String("-->"), pos);
+    if (commentEnd == -1)
+        return pos;
+
+    commentEnd += 3;
+    setFormat(start, commentEnd - start, _formats[Comment]);
+    return commentEnd - 1;
+}
+
+/****************************************
+ * EM and Strong Parsing + Highlighting *
+ ****************************************/
+
 struct Delimiter {
     int pos;
     int len;
     int end;
-    uint8_t jump;
+    int jump;
     bool open;
     bool close;
     char marker;
 };
 
-inline bool isMDAsciiPunct(const char ch) noexcept {
-    switch (ch) {
-    case 0x21/* ! */:
-    case 0x22/* " */:
-    case 0x23/* # */:
-    case 0x24/* $ */:
-    case 0x25/* % */:
-    case 0x26/* & */:
-    case 0x27/* ' */:
-    case 0x28/* ( */:
-    case 0x29/* ) */:
-    case 0x2A/* * */:
-    case 0x2B/* + */:
-    case 0x2C/* , */:
-    case 0x2D/* - */:
-    case 0x2E/* . */:
-    case 0x2F/* / */:
-    case 0x3A/* : */:
-    case 0x3B/* ; */:
-    case 0x3C/* < */:
-    case 0x3D/* = */:
-    case 0x3E/* > */:
-    case 0x3F/* ? */:
-    case 0x40/* @ */:
-    case 0x5B/* [ */:
-    case 0x5C/* \ */:
-    case 0x5D/* ] */:
-    case 0x5E/* ^ */:
-    case 0x5F/* _ */:
-    case 0x60/* ` */:
-    case 0x7B/* { */:
-    case 0x7C/* | */:
-    case 0x7D/* } */:
-    case 0x7E/* ~ */:
-        return true;
-    default:
-        return false;
-    }
+inline bool isMDAsciiPunct(const int ch) noexcept {
+    return (ch >= 33 && ch <= 47)  ||
+            (ch >= 58 && ch <= 64) ||
+            (ch >= 91 && ch <= 96) ||
+            (ch >= 123 && ch <= 126);
 }
 
-void scanDelims(const QString &text, const int start, const bool canSplitWord,
-                 bool &canOpen, bool &canClose, int &length ) {
+/**
+ * @brief scans a chain of '*' or '_'
+ * @param text: current text block
+ * @param start: current position in the the text
+ * @param canSplitWord: is Underscore
+ * @return length, canOpen, canClose
+ * @details Helper function for Em and strong highlighting
+ */
+QPair<int, QPair<bool, bool>> scanDelims(
+        const QString &text, const int start, const bool canSplitWord) {
     int pos = start;
     const int textLen = text.length();
     const QChar marker = text.at(start);
     bool leftFlanking = true;
     bool rightFlanking = true;
 
-    const QChar lastChar = start > 0 ? text[start - 1] : QChar('\0');
+    const QChar lastChar = start > 0 ? text.at(start - 1) : QChar('\0');
 
-    while (pos < textLen && text[pos] == marker) {
-            ++pos;
-    }
-    length = pos - start;
-
+    while (pos < textLen && text.at(pos) == marker)
+        ++pos;
+    const int length = pos - start;
 
     const QChar nextChar = pos + 1 < textLen ? text.at(pos) : QChar('\0');
 
     const bool isLastPunct =  isMDAsciiPunct(lastChar.toLatin1()) || lastChar.isPunct();
     const bool isNextPunct = isMDAsciiPunct(nextChar.toLatin1()) || nextChar.isPunct();
-
     //treat line end and start as whitespace
     const bool isLastWhiteSpace = lastChar.isNull() ? true : lastChar.isSpace();
     const bool isNextWhiteSpace = nextChar.isNull() ? true : nextChar.isSpace();
@@ -2051,18 +2049,62 @@ void scanDelims(const QString &text, const int start, const bool canSplitWord,
 //    qDebug () << isNextWhiteSpace << marker;
 //    qDebug () << text << leftFlanking << rightFlanking << lastChar << nextChar;
 
-    if (!canSplitWord) {
-        canOpen = leftFlanking && (!rightFlanking || isLastPunct);
-        canClose = rightFlanking && (!leftFlanking || isNextPunct);
-    } else {
-        canOpen = leftFlanking;
-        canClose = rightFlanking;
-    }
+    const bool canOpen = canSplitWord ? leftFlanking : leftFlanking && (!rightFlanking || isLastPunct);
+    const bool canClose = canSplitWord ? rightFlanking: rightFlanking && (!leftFlanking || isNextPunct);
+
+    return QPair<int, QPair<bool, bool>>{length, {canOpen, canClose}};
 }
 
-/* Forward declarations */
-int collectEmDelims(const QString &text, int curPos, QVector<Delimiter> &delims);
-void balancePairs(QVector<Delimiter> &delims);
+int collectEmDelims(const QString &text, int curPos, QVector<Delimiter> &delims) {
+    const char marker = text.at(curPos).toLatin1();
+    const auto result = scanDelims(text, curPos, marker == '*');
+    const int length = result.first;
+    const bool canOpen = result.second.first;
+    const bool canClose = result.second.second;
+    for (int i = 0; i < length; ++i) {
+        const Delimiter d = {
+            curPos + i,
+            length,
+            -1,
+            i,
+            canOpen,
+            canClose,
+            marker
+        };
+        delims.append(d);
+    }
+    return curPos + length;
+}
+
+void balancePairs(QVector<Delimiter> &delims) {
+    for (int i = 0; i < delims.length(); ++i) {
+        const auto &lastDelim = delims.at(i);
+
+        if (!lastDelim.close)
+            continue;
+
+        int j = i - lastDelim.jump - 1;
+
+        while (j >= 0) {
+            const auto &curDelim = delims.at(j);
+            if (curDelim.open && curDelim.marker == lastDelim.marker &&
+                curDelim.end < 0) {
+                const bool oddMatch = (curDelim.close || lastDelim.open) &&
+                        curDelim.len != -1 &&
+                        lastDelim.len != -1 &&
+                        (curDelim.len + lastDelim.len) % 3 == 0;
+                if (!oddMatch) {
+                    delims[i].jump = i - j;
+                    delims[i].open = false;
+                    delims[j].end = i;
+                    delims[j].jump = 0;
+                    break;
+                }
+            }
+            j -= curDelim.jump + 1;
+        }
+    }
+}
 
 /**
  * @brief highlights Em/Strong in text editor
@@ -2160,83 +2202,6 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text, const int po
         setFormat(masked.at(i).first, masked.at(i).second, maskedFmt);
     }
     masked.squeeze();
-}
-
-/**
- * @brief highlight inline comments in markdown <!-- comment -->
- * @param text
- * @param pos
- * @return position after the comment
- */
-int MarkdownHighlighter::highlightInlineComment(const QString &text, int pos) {
-    const int start = pos;
-    pos += 4;
-
-    if (pos >= text.length())
-        return pos;
-
-    int commentEnd = text.indexOf(QLatin1String("-->"), pos);
-    if (commentEnd == -1)
-        return pos;
-
-    commentEnd += 3;
-    setFormat(start, commentEnd - start, _formats[Comment]);
-    return commentEnd - 1;
-}
-
-int collectEmDelims(const QString &text, int curPos, QVector<Delimiter> &delims) {
-    const char marker = text.at(curPos).toLatin1();
-
-    if (marker != QLatin1Char('_') && marker != QLatin1Char('*'))
-        return curPos;
-
-    bool canOpen = false;
-    bool canClose = false;
-    int length = 0;
-    scanDelims(text, curPos, marker == QLatin1Char('*'), canOpen, canClose, length);
-    for (int i = 0; i < length; ++i) {
-        Delimiter d = {
-            curPos + i,
-            length,
-            -1,
-            (uint8_t)i,
-            canOpen,
-            canClose,
-            marker
-        };
-        delims.append(d);
-    }
-    return curPos + length;
-}
-
-void balancePairs(QVector<Delimiter> &delims) {
-    for (int i = 0; i < delims.length(); ++i) {
-        const auto &lastDelim = delims.at(i);
-
-        if (!lastDelim.close)
-            continue;
-
-        int j = i - lastDelim.jump - 1;
-
-        while (j >= 0) {
-            const auto &curDelim = delims.at(j);
-            if (curDelim.open && curDelim.marker == lastDelim.marker &&
-                curDelim.end < 0) {
-                const bool oddMatch = (curDelim.close || lastDelim.open) &&
-                        curDelim.len != -1 &&
-                        lastDelim.len != -1 &&
-                        (curDelim.len + lastDelim.len) % 3 == 0;
-                if (!oddMatch) {
-                    delims[i].jump = i - j;
-                    delims[i].open = false;
-                    delims[j].end = i;
-                    delims[j].jump = 0;
-                    break;
-                }
-            }
-            j -= curDelim.jump + 1;
-        }
-    }
 }
 
 void MarkdownHighlighter::setHighlightingOptions(const HighlightingOptions options) {
