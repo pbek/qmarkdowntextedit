@@ -144,10 +144,12 @@ void QPlainTextEditSearchWidget::updateSearchExtraSelections() {
     const auto textCursor = _textEdit->textCursor();
     _textEdit->moveCursor(QTextCursor::Start);
     const QColor color = QColor(0, 180, 0, 100);
+    QTextCharFormat extraFmt;
+    extraFmt.setBackground(color);
 
     while (doSearch(true, false, false)) {
         QTextEdit::ExtraSelection extra = QTextEdit::ExtraSelection();
-        extra.format.setBackground(color);
+        extra.format = extraFmt;
 
         extra.cursor = _textEdit->textCursor();
         _searchExtraSelections.append(extra);
@@ -302,14 +304,15 @@ bool QPlainTextEditSearchWidget::doSearch(
         // add a background color according if we found the text or not
         QString colorCode = found ? QStringLiteral("#D5FAE2") :
                             QStringLiteral("#FAE9EB");
+        QString fgColorCode(QStringLiteral("#404040"));
 
         if (_darkMode) {
-            colorCode = found ? QStringLiteral("#135a13") : QStringLiteral(
-                    "#8d2b36");
+            colorCode = found ? QStringLiteral("#135a13") : QStringLiteral("#8d2b36");
+            fgColorCode = QStringLiteral("#cccccc");
         }
 
         ui->searchLineEdit->setStyleSheet(QStringLiteral("* { background: ") +
-                                          colorCode + QStringLiteral("; }"));
+                                          colorCode + QStringLiteral("; color: ") + fgColorCode + "; }");
 
         // restore the search extra selections after the find command
         this->setSearchExtraSelections();
