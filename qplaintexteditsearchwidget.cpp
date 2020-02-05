@@ -32,20 +32,20 @@ QPlainTextEditSearchWidget::QPlainTextEditSearchWidget(QPlainTextEdit *parent) :
     _currentSearchResult = 0;
     _searchResultCount = 0;
 
-    QObject::connect(ui->closeButton, SIGNAL(clicked()),
-                     this, SLOT(deactivate()));
-    QObject::connect(ui->searchLineEdit, SIGNAL(textChanged(QString)),
-                     this, SLOT(searchLineEditTextChanged(QString)));
-    QObject::connect(ui->searchDownButton, SIGNAL(clicked()),
-                     this, SLOT(doSearchDown()));
-    QObject::connect(ui->searchUpButton, SIGNAL(clicked()),
-                     this, SLOT(doSearchUp()));
-    QObject::connect(ui->replaceToggleButton, SIGNAL(toggled(bool)),
-                     this, SLOT(setReplaceMode(bool)));
-    QObject::connect(ui->replaceButton, SIGNAL(clicked()),
-                     this, SLOT(doReplace()));
-    QObject::connect(ui->replaceAllButton, SIGNAL(clicked()),
-                     this, SLOT(doReplaceAll()));
+    connect(ui->closeButton, &QPushButton::clicked,
+            this, &QPlainTextEditSearchWidget::deactivate);
+    connect(ui->searchLineEdit, &QLineEdit::textChanged,
+            this, &QPlainTextEditSearchWidget::searchLineEditTextChanged);
+    connect(ui->searchDownButton, &QPushButton::clicked,
+            this, &QPlainTextEditSearchWidget::doSearchDown);
+    connect(ui->searchUpButton, &QPushButton::clicked,
+            this, &QPlainTextEditSearchWidget::doSearchUp);
+    connect(ui->replaceToggleButton, &QPushButton::toggled,
+            this, &QPlainTextEditSearchWidget::setReplaceMode);
+    connect(ui->replaceButton, &QPushButton::clicked,
+            this, &QPlainTextEditSearchWidget::doReplace);
+    connect(ui->replaceAllButton, &QPushButton::clicked,
+            this, &QPlainTextEditSearchWidget::doReplaceAll);
 
     installEventFilter(this);
     ui->searchLineEdit->installEventFilter(this);
@@ -347,7 +347,7 @@ void QPlainTextEditSearchWidget::setDarkMode(bool enabled) {
     _darkMode = enabled;
 }
 
-void QPlainTextEditSearchWidget::setSearchText(QString &searchText) {
+void QPlainTextEditSearchWidget::setSearchText(const QString &searchText) {
     ui->searchLineEdit->setText(searchText);
 }
 
