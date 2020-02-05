@@ -20,7 +20,8 @@
 
 QPlainTextEditSearchWidget::QPlainTextEditSearchWidget(QPlainTextEdit *parent) :
     QWidget(parent),
-    ui(new Ui::QPlainTextEditSearchWidget)
+    ui(new Ui::QPlainTextEditSearchWidget),
+    selectionColor(0, 180, 0, 100)
 {
     ui->setupUi(this);
     _textEdit = parent;
@@ -143,7 +144,7 @@ void QPlainTextEditSearchWidget::updateSearchExtraSelections() {
     _searchExtraSelections.clear();
     const auto textCursor = _textEdit->textCursor();
     _textEdit->moveCursor(QTextCursor::Start);
-    const QColor color = QColor(0, 180, 0, 100);
+    const QColor color = selectionColor;
     QTextCharFormat extraFmt;
     extraFmt.setBackground(color);
 
@@ -302,17 +303,14 @@ bool QPlainTextEditSearchWidget::doSearch(
         }
 
         // add a background color according if we found the text or not
-        QString colorCode = found ? QStringLiteral("#D5FAE2") :
-                            QStringLiteral("#FAE9EB");
-        QString fgColorCode(QStringLiteral("#404040"));
-
-        if (_darkMode) {
-            colorCode = found ? QStringLiteral("#135a13") : QStringLiteral("#8d2b36");
-            fgColorCode = QStringLiteral("#cccccc");
-        }
+        const QString bgColorCode = _darkMode ?
+                    (found ? QStringLiteral("#135a13") : QStringLiteral("#8d2b36")) :
+                    found ? QStringLiteral("#D5FAE2") : QStringLiteral("#FAE9EB");
+        const QString fgColorCode = _darkMode ? QStringLiteral("#cccccc") : QStringLiteral("#404040");
 
         ui->searchLineEdit->setStyleSheet(QStringLiteral("* { background: ") +
-                                          colorCode + QStringLiteral("; color: ") + fgColorCode + "; }");
+                                          bgColorCode + QStringLiteral("; color: ") +
+                                          fgColorCode + QStringLiteral("; }"));
 
         // restore the search extra selections after the find command
         this->setSearchExtraSelections();
@@ -387,6 +385,11 @@ void QPlainTextEditSearchWidget::updateSearchCountLabelText() {
     ui->searchCountLabel->setText(QString("%1/%2").arg(
             _currentSearchResult == 0 ? QChar('-') : QString::number(_currentSearchResult),
             _searchResultCount == 0 ? QChar('-') : QString::number(_searchResultCount)));
+}
+
+void QPlainTextEditSearchWidget::setSearchSelectionColor(const QColor &color)
+{
+    selectionColor = color;
 }
 
 void QPlainTextEditSearchWidget::on_modeComboBox_currentIndexChanged(int index) {
