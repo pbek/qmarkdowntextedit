@@ -25,7 +25,7 @@ Commonmark compliance is enforced where possible however we are not fully Common
 | --------------------------------------------------------------------------------------- | ---------------------------------------------------- |
 | Bolds and Italics                                                                       | Yes                                                  |
 | Lists (Unordered/Orderered)                                                             | Yes                                                  |
-| Links and Images<br/>()Inline/Reference/Autolinks/E-mail)                               | Yes                                                  |
+| Links and Images<br/>(Inline/Reference/Autolinks/E-mail)                                | Yes (Cannot handle nested links or complex cases yet) |
 | Heading (ATX and Setext)                                                                | Yes                                                  |
 | Codeblocks (indented and fenced)<br/> Both backtick and tilde code fences are supported | Yes (Only fenced code block has syntax highlighting) |
 | Inline code                                                                             | Yes                                                  |
