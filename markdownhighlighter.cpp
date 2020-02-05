@@ -1637,10 +1637,13 @@ void MarkdownHighlighter::highlightFrontmatterBlock(const QString& text) {
  * @param text
  */
 void MarkdownHighlighter::highlightCommentBlock(const QString &text) {
+    if (text.startsWith(QLatin1String("    ")) || text.startsWith(QLatin1Char('\t')))
+        return;
+
     bool highlight = false;
     const QString &trimmedText = text.trimmed();
-    const QString &startText = QStringLiteral("<!--");
-    const QString &endText = QStringLiteral("-->");
+    const QString startText(QStringLiteral("<!--"));
+    const QString endText(QStringLiteral("-->"));
 
     // we will skip this case because that is an inline comment and causes
     // troubles here
@@ -1652,16 +1655,15 @@ void MarkdownHighlighter::highlightCommentBlock(const QString &text) {
         return;
 
     if (trimmedText.startsWith(startText) ||
-            (!trimmedText.endsWith(endText) &&
-                    (previousBlockState() == HighlighterState::Comment))) {
-        setCurrentBlockState(HighlighterState::Comment);
+            (!trimmedText.endsWith(endText) && (previousBlockState() == Comment))) {
+        setCurrentBlockState(Comment);
         highlight = true;
-    } else if (trimmedText.endsWith(endText)) {
+    } else if (trimmedText.endsWith(endText) && previousBlockState() == Comment) {
         highlight = true;
     }
 
     if (highlight) {
-        setFormat(0, trimmedText.length(), _formats[HighlighterState::Comment]);
+        setFormat(0, text.length(), _formats[Comment]);
     }
 }
 
