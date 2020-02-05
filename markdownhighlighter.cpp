@@ -1963,50 +1963,17 @@ struct Delimiter {
     int pos;
     int len;
     int end;
-    uint8_t jump;
+    int jump;
     bool open;
     bool close;
     char marker;
 };
 
-inline bool isMDAsciiPunct(const char ch) noexcept {
-    switch (ch) {
-    case 0x21/* ! */:
-    case 0x22/* " */:
-    case 0x23/* # */:
-    case 0x24/* $ */:
-    case 0x25/* % */:
-    case 0x26/* & */:
-    case 0x27/* ' */:
-    case 0x28/* ( */:
-    case 0x29/* ) */:
-    case 0x2A/* * */:
-    case 0x2B/* + */:
-    case 0x2C/* , */:
-    case 0x2D/* - */:
-    case 0x2E/* . */:
-    case 0x2F/* / */:
-    case 0x3A/* : */:
-    case 0x3B/* ; */:
-    case 0x3C/* < */:
-    case 0x3D/* = */:
-    case 0x3E/* > */:
-    case 0x3F/* ? */:
-    case 0x40/* @ */:
-    case 0x5B/* [ */:
-    case 0x5C/* \ */:
-    case 0x5D/* ] */:
-    case 0x5E/* ^ */:
-    case 0x5F/* _ */:
-    case 0x60/* ` */:
-    case 0x7B/* { */:
-    case 0x7C/* | */:
-    case 0x7D/* } */:
-    case 0x7E/* ~ */:
-        return true;
-    default:
-        return false;
-    }
+inline bool isMDAsciiPunct(const int ch) noexcept {
+    return (ch >= 33 && ch <= 47)  ||
+            (ch >= 58 && ch <= 64) ||
+            (ch >= 91 && ch <= 96) ||
+            (ch >= 123 && ch <= 126);
 }
 
 void scanDelims(const QString &text, const int start, const bool canSplitWord,
@@ -2199,7 +2166,7 @@ int collectEmDelims(const QString &text, int curPos, QVector<Delimiter> &delims)
             curPos + i,
             length,
             -1,
-            (uint8_t)i,
+            i,
             canOpen,
             canClose,
             marker
