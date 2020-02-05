@@ -258,9 +258,8 @@ bool QPlainTextEditSearchWidget::doSearch(
             _textEdit->find(text, options);
 
     if (found) {
-        _currentSearchResult = std::min(searchDown ?
-                ++_currentSearchResult : --_currentSearchResult,
-                _searchResultCount);
+        const int result = searchDown ? ++_currentSearchResult : --_currentSearchResult;
+        _currentSearchResult = std::min(result, _searchResultCount);
 
         updateSearchCountLabelText();
     }
