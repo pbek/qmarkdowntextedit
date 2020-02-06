@@ -85,7 +85,7 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
     updateSettings();
 
     // workaround for disabled signals up initialization
-    QTimer::singleShot(300, this, &QMarkdownTextEdit::adjustRightMargin);
+    QTimer::singleShot(300, this, SLOT(adjustRightMargin()));
 }
 
 /**
