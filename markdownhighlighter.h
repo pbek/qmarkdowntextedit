@@ -13,33 +13,31 @@
  * QPlainTextEdit markdown highlighter
  */
 
-
 #pragma once
 
-#include <QTextCharFormat>
-#include <QSyntaxHighlighter>
 #include <QRegularExpression>
+#include <QSyntaxHighlighter>
+#include <QTextCharFormat>
 
 QT_BEGIN_NAMESPACE
 class QTextDocument;
 
 QT_END_NAMESPACE
 
-class MarkdownHighlighter : public QSyntaxHighlighter
-{
-Q_OBJECT
+class MarkdownHighlighter : public QSyntaxHighlighter {
+    Q_OBJECT
 
-public:
-    enum HighlightingOption{
+   public:
+    enum HighlightingOption {
         None = 0,
         FullyHighlightedBlockQuote = 0x01,
         Underline = 0x02
     };
     Q_DECLARE_FLAGS(HighlightingOptions, HighlightingOption)
 
-    MarkdownHighlighter(QTextDocument *parent = nullptr,
-                        HighlightingOptions highlightingOptions =
-                        HighlightingOption::None);
+    MarkdownHighlighter(
+        QTextDocument *parent = nullptr,
+        HighlightingOptions highlightingOptions = HighlightingOption::None);
 
     static inline QColor codeBlockBackgroundColor() {
         const QBrush brush = _formats[CodeBlock].background();
@@ -51,25 +49,24 @@ public:
         return brush.color();
     }
 
-   static constexpr inline bool isOctal(const char c) {
-       return (c >= '0' && c <= '7');
-   }
-   static constexpr inline bool isHex(const char c) {
-       return (c >= '0' && c <= '9') ||
-              (c >= 'a' && c <= 'f') ||
-              (c >= 'A' && c <= 'F');
-   }
-   static constexpr inline bool isCodeBlock(const int state) {
-      return state == MarkdownHighlighter::CodeBlock ||
-             state == MarkdownHighlighter::CodeBlockTilde ||
-             state == MarkdownHighlighter::CodeBlockComment ||
-             state == MarkdownHighlighter::CodeBlockTildeComment ||
-             state >= MarkdownHighlighter::CodeCpp;
-   }
-   static constexpr inline bool isCodeBlockEnd(const int state) {
-       return state == MarkdownHighlighter::CodeBlockEnd ||
-              state == MarkdownHighlighter::CodeBlockTildeEnd;
-   }
+    static constexpr inline bool isOctal(const char c) {
+        return (c >= '0' && c <= '7');
+    }
+    static constexpr inline bool isHex(const char c) {
+        return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') ||
+               (c >= 'A' && c <= 'F');
+    }
+    static constexpr inline bool isCodeBlock(const int state) {
+        return state == MarkdownHighlighter::CodeBlock ||
+               state == MarkdownHighlighter::CodeBlockTilde ||
+               state == MarkdownHighlighter::CodeBlockComment ||
+               state == MarkdownHighlighter::CodeBlockTildeComment ||
+               state >= MarkdownHighlighter::CodeCpp;
+    }
+    static constexpr inline bool isCodeBlockEnd(const int state) {
+        return state == MarkdownHighlighter::CodeBlockEnd ||
+               state == MarkdownHighlighter::CodeBlockTildeEnd;
+    }
 
     // we use some predefined numbers here to be compatible with
     // the peg-markdown parser
@@ -101,7 +98,7 @@ public:
         CheckBoxUnChecked,
         CheckBoxChecked,
 
-        //code highlighting
+        // code highlighting
         CodeKeyWord = 1000,
         CodeString = 1001,
         CodeComment = 1002,
@@ -119,15 +116,13 @@ public:
         HeadlineEnd,
         FrontmatterBlockEnd,
 
-        //languages
+        // languages
         /*********
          * When adding a language make sure that its value is a multiple of 2
          * This is because we use the next number as comment for that language
-         * In case the language doesn't support multiline comments in the traditional C++
-         * sense, leave the next value empty. Otherwise mark the next value as comment for
-         * that language.
-         * e.g
-         * CodeCpp = 200
+         * In case the language doesn't support multiline comments in the
+         * traditional C++ sense, leave the next value empty. Otherwise mark the
+         * next value as comment for that language. e.g CodeCpp = 200
          * CodeCppComment = 201
          */
         CodeCpp = 200,
@@ -169,30 +164,32 @@ public:
     };
     Q_ENUMS(HighlighterState)
 
-//    enum BlockState {
-//        NoBlockState = 0,
-//        H1,
-//        H2,
-//        H3,
-//        Table,
-//        CodeBlock,
-//        CodeBlockEnd
-//    };
+    //    enum BlockState {
+    //        NoBlockState = 0,
+    //        H1,
+    //        H2,
+    //        H3,
+    //        Table,
+    //        CodeBlock,
+    //        CodeBlockEnd
+    //    };
 
-    static void setTextFormats(QHash<HighlighterState, QTextCharFormat> formats);
+    static void setTextFormats(
+        QHash<HighlighterState, QTextCharFormat> formats);
     static void setTextFormat(HighlighterState state, QTextCharFormat format);
     void clearDirtyBlocks();
     void setHighlightingOptions(const HighlightingOptions options);
     void initHighlightingRules();
-signals:
+   signals:
     void highlightingFinished();
 
-protected slots:
+   protected slots:
     void timerTick();
 
-protected:
+   protected:
     struct HighlightingRule {
-        explicit HighlightingRule(const HighlighterState state_) : state(state_) {}
+        explicit HighlightingRule(const HighlighterState state_)
+            : state(state_) {}
         HighlightingRule() = default;
 
         QRegularExpression pattern;
@@ -210,20 +207,20 @@ protected:
 
     static void initCodeLangs();
 
-    void highlightMarkdown(const QString& text);
+    void highlightMarkdown(const QString &text);
 
     /******************************
      *  BLOCK LEVEL FUNCTIONS
      ******************************/
 
-    void highlightHeadline(const QString& text);
+    void highlightHeadline(const QString &text);
 
     void highlightSubHeadline(const QString &text, HighlighterState state);
 
     void highlightAdditionalRules(const QVector<HighlightingRule> &rules,
-                                  const QString& text);
+                                  const QString &text);
 
-    void highlightFrontmatterBlock(const QString& text);
+    void highlightFrontmatterBlock(const QString &text);
 
     void highlightCommentBlock(const QString &text);
 
@@ -237,15 +234,16 @@ protected:
 
     void highlightInlineRules(const QString &text);
 
-    Q_REQUIRED_RESULT int highlightInlineSpans(const QString &text, int currentPos, const QChar c);
+    Q_REQUIRED_RESULT int highlightInlineSpans(const QString &text,
+                                               int currentPos, const QChar c);
 
     void highlightEmAndStrong(const QString &text, const int pos);
 
     Q_REQUIRED_RESULT int highlightInlineComment(const QString &text, int pos);
 
     void setHeadingStyles(MarkdownHighlighter::HighlighterState rule,
-                     const QRegularExpressionMatch &match,
-                     const int capturedGroup);
+                          const QRegularExpressionMatch &match,
+                          const int capturedGroup);
 
     /******************************
      *  CODE HIGHLIGHTING FUNCTIONS
@@ -255,13 +253,15 @@ protected:
 
     void highlightCodeFence(const QString &text);
 
-    void highlightCodeBlock(const QString &text, const QString &opener = QStringLiteral("```"));
+    void highlightCodeBlock(const QString &text,
+                            const QString &opener = QStringLiteral("```"));
 
     void highlightSyntax(const QString &text);
 
-    Q_REQUIRED_RESULT int highlightNumericLiterals(const QString& text, int i);
+    Q_REQUIRED_RESULT int highlightNumericLiterals(const QString &text, int i);
 
-    Q_REQUIRED_RESULT int highlightStringLiterals(QChar strType, const QString& text, int i);
+    Q_REQUIRED_RESULT int highlightStringLiterals(QChar strType,
+                                                  const QString &text, int i);
 
     void ymlHighlighter(const QString &text);
 
@@ -275,7 +275,7 @@ protected:
 
     void taggerScriptHighlighter(const QString &text);
 
-    void addDirtyBlock(const QTextBlock& block);
+    void addDirtyBlock(const QTextBlock &block);
 
     void reHighlightDirtyBlocks();
 
