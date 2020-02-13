@@ -987,7 +987,7 @@ bool QMarkdownTextEdit::isValidUrl(const QString &urlString) {
  *   "/path/to/my/file/QOwnNotes.pdf" if the operating system supports that
  *  handler
  */
-void QMarkdownTextEdit::openUrl(QString urlString) {
+void QMarkdownTextEdit::openUrl(const QString &urlString) {
     qDebug() << "QMarkdownTextEdit " << __func__
              << " - 'urlString': " << urlString;
 
@@ -1101,8 +1101,8 @@ QString QMarkdownTextEdit::getMarkdownUrlAtPosition(const QString &text,
     const QMap<QString, QString> urlMap = parseMarkdownUrlsFromText(text);
     QMap<QString, QString>::const_iterator i = urlMap.constBegin();
     for (; i != urlMap.constEnd(); ++i) {
-        const QString linkText = i.key();
-        const QString urlString = i.value();
+        const QString &linkText = i.key();
+        const QString &urlString = i.value();
 
         const int foundPositionStart = text.indexOf(linkText);
 
@@ -1422,7 +1422,7 @@ void QMarkdownTextEdit::paintEvent(QPaintEvent *e) {
     qreal dy = 0.0;
     bool done = false;
 
-    const QColor &color = _highlighter->codeBlockBackgroundColor();
+    const QColor &color = MarkdownHighlighter::codeBlockBackgroundColor();
     const int cornerRadius = 5;
 
     while (block.isValid() && !done) {
