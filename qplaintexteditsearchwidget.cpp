@@ -13,9 +13,11 @@
  */
 
 #include "qplaintexteditsearchwidget.h"
+
 #include <QDebug>
 #include <QEvent>
 #include <QKeyEvent>
+
 #include "ui_qplaintexteditsearchwidget.h"
 
 QPlainTextEditSearchWidget::QPlainTextEditSearchWidget(QPlainTextEdit *parent)

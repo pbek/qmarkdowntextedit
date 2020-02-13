@@ -12,6 +12,7 @@
  *
  */
 #include "qownlanguagedata.h"
+
 #include <QLatin1String>
 #include <QMultiHash>
 /* ------------------------

@@ -16,6 +16,7 @@
  */
 
 #include "markdownhighlighter.h"
+
 #include <QDebug>
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
@@ -23,6 +24,7 @@
 #include <QTextDocument>
 #include <QTimer>
 #include <utility>
+
 #include "qownlanguagedata.h"
 
 QHash<QString, MarkdownHighlighter::HighlighterState>
@@ -960,8 +962,9 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
                             // mark this block as code if it was previously
                             // comment first check if the comment ended on the
                             // same line if modulo 2 is not equal to zero, it
-                            // means we are in a comment -1 will set this block's
-                            //state as language
+                            // means we are in a comment -1 will set this
+                            // block's
+                            // state as language
                             if (currentBlockState() % 2 != 0) {
                                 setCurrentBlockState(currentBlockState() - 1);
                             }

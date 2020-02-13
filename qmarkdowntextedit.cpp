@@ -13,7 +13,6 @@
  */
 
 #include "qmarkdowntextedit.h"
-#include "markdownhighlighter.h"
 
 #include <QClipboard>
 #include <QDebug>
@@ -31,6 +30,8 @@
 #include <QTextBlock>
 #include <QTimer>
 #include <utility>
+
+#include "markdownhighlighter.h"
 
 static const QByteArray _openingCharacters = QByteArrayLiteral("([{<*\"'_~");
 static const QByteArray _closingCharacters = QByteArrayLiteral(")]}>*\"'_~");
@@ -223,7 +224,8 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
                     text = "\n";
                 else {
                     // cursor.select(QTextCursor::BlockUnderCursor); //
-                    // negative, it will include the previous paragraph separator
+                    // negative, it will include the previous paragraph
+                    // separator
                     cursor.movePosition(QTextCursor::StartOfBlock);
                     cursor.movePosition(QTextCursor::EndOfBlock,
                                         QTextCursor::KeepAnchor);
