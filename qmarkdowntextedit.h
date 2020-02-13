@@ -42,7 +42,7 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     MarkdownHighlighter *highlighter();
     QPlainTextEditSearchWidget *searchWidget();
     void setIgnoredClickUrlSchemata(QStringList ignoredUrlSchemata);
-    virtual void openUrl(QString urlString);
+    virtual void openUrl(const QString &urlString);
     QString getMarkdownUrlAtPosition(const QString &text, int position);
     void initSearchFrame(QWidget *searchFrame, bool darkMode = false);
     void setAutoTextOptions(AutoTextOptions options);

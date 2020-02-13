@@ -230,8 +230,8 @@ void MarkdownHighlighter::initHighlightingRules() {
     {
         HighlightingRule rule(HighlighterState::TrailingSpace);
         rule.pattern = QRegularExpression(QStringLiteral("( +)$"));
-        rule.shouldContain =
-            QString(" \0");    // waqar144: dont use QStringLiteral here.
+        // waqar144: dont use QStringLiteral here.
+        rule.shouldContain = QString(" \0");
         rule.capturingGroup = 1;
         _highlightingRules.append(rule);
     }
@@ -265,7 +265,7 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize) {
 
     // set character formats for headlines
     format = QTextCharFormat();
-    format.setForeground(QBrush(QColor(2, 69, 150)));
+    format.setForeground(QColor(2, 69, 150));
     format.setFontWeight(QFont::Bold);
     format.setFontPointSize(defaultFontSize * 1.6);
     _formats[H1] = format;
@@ -283,35 +283,35 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize) {
 
     // set character format for horizontal rulers
     format = QTextCharFormat();
-    format.setForeground(QBrush(Qt::darkGray));
-    format.setBackground(QBrush(Qt::lightGray));
-    _formats[HorizontalRuler] = format;
+    format.setForeground(Qt::darkGray);
+    format.setBackground(Qt::lightGray);
+    _formats[HorizontalRuler] = std::move(format);
 
     // set character format for lists
     format = QTextCharFormat();
-    format.setForeground(QBrush(QColor(163, 0, 123)));
+    format.setForeground(QColor(163, 0, 123));
     _formats[List] = format;
 
     // set character format for checkbox
     format = QTextCharFormat();
-    format.setForeground(QBrush(QColor(123, 100, 223)));
-    _formats[CheckBoxUnChecked] = format;
+    format.setForeground(QColor(123, 100, 223));
+    _formats[CheckBoxUnChecked] = std::move(format);
     // set character format for checkced checkbox
     format = QTextCharFormat();
-    format.setForeground(QBrush(QColor(223, 50, 123)));
-    _formats[CheckBoxChecked] = format;
+    format.setForeground(QColor(223, 50, 123));
+    _formats[CheckBoxChecked] = std::move(format);
 
     // set character format for links
     format = QTextCharFormat();
-    format.setForeground(QBrush(QColor(0, 128, 255)));
+    format.setForeground(QColor(0, 128, 255));
     format.setFontUnderline(true);
-    _formats[Link] = format;
+    _formats[Link] = std::move(format);
 
     // set character format for images
     format = QTextCharFormat();
-    format.setForeground(QBrush(QColor(0, 191, 0)));
-    format.setBackground(QBrush(QColor(228, 255, 228)));
-    _formats[Image] = format;
+    format.setForeground(QColor(0, 191, 0));
+    format.setBackground(QColor(228, 255, 228));
+    _formats[Image] = std::move(format);
 
     // set character format for code blocks
     format = QTextCharFormat();
@@ -324,39 +324,39 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize) {
     format = QTextCharFormat();
     format.setFontWeight(QFont::StyleItalic);
     format.setFontItalic(true);
-    _formats[Italic] = format;
+    _formats[Italic] = std::move(format);
 
     // set character format for bold
     format = QTextCharFormat();
     format.setFontWeight(QFont::Bold);
-    _formats[Bold] = format;
+    _formats[Bold] = std::move(format);
 
     // set character format for comments
     format = QTextCharFormat();
     format.setForeground(QBrush(Qt::gray));
-    _formats[Comment] = format;
+    _formats[Comment] = std::move(format);
 
     // set character format for masked syntax
     format = QTextCharFormat();
-    format.setForeground(QBrush("#cccccc"));
-    _formats[MaskedSyntax] = format;
+    format.setForeground(QColor(204, 204, 204));
+    _formats[MaskedSyntax] = std::move(format);
 
     // set character format for tables
     format = QTextCharFormat();
     format.setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-    format.setForeground(QBrush(QColor("#649449")));
-    _formats[Table] = format;
+    format.setForeground(QColor(100, 148, 73));
+    _formats[Table] = std::move(format);
 
     // set character format for block quotes
     format = QTextCharFormat();
-    format.setForeground(QBrush(QColor(Qt::darkRed)));
-    _formats[BlockQuote] = format;
+    format.setForeground(Qt::darkRed);
+    _formats[BlockQuote] = std::move(format);
 
     format = QTextCharFormat();
-    _formats[HeadlineEnd] = format;
+    _formats[HeadlineEnd] = std::move(format);
 
     format = QTextCharFormat();
-    _formats[NoState] = format;
+    _formats[NoState] = std::move(format);
 
     /****************************************
      * Formats for syntax highlighting
@@ -364,38 +364,38 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize) {
 
     format = QTextCharFormat();
     format.setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-    format.setForeground(QColor("#F92672"));
-    _formats[CodeKeyWord] = format;
+    format.setForeground(QColor(249, 38, 114));
+    _formats[CodeKeyWord] = std::move(format);
 
     format = QTextCharFormat();
     format.setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-    format.setForeground(QColor("#a39b4e"));
-    _formats[CodeString] = format;
+    format.setForeground(QColor(163, 155, 78));
+    _formats[CodeString] = std::move(format);
 
     format = QTextCharFormat();
     format.setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-    format.setForeground(QColor("#75715E"));
-    _formats[CodeComment] = format;
+    format.setForeground(QColor(117, 113, 94));
+    _formats[CodeComment] = std::move(format);
 
     format = QTextCharFormat();
     format.setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-    format.setForeground(QColor("#54aebf"));
-    _formats[CodeType] = format;
+    format.setForeground(QColor(84, 174, 191));
+    _formats[CodeType] = std::move(format);
 
     format = QTextCharFormat();
     format.setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-    format.setForeground(QColor("#db8744"));
-    _formats[CodeOther] = format;
+    format.setForeground(QColor(219, 135, 68));
+    _formats[CodeOther] = std::move(format);
 
     format = QTextCharFormat();
     format.setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-    format.setForeground(QColor("#AE81FF"));
-    _formats[CodeNumLiteral] = format;
+    format.setForeground(QColor(174, 129, 255));
+    _formats[CodeNumLiteral] = std::move(format);
 
     format = QTextCharFormat();
     format.setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-    format.setForeground(QColor("#018a0f"));
-    _formats[CodeBuiltIn] = format;
+    format.setForeground(QColor(1, 138, 15));
+    _formats[CodeBuiltIn] = std::move(format);
 }
 
 /**
@@ -901,17 +901,16 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
                const QString &text, const QTextCharFormat &fmt) -> int {
         // check if we are at the beginning OR if this is the start of a word
         // AND the current char is present in the data structure
-        if ((i == 0 || !text[i - 1].isLetter()) &&
-            data.contains(text[i].toLatin1())) {
-            const QList<QLatin1String> wordList =
-                data.values(text[i].toLatin1());
+        if ((i == 0 || !text.at(i - 1).isLetter()) &&
+            data.contains(text.at(i).toLatin1())) {
+            const auto wordList = data.values(text.at(i).toLatin1());
             for (const QLatin1String &word : wordList) {
-                if (word == text.midRef(
-                                i, word.size()) &&    // we have a word match
-                    (i + word.size() ==
-                         text.length() ||    // check if we are at the end
-                     !text.at(i + word.size())
-                          .isLetter())) {    // OR if we have a complete word
+                // we have a word match check
+                // 1. if we are at the end
+                // 2. if we have a complete word
+                if (word == text.midRef(i, word.size()) &&
+                    (i + word.size() == text.length() ||
+                     !text.at(i + word.size()).isLetter())) {
                     setFormat(i, word.size(), fmt);
                     i += word.size();
                 }
@@ -936,10 +935,8 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
                 ++i;
                 // make sure we don't cross the bound
                 if (i == textLen) break;
-                if (text[i].isLetter())
-                    break;
-                else
-                    continue;
+                if (text[i].isLetter()) break;
+                continue;
             }
             // inline comment
             if (comment.isNull() && text[i] == QLatin1Char('/')) {
@@ -1399,12 +1396,11 @@ void MarkdownHighlighter::ymlHighlighter(const QString &text) {
             if (colon + 1 == textLen) {
                 setFormat(i, colon - i, _formats[CodeKeyWord]);
                 return;
-            } else {
-                // colon is found, check if it isn't some path or something else
-                if (!(text.at(colon + 1) == QChar('\\') &&
-                      text.at(colon + 1) == QChar('/'))) {
-                    setFormat(i, colon - i, _formats[CodeKeyWord]);
-                }
+            }
+            // colon is found, check if it isn't some path or something else
+            if (!(text.at(colon + 1) == QChar('\\') &&
+                  text.at(colon + 1) == QChar('/'))) {
+                setFormat(i, colon - i, _formats[CodeKeyWord]);
             }
         }
 
@@ -1555,11 +1551,9 @@ void MarkdownHighlighter::cssHighlighter(const QString &text) {
                 if (c.lightness() <= 20) {
                     foreground = Qt::white;
                 } else if (c.lightness() > 20 && c.lightness() <= 51) {
-                    foreground = QColor("#ccc");
-                } else if (c.lightness() > 51 && c.lightness() <= 78) {
-                    foreground = QColor("#bbb");
-                } else if (c.lightness() > 78 && c.lightness() <= 110) {
-                    foreground = QColor("#bbb");
+                    foreground = QColor(204, 204, 204);
+                } else if (c.lightness() > 51 && c.lightness() <= 110) {
+                    foreground = QColor(187, 187, 187);
                 } else if (c.lightness() > 127) {
                     lightness = c.lightness() + 100;
                     foreground = c.darker(lightness);
@@ -1570,8 +1564,8 @@ void MarkdownHighlighter::cssHighlighter(const QString &text) {
 
                 f.setBackground(c);
                 f.setForeground(foreground);
-                setFormat(i, semicolon - i,
-                          QTextCharFormat());    // clear prev format
+                // clear prev format
+                setFormat(i, semicolon - i, QTextCharFormat());
                 setFormat(i, semicolon - i, f);
                 i = semicolon;
             }
@@ -1588,7 +1582,7 @@ void MarkdownHighlighter::xmlHighlighter(const QString &text) {
     for (int i = 0; i < textLen; ++i) {
         if (i + 1 < textLen && text[i] == QLatin1Char('<') &&
             text[i + 1] != QLatin1Char('!')) {
-            int found = text.indexOf(QLatin1Char('>'), i);
+            const int found = text.indexOf(QLatin1Char('>'), i);
             if (found > 0) {
                 ++i;
                 if (text[i] == QLatin1Char('/')) ++i;
@@ -1606,7 +1600,7 @@ void MarkdownHighlighter::xmlHighlighter(const QString &text) {
         }
 
         if (text[i] == QLatin1Char('\"')) {
-            int pos = i;
+            const int pos = i;
             int cnt = 1;
             ++i;
             // bound check
@@ -1648,7 +1642,7 @@ void MarkdownHighlighter::highlightFrontmatterBlock(const QString &text) {
     }
 
     if (text == QLatin1String("---")) {
-        bool foundEnd =
+        const bool foundEnd =
             previousBlockState() == HighlighterState::FrontmatterBlock;
 
         // return if the frontmatter block was already highlighted in previous
@@ -1679,7 +1673,6 @@ void MarkdownHighlighter::highlightCommentBlock(const QString &text) {
         text.startsWith(QLatin1Char('\t')))
         return;
 
-    bool highlight = false;
     const QString &trimmedText = text.trimmed();
     const QString startText(QStringLiteral("<!--"));
     const QString endText(QStringLiteral("-->"));
@@ -1693,18 +1686,15 @@ void MarkdownHighlighter::highlightCommentBlock(const QString &text) {
     if (!trimmedText.startsWith(startText) && trimmedText.contains(startText))
         return;
 
-    if (trimmedText.startsWith(startText) ||
-        (!trimmedText.endsWith(endText) && (previousBlockState() == Comment))) {
-        setCurrentBlockState(Comment);
-        highlight = true;
-    } else if (trimmedText.endsWith(endText) &&
-               previousBlockState() == Comment) {
-        highlight = true;
-    }
+    const bool isComment =
+        trimmedText.startsWith(startText) ||
+        (!trimmedText.endsWith(endText) && previousBlockState() == Comment);
+    const bool isCommentEnd =
+        trimmedText.endsWith(endText) && previousBlockState() == Comment;
+    const bool highlight = isComment || isCommentEnd;
 
-    if (highlight) {
-        setFormat(0, text.length(), _formats[Comment]);
-    }
+    if (isComment) setCurrentBlockState(Comment);
+    if (highlight) setFormat(0, text.length(), _formats[Comment]);
 }
 
 /**
@@ -1813,19 +1803,18 @@ void MarkdownHighlighter::highlightLists(const QString &text) {
  * @param match The regex match
  * @param capturedGroup The captured group
  */
-void MarkdownHighlighter::setHeadingStyles(
-    MarkdownHighlighter::HighlighterState rule,
-    const QRegularExpressionMatch &match, const int capturedGroup) {
-    MarkdownHighlighter::HighlighterState state =
-        static_cast<HighlighterState>(currentBlockState());
-    QTextCharFormat f = _formats[state];
+void MarkdownHighlighter::setHeadingStyles(HighlighterState rule,
+                                           const QRegularExpressionMatch &match,
+                                           const int capturedGroup) {
+    auto state = static_cast<HighlighterState>(currentBlockState());
+    const QTextCharFormat &f = _formats[state];
 
     if (rule == HighlighterState::Link) {
-        QTextCharFormat link = _formats[Link];
-        link.setFontPointSize(f.fontPointSize());
+        auto linkFmt = _formats[Link];
+        linkFmt.setFontPointSize(f.fontPointSize());
         if (capturedGroup == 1) {
             setFormat(match.capturedStart(capturedGroup),
-                      match.capturedLength(capturedGroup), link);
+                      match.capturedLength(capturedGroup), linkFmt);
         }
         return;
     }
@@ -1838,31 +1827,20 @@ void MarkdownHighlighter::setHeadingStyles(
  */
 void MarkdownHighlighter::highlightAdditionalRules(
     const QVector<HighlightingRule> &rules, const QString &text) {
-    const QTextCharFormat &maskedFormat =
-        _formats[HighlighterState::MaskedSyntax];
+    const auto &maskedFormat = _formats[HighlighterState::MaskedSyntax];
 
     for (const HighlightingRule &rule : rules) {
         // continue if another current block state was already set if
         // disableIfCurrentStateIsSet is set
-        if (rule.disableIfCurrentStateIsSet &&
-            (currentBlockState() != HighlighterState::NoState)) {
-            continue;
-        }
+        if (currentBlockState() != NoState) continue;
 
-        const bool contains = text.contains(rule.shouldContain) ? true : false;
+        const bool contains = text.contains(rule.shouldContain);
         if (!contains) continue;
 
-        QRegularExpression expression(rule.pattern);
-        QRegularExpressionMatchIterator iterator = expression.globalMatch(text);
-        uint8_t capturingGroup = rule.capturingGroup;
-        uint8_t maskedGroup = rule.maskedGroup;
-        QTextCharFormat &format = _formats[rule.state];
-
-        // store the current block state if useStateAsCurrentBlockState
-        // is set
-        if (iterator.hasNext() && rule.useStateAsCurrentBlockState) {
-            setCurrentBlockState(rule.state);
-        }
+        auto iterator = rule.pattern.globalMatch(text);
+        const uint8_t capturingGroup = rule.capturingGroup;
+        const uint8_t maskedGroup = rule.maskedGroup;
+        const QTextCharFormat &format = _formats[rule.state];
 
         // find and format all occurrences
         while (iterator.hasNext()) {
@@ -1888,7 +1866,6 @@ void MarkdownHighlighter::highlightAdditionalRules(
                               currentMaskedFormat);
                 }
             }
-
             if (currentBlockState() >= H1 && currentBlockState() <= H6) {
                 setHeadingStyles(rule.state, match, capturingGroup);
 
@@ -2172,9 +2149,7 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text,
             // per character highlighting
             const int boldLen = endDelim.pos - startDelim.pos;
             const bool underline = _highlightingOptions.testFlag(Underline) &&
-                                           startDelim.marker == QLatin1Char('_')
-                                       ? true
-                                       : false;
+                                   startDelim.marker == QLatin1Char('_');
             while (k != (startDelim.pos + boldLen)) {
                 QTextCharFormat fmt = QSyntaxHighlighter::format(k);
                 // if we are in plains text, use the format's specified color
@@ -2197,9 +2172,7 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text,
             int k = startDelim.pos;
             while (text.at(k) == startDelim.marker) ++k;
             const bool underline = _highlightingOptions.testFlag(Underline) &&
-                                           startDelim.marker == QLatin1Char('_')
-                                       ? true
-                                       : false;
+                                   startDelim.marker == QLatin1Char('_');
             const int itLen = endDelim.pos - startDelim.pos;
             while (k != (startDelim.pos + itLen)) {
                 QTextCharFormat fmt = QSyntaxHighlighter::format(k);
@@ -2220,8 +2193,7 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text,
     // 4. Apply masked syntax
     for (int i = 0; i < masked.length(); ++i) {
         QTextCharFormat maskedFmt = _formats[MaskedSyntax];
-        MarkdownHighlighter::HighlighterState state =
-            static_cast<HighlighterState>(currentBlockState());
+        auto state = static_cast<HighlighterState>(currentBlockState());
         if (_formats[state].fontPointSize() > 0)
             maskedFmt.setFontPointSize(_formats[state].fontPointSize());
         setFormat(masked.at(i).first, masked.at(i).second, maskedFmt);

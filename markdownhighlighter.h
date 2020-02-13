@@ -197,8 +197,6 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
         HighlighterState state = NoState;
         uint8_t capturingGroup = 0;
         uint8_t maskedGroup = 0;
-        bool useStateAsCurrentBlockState = false;
-        bool disableIfCurrentStateIsSet = false;
     };
 
     void highlightBlock(const QString &text) Q_DECL_OVERRIDE;
