@@ -223,7 +223,8 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
                     text = "\n";
                 else {
                     // cursor.select(QTextCursor::BlockUnderCursor); //
-                    // negative, it will include the previous paragraph separator
+                    // negative, it will include the previous paragraph
+                    // separator
                     cursor.movePosition(QTextCursor::StartOfBlock);
                     cursor.movePosition(QTextCursor::EndOfBlock,
                                         QTextCursor::KeepAnchor);
@@ -736,6 +737,23 @@ bool QMarkdownTextEdit::quotationMarkCheck(const QChar quotationCharacter) {
     return true;
 }
 
+/***********************************
+ * helper methods for char removal
+ * Rules for (') and ("):
+ * if [sp]" -> opener (sp = space)
+ * if "[sp] -> closer
+ ***********************************/
+bool isQuotOpener(int position, const QString &text) {
+    if (position == 0) return true;
+    const int prevCharPos = position - 1;
+    return text.at(prevCharPos).isSpace();
+}
+bool isQuotCloser(int position, const QString &text) {
+    const int nextCharPos = position + 1;
+    if (nextCharPos >= text.length()) return true;
+    return text.at(nextCharPos).isSpace();
+}
+
 /**
  * Handles removing of matching brackets and other markdown characters
  * Only works with backspace to remove text
@@ -743,7 +761,6 @@ bool QMarkdownTextEdit::quotationMarkCheck(const QChar quotationCharacter) {
  * @return
  */
 bool QMarkdownTextEdit::handleBracketRemoval() {
-    // check if bracket removal or read-only are enabled
     if (!(_autoTextOptions & AutoTextOption::BracketRemoval) || isReadOnly()) {
         return false;
     }
@@ -772,38 +789,52 @@ bool QMarkdownTextEdit::handleBracketRemoval() {
     const char charInFront = text.at(positionInBlock - 1).toLatin1();
     // is it opener?
     int pos = _openingCharacters.indexOf(charInFront);
-    const bool isOpener = pos == -1 ? false : true;
+    // for " and '
+    bool isOpener = false;
+    bool isCloser = false;
+    if (pos == 5 || pos == 6) {
+        isOpener = isQuotOpener(positionInBlock - 1, text);
+    } else {
+        isOpener = pos != -1;
+    }
     if (isOpener) {
         charToRemove = _closingCharacters.at(pos);
     } else {
         // is it closer?
         pos = _closingCharacters.indexOf(charInFront);
-        const bool isCloser = pos == -1 ? false : true;
-        if (isCloser) {
+        if (pos == 5 || pos == 6)
+            isCloser = isQuotCloser(positionInBlock - 1, text);
+        else
+            isCloser = pos == -1 ? false : true;
+        if (isCloser)
             charToRemove = _openingCharacters.at(pos);
-        } else {
+        else
             return false;
-        }
     }
 
     int charToRemoveIndex = -1;
     if (isOpener) {
+        bool closer = false;
         charToRemoveIndex = text.indexOf(charToRemove, positionInBlock);
-        if (charToRemoveIndex == -1 && charToRemove == charInFront) {
-            // maybe its '*'
-            /* it will mess up cases where there are multiple '*' in the same
-             * line This can probably be handled correctly by using the
-             * algorithms(pair matching/balancing) from highlighter but that
-             * would be overkill here
-             */
-            goto LookBackwards;
-        } else if (charToRemoveIndex == -1) {
-            return false;
-        }
+        if (pos == 5 || pos == 6)
+            closer = isQuotCloser(charToRemoveIndex, text);
+        else
+            closer = charToRemoveIndex != -1;
+        if (!closer) return false;
         cursor.setPosition(position + (charToRemoveIndex - positionInBlock));
         cursor.deleteChar();
+    } else if (isCloser) {
+        charToRemoveIndex = text.lastIndexOf(charToRemove, positionInBlock - 2);
+        if (charToRemoveIndex == -1) return false;
+        bool opener = true;
+        if (pos == 5 || pos == 6)
+            opener = isQuotOpener(charToRemoveIndex, text);
+        if (!opener) return false;
+        const int pos = position - (positionInBlock - charToRemoveIndex);
+        cursor.setPosition(pos);
+        cursor.deleteChar();
+        position -= 1;
     } else {
-    LookBackwards:
         charToRemoveIndex = text.lastIndexOf(charToRemove, positionInBlock - 2);
         if (charToRemoveIndex == -1) return false;
         const int pos = position - (positionInBlock - charToRemoveIndex);
