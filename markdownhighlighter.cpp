@@ -1519,7 +1519,7 @@ void MarkdownHighlighter::cssHighlighter(const QString &text) {
                 }
                 int semicolon = text.indexOf(QLatin1Char(';'), i);
                 if (semicolon < 0) semicolon = textLen;
-                const QStringRef color = text.midRef(i, semicolon - i);
+                const QString color = text.mid(i, semicolon - i);
                 QTextCharFormat f = _formats[CodeBlock];
                 QColor c(color);
                 if (color.startsWith(QLatin1String("rgb"))) {
