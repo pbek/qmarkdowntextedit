@@ -1499,7 +1499,7 @@ void MarkdownHighlighter::cssHighlighter(const QString &text) {
             if (text[i + 1].isSpace() || text[i + 1].isNumber()) continue;
             int space = text.indexOf(QLatin1Char(' '), i);
             if (space < 0) {
-                space = text.indexOf(QChar('{'));
+                space = text.indexOf(QLatin1Char('{'), i);
                 if (space < 0) {
                     space = textLen;
                 }
@@ -1509,24 +1509,24 @@ void MarkdownHighlighter::cssHighlighter(const QString &text) {
         } else if (text[i] == QLatin1Char('c')) {
             if (text.midRef(i, 5) == QLatin1String("color")) {
                 i += 5;
-                int colon = text.indexOf(QLatin1Char(':'), i);
+                const int colon = text.indexOf(QLatin1Char(':'), i);
                 if (colon < 0) continue;
                 i = colon;
-                i++;
+                ++i;
                 while (i < textLen) {
                     if (!text[i].isSpace()) break;
-                    i++;
+                    ++i;
                 }
-                int semicolon = text.indexOf(QLatin1Char(';'));
+                int semicolon = text.indexOf(QLatin1Char(';'), i);
                 if (semicolon < 0) semicolon = textLen;
-                QString color = text.mid(i, semicolon - i);
+                const QStringRef color = text.midRef(i, semicolon - i);
                 QTextCharFormat f = _formats[CodeBlock];
                 QColor c(color);
                 if (color.startsWith(QLatin1String("rgb"))) {
-                    int t = text.indexOf(QChar('('), i);
-                    int rPos = text.indexOf(QChar(','), t);
-                    int gPos = text.indexOf(QChar(','), rPos + 1);
-                    int bPos = text.indexOf(QChar(')'), gPos);
+                    const int t = text.indexOf(QLatin1Char('('), i);
+                    const int rPos = text.indexOf(QLatin1Char(','), t);
+                    const int gPos = text.indexOf(QLatin1Char(','), rPos + 1);
+                    const int bPos = text.indexOf(QLatin1Char(')'), gPos);
                     if (rPos > -1 && gPos > -1 && bPos > -1) {
                         const QStringRef r = text.midRef(t + 1, rPos - (t + 1));
                         const QStringRef g =
