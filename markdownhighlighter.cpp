@@ -1830,6 +1830,7 @@ void MarkdownHighlighter::setHeadingStyles(HighlighterState rule,
 void MarkdownHighlighter::highlightAdditionalRules(
     const QVector<HighlightingRule> &rules, const QString &text) {
     const auto &maskedFormat = _formats[HighlighterState::MaskedSyntax];
+    _linkRanges.clear();
 
     for (const HighlightingRule &rule : rules) {
         // continue if another current block state was already set if
@@ -1863,6 +1864,14 @@ void MarkdownHighlighter::highlightAdditionalRules(
                     // setHeadingStyles(format, match, maskedGroup);
 
                 } else {
+
+                    //store masked part of the link as a range
+                    if (rule.state == Link) {
+                        _linkRanges.append({match.capturedStart(maskedGroup),
+                                          match.capturedStart(maskedGroup) +
+                                           match.capturedLength(maskedGroup)});
+                    }
+
                     setFormat(match.capturedStart(maskedGroup),
                               match.capturedLength(maskedGroup),
                               currentMaskedFormat);
@@ -1879,12 +1888,45 @@ void MarkdownHighlighter::highlightAdditionalRules(
     }
 }
 
+/**
+ * @brief helper function to check if we are in a link while highlighting inline rules
+ * @param pos
+ * @param range
+ */
+int isInLinkRange(int pos, QVector<QPair<int,int>> &range) {
+    int j = 0;
+    for (const auto i : range ) {
+        if (pos >= i.first && pos <= i.second) {
+            //return the length of the range so that we can skip it
+            const int len = i.second - i.first;
+            range.remove(j);
+            return len;
+        }
+        ++j;
+    }
+    return -1;
+}
+
+/**
+ * @brief highlight inline rules aka Emphasis, bolds, inline code spans,
+ * underlines, strikethrough.
+ */
 void MarkdownHighlighter::highlightInlineRules(const QString &text) {
     if (text.isEmpty()) return;
 
     bool isEmStrongDone = false;
 
+    //TODO: Add Links and Images parsing
     for (int i = 0; i < text.length(); ++i) {
+        //make sure we are not in a link range
+        if (!_linkRanges.isEmpty()) {
+            const int res = isInLinkRange(i, _linkRanges);
+            if (res > -1) {
+                i += res - 1;
+                continue;
+            }
+        }
+
         if (text.at(i) == QLatin1Char('`') || text.at(i) == QLatin1Char('~')) {
             i = highlightInlineSpans(text, i, text.at(i));
         } else if (text.at(i) == QLatin1Char('<') && i + 3 < text.length() &&
