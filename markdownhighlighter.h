@@ -278,6 +278,7 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
     void reHighlightDirtyBlocks();
 
     QVector<HighlightingRule> _highlightingRules;
+    QVector<QPair<int,int>> _linkRanges;
     static QHash<HighlighterState, QTextCharFormat> _formats;
     static QHash<QString, HighlighterState> _langStringToEnum;
     QVector<QTextBlock> _dirtyTextBlocks;
