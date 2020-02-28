@@ -630,8 +630,7 @@ void MarkdownHighlighter::highlightSubHeadline(const QString &text,
         // causes text to be formatted the same way when writing after
         // the text
         if (previousBlockState() != state) {
-            //            addDirtyBlock(previousBlock);
-            highlightBlock(previousBlock.text());
+            addDirtyBlock(previousBlock);
             previousBlock.setUserState(state);
         }
     }
@@ -1767,9 +1766,12 @@ void MarkdownHighlighter::highlightLists(const QString &text) {
         return;
     }
 
-    // check for a space after it
-    if (spaces + 1 < text.length() && text.at(spaces + 1) != QLatin1Char(' '))
+    if (spaces + 1 >= text.length())
         return;
+    // check for a space after it
+    if (text.at(spaces + 1) != QLatin1Char(' '))
+        return;
+
     // check if we are in checkbox list
     if (spaces + 2 < text.length() && text.at(spaces + 2) == QLatin1Char('[')) {
         if (spaces + 4 >= text.length()) return;
