@@ -1867,9 +1867,11 @@ void MarkdownHighlighter::highlightAdditionalRules(
 
                     //store masked part of the link as a range
                     if (rule.state == Link) {
-                        _linkRanges.append({match.capturedStart(maskedGroup),
-                                          match.capturedStart(maskedGroup) +
-                                           match.capturedLength(maskedGroup)});
+                        const int start = match.capturedStart(maskedGroup);
+                        const int end = match.capturedStart(maskedGroup) + match.capturedLength(maskedGroup);
+                        if (!_linkRanges.contains({start, end})) {
+                            _linkRanges.append({start, end});
+                        }
                     }
 
                     setFormat(match.capturedStart(maskedGroup),
