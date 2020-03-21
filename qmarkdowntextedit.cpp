@@ -978,15 +978,18 @@ bool QMarkdownTextEdit::openLinkAtCursorPosition() {
     const QUrl url = QUrl(urlString);
     const bool isRelativeFileUrl =
         urlString.startsWith(QLatin1String("file://.."));
+    const bool isLegacyAttachmentUrl =
+            urlString.startsWith(QLatin1String("file://attachments"));
 
     qDebug() << __func__ << " - 'emit urlClicked( urlString )': " << urlString;
 
     emit urlClicked(urlString);
 
-    if ((url.isValid() && isValidUrl(urlString)) || isRelativeFileUrl) {
+    if ((url.isValid() && isValidUrl(urlString)) || isRelativeFileUrl ||
+            isLegacyAttachmentUrl) {
         // ignore some schemata
         if (!(_ignoredClickUrlSchemata.contains(url.scheme()) ||
-              isRelativeFileUrl)) {
+              isRelativeFileUrl || isLegacyAttachmentUrl)) {
             // open the url
             openUrl(urlString);
         }
