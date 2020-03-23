@@ -718,6 +718,8 @@ bool QMarkdownTextEdit::quotationMarkCheck(const QChar quotationCharacter) {
     const QString &text = cursor.block().text();
     const int textLength = text.length();
 
+    if (!text.at(positionInBlock - 1).isSpace()) return false;
+
     // if we are at the end of the line we just want to enter the character
     if (positionInBlock >= textLength) {
         return handleBracketClosing(quotationCharacter);
