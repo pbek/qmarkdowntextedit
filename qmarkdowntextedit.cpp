@@ -94,19 +94,14 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
  * @param enabled
  */
 void QMarkdownTextEdit::setHighlightingEnabled(bool enabled) {
-    if (_highlightingEnabled == enabled) {
+    if (_highlightingEnabled == enabled || _highlighter == nullptr) {
         return;
     }
 
     _highlightingEnabled = enabled;
-    if (!enabled) {
-        return;
-    }
-    if (_highlighter) {
-        _highlighter->setDocument(enabled ? document() : Q_NULLPTR);
-    }
+    _highlighter->setDocument(enabled ? document() : Q_NULLPTR);
 
-    if (enabled && _highlighter) {
+    if (enabled) {
         _highlighter->rehighlight();
     }
 }
