@@ -98,7 +98,9 @@ void QMarkdownTextEdit::setHighlightingEnabled(bool enabled) {
         return;
     }
 
-    _highlighter->setDocument(enabled ? document() : Q_NULLPTR);
+    if (_highlighter != nullptr) {
+        _highlighter->setDocument(enabled ? document() : Q_NULLPTR);
+    }
     _highlightingEnabled = enabled;
 
     if (enabled) {
@@ -720,7 +722,7 @@ bool QMarkdownTextEdit::quotationMarkCheck(const QChar quotationCharacter) {
     const int textLength = text.length();
 
     if (positionInBlock != 0 && !text.at(positionInBlock - 1).isSpace())
-      return false;
+        return false;
 
     // if we are at the end of the line we just want to enter the character
     if (positionInBlock >= textLength) {
@@ -983,14 +985,14 @@ bool QMarkdownTextEdit::openLinkAtCursorPosition() {
     const bool isRelativeFileUrl =
         urlString.startsWith(QLatin1String("file://.."));
     const bool isLegacyAttachmentUrl =
-            urlString.startsWith(QLatin1String("file://attachments"));
+        urlString.startsWith(QLatin1String("file://attachments"));
 
     qDebug() << __func__ << " - 'emit urlClicked( urlString )': " << urlString;
 
     emit urlClicked(urlString);
 
     if ((url.isValid() && isValidUrl(urlString)) || isRelativeFileUrl ||
-            isLegacyAttachmentUrl) {
+        isLegacyAttachmentUrl) {
         // ignore some schemata
         if (!(_ignoredClickUrlSchemata.contains(url.scheme()) ||
               isRelativeFileUrl || isLegacyAttachmentUrl)) {
