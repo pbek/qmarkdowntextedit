@@ -42,6 +42,7 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
     installEventFilter(this);
     viewport()->installEventFilter(this);
     _autoTextOptions = AutoTextOption::BracketClosing;
+    _autoTextOptions.setFlag(AutoTextOption::BracketRemoval);
 
     // markdown highlighting is enabled by default
     _highlightingEnabled = true;
@@ -587,7 +588,7 @@ bool QMarkdownTextEdit::handleBracketClosing(const QChar openingCharacter,
         return true;
     } else {
         // if not text was selected check if we are inside the text
-        int positionInBlock = cursor.position() - cursor.block().position();
+        const int positionInBlock = cursor.position() - cursor.block().position();
 
         if (!(text.isEmpty() || positionInBlock >= text.length()) &&
             !text.at(positionInBlock).isSpace())
@@ -603,6 +604,10 @@ bool QMarkdownTextEdit::handleBracketClosing(const QChar openingCharacter,
     // - start of a list (or sublist);
     // - start of a bold text;
     if (openingCharacter == QLatin1Char('*')) {
+        //don't auto complete in code block
+        if (MarkdownHighlighter::isCodeBlock(cursor.block().userState())) {
+            return false;
+        }
         // User wants: '*'.
         // This could be the start of a list, don't autocomplete.
         if (text.isEmpty()) {
@@ -628,6 +633,12 @@ bool QMarkdownTextEdit::handleBracketClosing(const QChar openingCharacter,
             cursor.insertText(QStringLiteral("``"));
             cursorSubtract = 3;
         }
+    }
+
+    //don't auto complete in code block
+    if (openingCharacter == QLatin1Char('<') &&
+            MarkdownHighlighter::isCodeBlock(cursor.block().userState())) {
+        return false;
     }
 
     cursor.beginEditBlock();
