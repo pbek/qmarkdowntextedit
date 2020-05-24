@@ -456,10 +456,9 @@ void QMarkdownTextEdit::undo() {
         cursor.setPosition(selectionEnd - 1, QTextCursor::KeepAnchor);
         this->setTextCursor(cursor);
         _handleBracketClosingUsed = false;
-        return;
-        // else if text was selected but bracket closing wasn't used
-        // do normal undo
     } else {
+        // if text was selected but bracket closing wasn't used
+        // do normal undo
         QPlainTextEdit::undo();
         return;
     }
@@ -558,9 +557,6 @@ bool QMarkdownTextEdit::handleBracketClosing(const QChar openingCharacter,
 
     QTextCursor cursor = textCursor();
 
-    // get the current text from the block (inserted character not included)
-    QString text = cursor.block().text();
-
     if (closingCharacter.isNull()) {
         closingCharacter = openingCharacter;
     }
@@ -585,17 +581,11 @@ bool QMarkdownTextEdit::handleBracketClosing(const QChar openingCharacter,
         this->setTextCursor(cursor);
         _handleBracketClosingUsed = true;
         return true;
-    } else {
-        // if not text was selected check if we are inside the text
-        int positionInBlock = cursor.position() - cursor.block().position();
-
-        if (!(text.isEmpty() || positionInBlock >= text.length()) &&
-            !text.at(positionInBlock).isSpace())
-            return false;
     }
 
+    // get the current text from the block (inserted character not included)
     // Remove whitespace at start of string (e.g. in multilevel-lists).
-    text = text.remove(QRegExp("^\\s+"));
+    const QString text = cursor.block().text().remove(QRegExp("^\\s+"));
 
     // Default positions to move the cursor back.
     int cursorSubtract = 1;
@@ -603,22 +593,38 @@ bool QMarkdownTextEdit::handleBracketClosing(const QChar openingCharacter,
     // - start of a list (or sublist);
     // - start of a bold text;
     if (openingCharacter == QLatin1Char('*')) {
-        // User wants: '*'.
+        // don't auto complete in code block
+        bool isInCode =
+            MarkdownHighlighter::isCodeBlock(cursor.block().userState());
+        const int positionInBlock =
+            cursor.position() - cursor.block().position();
+        // we only do auto completion if there is a space before the cursor pos
+        bool hasSpaceOrAsteriskBefore =
+            positionInBlock > 0 &&
+            (text.at(positionInBlock - 1).isSpace() ||
+             text.at(positionInBlock - 1) == QLatin1Char('*'));
         // This could be the start of a list, don't autocomplete.
-        if (text.isEmpty()) {
+        bool isEmpty = text.isEmpty();
+
+        if (isInCode || !hasSpaceOrAsteriskBefore || isEmpty) {
             return false;
         }
+
+        // bold
+        bool isPreviousAsterisk =
+            positionInBlock > 0 && text.at(positionInBlock - 1) == '*';
+        bool isNextAsterisk =
+            positionInBlock < text.length() && text.at(positionInBlock) == '*';
+        if (isPreviousAsterisk && isNextAsterisk) {
+            cursorSubtract = 1;
+        }
+
         // User wants: '**'.
         // Not the start of a list, probably bold text. We autocomplete with
         // extra closingCharacter and cursorSubtract to 'catchup'.
-        else if (text == QLatin1String("*")) {
+        if (text == QLatin1String("*")) {
             cursor.insertText(QStringLiteral("*"));
             cursorSubtract = 2;
-        }
-        // User wants: '* *'.
-        // We are in a list already, proceed as normal (autocomplete).
-        else if (text == QStringLiteral("* ")) {
-            // no-op.
         }
     }
 
@@ -628,6 +634,12 @@ bool QMarkdownTextEdit::handleBracketClosing(const QChar openingCharacter,
             cursor.insertText(QStringLiteral("``"));
             cursorSubtract = 3;
         }
+    }
+
+    // don't auto complete in code block
+    if (openingCharacter == QLatin1Char('<') &&
+        MarkdownHighlighter::isCodeBlock(cursor.block().userState())) {
+        return false;
     }
 
     cursor.beginEditBlock();
