@@ -587,6 +587,11 @@ bool QMarkdownTextEdit::handleBracketClosing(const QChar openingCharacter,
     // Remove whitespace at start of string (e.g. in multilevel-lists).
     const QString text = cursor.block().text().remove(QRegExp("^\\s+"));
 
+    const int pib = cursor.positionInBlock();
+    if (pib < text.length() && !text.at(pib).isSpace()) {
+        return false;
+    }
+
     // Default positions to move the cursor back.
     int cursorSubtract = 1;
     // Special handling for `*` opening character, as this could be:
@@ -731,8 +736,10 @@ bool QMarkdownTextEdit::quotationMarkCheck(const QChar quotationCharacter) {
     const QString &text = cursor.block().text();
     const int textLength = text.length();
 
-    if (positionInBlock != 0 && !text.at(positionInBlock - 1).isSpace())
+    // if last char is not space, we are at word end, no autocompletion
+    if (positionInBlock != 0 && !text.at(positionInBlock - 1).isSpace()) {
         return false;
+    }
 
     // if we are at the end of the line we just want to enter the character
     if (positionInBlock >= textLength) {
