@@ -1031,7 +1031,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
                 if (!text[cnt].isLetter()) break;
                 ++cnt;
             }
-            i = cnt;
+            i = cnt - 1;
         }
     }
 
