@@ -1408,9 +1408,11 @@ bool QMarkdownTextEdit::handleTabEntered(bool reverse,
 
             // add or remove one tabulator key
             if (reverse) {
-                // remove one set of indentCharacters
-                whitespaces.replace(whitespaces.indexOf(indentCharacters),
-                                    indentCharacters.size(), QLatin1String(""));
+                // remove one set of indentCharacters or a tabulator
+                whitespaces.remove(QRegularExpression(QStringLiteral("^(\\t|") +
+                                                  QRegularExpression::escape(indentCharacters) +
+                                                  QStringLiteral(")")));
+
             } else {
                 whitespaces += indentCharacters;
             }
