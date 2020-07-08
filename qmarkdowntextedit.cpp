@@ -601,13 +601,10 @@ bool QMarkdownTextEdit::handleBracketClosing(const QChar openingCharacter,
         // don't auto complete in code block
         bool isInCode =
             MarkdownHighlighter::isCodeBlock(cursor.block().userState());
-        const int positionInBlock =
-            cursor.position() - cursor.block().position();
         // we only do auto completion if there is a space before the cursor pos
-        bool hasSpaceOrAsteriskBefore =
-            positionInBlock > 0 &&
-            (text.at(positionInBlock - 1).isSpace() ||
-             text.at(positionInBlock - 1) == QLatin1Char('*'));
+        bool hasSpaceOrAsteriskBefore = !text.isEmpty() && pib > 0 &&
+                                        (text.at(pib - 1).isSpace() ||
+                                         text.at(pib - 1) == QLatin1Char('*'));
         // This could be the start of a list, don't autocomplete.
         bool isEmpty = text.isEmpty();
 
@@ -616,10 +613,8 @@ bool QMarkdownTextEdit::handleBracketClosing(const QChar openingCharacter,
         }
 
         // bold
-        bool isPreviousAsterisk =
-            positionInBlock > 0 && text.at(positionInBlock - 1) == '*';
-        bool isNextAsterisk =
-            positionInBlock < text.length() && text.at(positionInBlock) == '*';
+        bool isPreviousAsterisk = pib > 0 && text.at(pib - 1) == '*';
+        bool isNextAsterisk = pib < text.length() && text.at(pib) == '*';
         if (isPreviousAsterisk && isNextAsterisk) {
             cursorSubtract = 1;
         }
