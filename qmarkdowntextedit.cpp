@@ -588,7 +588,10 @@ bool QMarkdownTextEdit::handleBracketClosing(const QChar openingCharacter,
     const QString text = cursor.block().text().remove(QRegExp("^\\s+"));
 
     const int pib = cursor.positionInBlock();
-    if (pib < text.length() && !text.at(pib).isSpace()) {
+    bool isPreviousAsterisk = pib > 0 && text.at(pib - 1) == '*';
+    bool isNextAsterisk = pib < text.length() && text.at(pib) == '*';
+    bool isMaybeBold = isPreviousAsterisk && isNextAsterisk;
+    if (pib < text.length() && !isMaybeBold && !text.at(pib).isSpace()) {
         return false;
     }
 
@@ -613,8 +616,6 @@ bool QMarkdownTextEdit::handleBracketClosing(const QChar openingCharacter,
         }
 
         // bold
-        bool isPreviousAsterisk = pib > 0 && text.at(pib - 1) == '*';
-        bool isNextAsterisk = pib < text.length() && text.at(pib) == '*';
         if (isPreviousAsterisk && isNextAsterisk) {
             cursorSubtract = 1;
         }
