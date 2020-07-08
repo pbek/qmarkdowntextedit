@@ -588,7 +588,10 @@ bool QMarkdownTextEdit::handleBracketClosing(const QChar openingCharacter,
     const QString text = cursor.block().text().remove(QRegExp("^\\s+"));
 
     const int pib = cursor.positionInBlock();
-    if (pib < text.length() && !text.at(pib).isSpace()) {
+    bool isPreviousAsterisk = pib > 0 && text.at(pib - 1) == '*';
+    bool isNextAsterisk = pib < text.length() && text.at(pib) == '*';
+    bool isMaybeBold = isPreviousAsterisk && isNextAsterisk;
+    if (pib < text.length() && !isMaybeBold && !text.at(pib).isSpace()) {
         return false;
     }
 
@@ -601,13 +604,10 @@ bool QMarkdownTextEdit::handleBracketClosing(const QChar openingCharacter,
         // don't auto complete in code block
         bool isInCode =
             MarkdownHighlighter::isCodeBlock(cursor.block().userState());
-        const int positionInBlock =
-            cursor.position() - cursor.block().position();
         // we only do auto completion if there is a space before the cursor pos
-        bool hasSpaceOrAsteriskBefore =
-            positionInBlock > 0 &&
-            (text.at(positionInBlock - 1).isSpace() ||
-             text.at(positionInBlock - 1) == QLatin1Char('*'));
+        bool hasSpaceOrAsteriskBefore = !text.isEmpty() && pib > 0 &&
+                                        (text.at(pib - 1).isSpace() ||
+                                         text.at(pib - 1) == QLatin1Char('*'));
         // This could be the start of a list, don't autocomplete.
         bool isEmpty = text.isEmpty();
 
@@ -616,10 +616,6 @@ bool QMarkdownTextEdit::handleBracketClosing(const QChar openingCharacter,
         }
 
         // bold
-        bool isPreviousAsterisk =
-            positionInBlock > 0 && text.at(positionInBlock - 1) == '*';
-        bool isNextAsterisk =
-            positionInBlock < text.length() && text.at(positionInBlock) == '*';
         if (isPreviousAsterisk && isNextAsterisk) {
             cursorSubtract = 1;
         }
@@ -730,14 +726,17 @@ bool QMarkdownTextEdit::quotationMarkCheck(const QChar quotationCharacter) {
     }
 
     QTextCursor cursor = textCursor();
-    const int positionInBlock = cursor.position() - cursor.block().position();
+    const int positionInBlock = cursor.positionInBlock();
 
     // get the current text from the block
     const QString &text = cursor.block().text();
     const int textLength = text.length();
 
     // if last char is not space, we are at word end, no autocompletion
-    if (positionInBlock != 0 && !text.at(positionInBlock - 1).isSpace()) {
+
+    const bool isBacktick = quotationCharacter == '`';
+    if (!isBacktick && positionInBlock != 0 &&
+        !text.at(positionInBlock - 1).isSpace()) {
         return false;
     }
 
@@ -1409,9 +1408,10 @@ bool QMarkdownTextEdit::handleTabEntered(bool reverse,
             // add or remove one tabulator key
             if (reverse) {
                 // remove one set of indentCharacters or a tabulator
-                whitespaces.remove(QRegularExpression(QStringLiteral("^(\\t|") +
-                                                  QRegularExpression::escape(indentCharacters) +
-                                                  QStringLiteral(")")));
+                whitespaces.remove(QRegularExpression(
+                    QStringLiteral("^(\\t|") +
+                    QRegularExpression::escape(indentCharacters) +
+                    QStringLiteral(")")));
 
             } else {
                 whitespaces += indentCharacters;
