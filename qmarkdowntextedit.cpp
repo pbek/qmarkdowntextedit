@@ -730,14 +730,17 @@ bool QMarkdownTextEdit::quotationMarkCheck(const QChar quotationCharacter) {
     }
 
     QTextCursor cursor = textCursor();
-    const int positionInBlock = cursor.position() - cursor.block().position();
+    const int positionInBlock = cursor.positionInBlock();
 
     // get the current text from the block
     const QString &text = cursor.block().text();
     const int textLength = text.length();
 
     // if last char is not space, we are at word end, no autocompletion
-    if (positionInBlock != 0 && !text.at(positionInBlock - 1).isSpace()) {
+
+    const bool isBacktick = quotationCharacter == '`';
+    if (!isBacktick && positionInBlock != 0 &&
+        !text.at(positionInBlock - 1).isSpace()) {
         return false;
     }
 
@@ -1409,9 +1412,10 @@ bool QMarkdownTextEdit::handleTabEntered(bool reverse,
             // add or remove one tabulator key
             if (reverse) {
                 // remove one set of indentCharacters or a tabulator
-                whitespaces.remove(QRegularExpression(QStringLiteral("^(\\t|") +
-                                                  QRegularExpression::escape(indentCharacters) +
-                                                  QStringLiteral(")")));
+                whitespaces.remove(QRegularExpression(
+                    QStringLiteral("^(\\t|") +
+                    QRegularExpression::escape(indentCharacters) +
+                    QStringLiteral(")")));
 
             } else {
                 whitespaces += indentCharacters;
