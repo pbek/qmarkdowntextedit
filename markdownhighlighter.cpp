@@ -896,7 +896,8 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
         [this](int i, const QMultiHash<char, QLatin1String> &data,
                const QString &text, const QTextCharFormat &fmt) -> int {
         // check if we are at the beginning OR if this is the start of a word
-        if (i == 0 || !text.at(i - 1).isLetter()) {
+        if (i == 0 || (!text.at(i - 1).isLetterOrNumber() &&
+                       text.at(i-1) != QLatin1Char('_'))) {
             const auto wordList = data.values(text.at(i).toLatin1());
             for (const QLatin1String &word : wordList) {
                 // we have a word match check
@@ -904,7 +905,8 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
                 // 2. if we have a complete word
                 if (word == text.midRef(i, word.size()) &&
                     (i + word.size() == text.length() ||
-                     !text.at(i + word.size()).isLetter())) {
+                     (!text.at(i + word.size()).isLetterOrNumber() &&
+                      text.at(i + word.size()) != QLatin1Char('_')))) {
                     setFormat(i, word.size(), fmt);
                     i += word.size();
                 }
