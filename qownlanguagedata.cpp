@@ -187,6 +187,7 @@ void initCppData() {
 
     cpp_builtin = {{('s'), QLatin1String("std")},
                    {('s'), QLatin1String("string")},
+                   {('s'), QLatin1String("string_view")},
                    {('w'), QLatin1String("wstring")},
                    {('c'), QLatin1String("cin")},
                    {('c'), QLatin1String("cout")},
