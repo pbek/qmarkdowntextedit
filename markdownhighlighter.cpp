@@ -1698,19 +1698,22 @@ void MarkdownHighlighter::highlightCommentBlock(const QString &text) {
  * @param text
  */
 void MarkdownHighlighter::highlightThematicBreak(const QString &text) {
-    if (text.isEmpty() || text.startsWith(QLatin1String("    ")) ||
-        text.startsWith(QLatin1Char('\t')))
-        return;
-    const auto &sText = text.simplified();
-    if (sText.isEmpty()) return;
+    int i = 0;
+    for (; i < 4 && i < text.length(); ++i) {
+        if (text.at(i) != QLatin1Char(' '))
+            break;
+    }
 
-    if (!sText.startsWith(QLatin1Char('-')) &&
-        !sText.startsWith(QLatin1Char('_')) &&
-        !sText.startsWith(QLatin1Char('*')))
+    const QStringRef sText = text.midRef(i);
+    if (sText.isEmpty() || i == 4 || text.startsWith(QLatin1Char('\t')))
         return;
-    const QChar c = sText.at(0);
-    bool hasSameChars = true;
+
+    const char c = sText.at(0).toLatin1();
+    if (c != '-' && c != '_' && c != '*')
+        return;
+
     int len = 0;
+    bool hasSameChars = true;
     for (int i = 0; i < sText.length(); ++i) {
         if (c != sText.at(i) && sText.at(i) != QLatin1Char(' ')) {
             hasSameChars = false;
@@ -1720,13 +1723,8 @@ void MarkdownHighlighter::highlightThematicBreak(const QString &text) {
     }
     if (len < 3) return;
 
-    QTextCharFormat f = _formats[HorizontalRuler];
-    if (c == QLatin1Char('-'))
-        f.setFontLetterSpacing(80);
-    else if (c == QLatin1Char('_'))
-        f.setFontUnderline(true);
-
-    if (hasSameChars) setFormat(0, text.length(), f);
+    if (hasSameChars)
+        setFormat(0, text.length(), _formats[HorizontalRuler]);
 }
 
 /**
