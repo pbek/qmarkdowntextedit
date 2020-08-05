@@ -232,7 +232,7 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
 
     void highlightInlineRules(const QString &text);
 
-    Q_REQUIRED_RESULT int highlightInlineSpans(const QString &text,
+    void highlightInlineSpans(const QString &text,
                                                int currentPos, const QChar c);
 
     void highlightEmAndStrong(const QString &text, const int pos);

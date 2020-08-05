@@ -1908,9 +1908,8 @@ int isInLinkRange(int pos, QVector<QPair<int, int>> &range) {
  * underlines, strikethrough.
  */
 void MarkdownHighlighter::highlightInlineRules(const QString &text) {
-    if (text.isEmpty()) return;
-
     bool isEmStrongDone = false;
+    bool inlineSpans = false;
 
     // TODO: Add Links and Images parsing
     for (int i = 0; i < text.length(); ++i) {
@@ -1923,8 +1922,10 @@ void MarkdownHighlighter::highlightInlineRules(const QString &text) {
             }
         }
 
-        if (text.at(i) == QLatin1Char('`') || text.at(i) == QLatin1Char('~')) {
-            i = highlightInlineSpans(text, i, text.at(i));
+        if (!inlineSpans && (text.at(i) == QLatin1Char('`') ||
+                             text.at(i) == QLatin1Char('~'))) {
+            highlightInlineSpans(text, i, text.at(i));
+            inlineSpans = true;
         } else if (text.at(i) == QLatin1Char('<') && i + 3 < text.length() &&
                    text.at(i + 1) == QLatin1Char('!') &&
                    text.at(i + 2) == QLatin1Char('-') &&
@@ -1954,10 +1955,8 @@ void MarkdownHighlighter::highlightInlineRules(const QString &text) {
 ` foo `` bar `
 <code>foo `` bar</code>
 */
-int MarkdownHighlighter::highlightInlineSpans(const QString &text,
+void MarkdownHighlighter::highlightInlineSpans(const QString &text,
                                               int currentPos, const QChar c) {
-    if (currentPos + 1 >= text.length()) return currentPos;
-
     for (int i = currentPos; i < text.length(); ++i) {
         if (text.at(i) != c) continue;
 
@@ -1978,29 +1977,31 @@ int MarkdownHighlighter::highlightInlineSpans(const QString &text,
         i += len;
         const int next = text.indexOf(seq, i);
         if (next == -1) {
-            return currentPos + len;
+            return;
         }
         if (next + len < text.length() && text.at(next + len) == c) continue;
 
+        //get existing format if any
+        //we want to append to the existing format, not overwrite it
         QTextCharFormat fmt = QSyntaxHighlighter::format(start + 1);
-        QTextCharFormat inlineFmt = _formats[NoState];
+        QTextCharFormat inlineFmt;
+        //select appropriate format for current text
         if (c != QLatin1Char('~')) inlineFmt = _formats[InlineCodeBlock];
         inlineFmt.setFontUnderline(fmt.fontUnderline());
         inlineFmt.setUnderlineStyle(fmt.underlineStyle());
+        //make sure we don't change font size / existing formatting
         if (fmt.fontPointSize() > 0)
             inlineFmt.setFontPointSize(fmt.fontPointSize());
         inlineFmt.setFontItalic(fmt.fontItalic());
         if (c == QLatin1Char('~')) inlineFmt.setFontStrikeOut(true);
+        //format the text
         setFormat(start + 1, next - start, inlineFmt);
-        // highlight backticks as masked
+        // format backticks as masked
         setFormat(start, len, _formats[MaskedSyntax]);
         setFormat(next, len, _formats[MaskedSyntax]);
 
         i = next + len;
-        currentPos = i;
     }
-
-    return currentPos;
 }
 
 /**
