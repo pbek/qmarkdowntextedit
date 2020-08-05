@@ -68,7 +68,7 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
                state == MarkdownHighlighter::CodeBlockTildeEnd;
     }
 
-    // we use some predefined numbers here to be compatible with
+    // we used some predefined numbers here to be compatible with
     // the peg-markdown parser
     enum HighlighterState {
         NoState = -1,
@@ -163,16 +163,6 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
         CodeMake = 244
     };
     Q_ENUMS(HighlighterState)
-
-    //    enum BlockState {
-    //        NoBlockState = 0,
-    //        H1,
-    //        H2,
-    //        H3,
-    //        Table,
-    //        CodeBlock,
-    //        CodeBlockEnd
-    //    };
 
     static void setTextFormats(
         QHash<HighlighterState, QTextCharFormat> formats);
@@ -277,13 +267,14 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
 
     void reHighlightDirtyBlocks();
 
-    QVector<HighlightingRule> _highlightingRules;
-    QVector<QPair<int,int>> _linkRanges;
-    static QHash<HighlighterState, QTextCharFormat> _formats;
-    static QHash<QString, HighlighterState> _langStringToEnum;
-    QVector<QTextBlock> _dirtyTextBlocks;
-    QTimer *_timer;
     bool _highlightingFinished;
     HighlightingOptions _highlightingOptions;
+    QTimer *_timer;
+    QVector<QTextBlock> _dirtyTextBlocks;
+    QVector<HighlightingRule> _highlightingRules;
+    QVector<QPair<int,int>> _linkRanges;
+
+    static QHash<HighlighterState, QTextCharFormat> _formats;
+    static QHash<QString, HighlighterState> _langStringToEnum;
     static constexpr int tildeOffset = 300;
 };

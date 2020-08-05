@@ -16,6 +16,7 @@
  */
 
 #include "markdownhighlighter.h"
+#include "qownlanguagedata.h"
 
 #include <QDebug>
 #include <QRegularExpression>
@@ -25,8 +26,6 @@
 #include <QTimer>
 #include <utility>
 
-#include "qownlanguagedata.h"
-
 QHash<QString, MarkdownHighlighter::HighlighterState>
     MarkdownHighlighter::_langStringToEnum;
 QHash<MarkdownHighlighter::HighlighterState, QTextCharFormat>
@@ -34,10 +33,6 @@ QHash<MarkdownHighlighter::HighlighterState, QTextCharFormat>
 
 /**
  * Markdown syntax highlighting
- *
- * markdown syntax:
- * http://daringfireball.net/projects/markdown/syntax
- *
  * @param parent
  * @return
  */
@@ -64,9 +59,6 @@ MarkdownHighlighter::MarkdownHighlighter(
  * Does jobs every second
  */
 void MarkdownHighlighter::timerTick() {
-    // qDebug() << "timerTick: " << this << ", " <<
-    // this->parent()->parent()->parent()->objectName();
-
     // re-highlight all dirty blocks
     reHighlightDirtyBlocks();
 
@@ -565,14 +557,14 @@ void MarkdownHighlighter::highlightHeadline(const QString &text) {
 
     if (text.at(spacesOffset) == QLatin1Char('=') && prevSpaces < 4) {
         const bool pattern1 =
-            hasOnlyHeadChars(text, QLatin1Char('='), spacesOffset);
+            !prev.isEmpty() && hasOnlyHeadChars(text, QLatin1Char('='), spacesOffset);
         if (pattern1) {
             highlightSubHeadline(text, H1);
             return;
         }
     } else if (text.at(spacesOffset) == QLatin1Char('-') && prevSpaces < 4) {
         const bool pattern2 =
-            hasOnlyHeadChars(text, QLatin1Char('-'), spacesOffset);
+            !prev.isEmpty() && hasOnlyHeadChars(text, QLatin1Char('-'), spacesOffset);
         if (pattern2) {
             highlightSubHeadline(text, H2);
             return;
@@ -608,9 +600,6 @@ void MarkdownHighlighter::highlightSubHeadline(const QString &text,
     const QTextCharFormat &maskedFormat =
         _formats[HighlighterState::MaskedSyntax];
     QTextBlock previousBlock = currentBlock().previous();
-    bool prevEmpty = previousBlock.text().trimmed().isEmpty();
-
-    if (prevEmpty) return;
 
     // we check for both H1/H2 so that if the user changes his mind, and changes
     // === to ---, changes be reflected immediately
@@ -645,15 +634,15 @@ void MarkdownHighlighter::highlightIndentedCodeBlock(const QString &text) {
     if (text.isEmpty() || (!text.startsWith(QLatin1String("    ")) &&
                            !text.startsWith(QLatin1Char('\t'))))
         return;
+
+    const QString &trimmed = text.trimmed();
     // previous line must be empty according to CommonMark except if it is a
     // heading https://spec.commonmark.org/0.29/#indented-code-block
-    if (!currentBlock().previous().text().trimmed().isEmpty() &&
+    if (!trimmed.isEmpty() &&
         previousBlockState() != CodeBlockIndented &&
         (previousBlockState() < H1 || previousBlockState() > H6) &&
         previousBlockState() != HeadlineEnd)
         return;
-
-    const QString &trimmed = text.trimmed();
 
     // should not be in a list
     if (trimmed.startsWith(QLatin1String("- ")) ||
@@ -1516,7 +1505,6 @@ void MarkdownHighlighter::cssHighlighter(const QString &text) {
                 int semicolon = text.indexOf(QLatin1Char(';'), i);
                 if (semicolon < 0) semicolon = textLen;
                 const QString color = text.mid(i, semicolon - i);
-                QTextCharFormat f = _formats[CodeBlock];
                 QColor c(color);
                 if (color.startsWith(QLatin1String("rgb"))) {
                     const int t = text.indexOf(QLatin1Char('('), i);
@@ -1558,6 +1546,7 @@ void MarkdownHighlighter::cssHighlighter(const QString &text) {
                     foreground = c.lighter(lightness);
                 }
 
+                QTextCharFormat f = _formats[CodeBlock];
                 f.setBackground(c);
                 f.setForeground(foreground);
                 // clear prev format
@@ -1632,11 +1621,6 @@ void MarkdownHighlighter::makeHighlighter(const QString &text) {
  * @param text
  */
 void MarkdownHighlighter::highlightFrontmatterBlock(const QString &text) {
-    // return if there is no frontmatter in this document
-    if (document()->firstBlock().text() != QLatin1String("---")) {
-        return;
-    }
-
     if (text == QLatin1String("---")) {
         const bool foundEnd =
             previousBlockState() == HighlighterState::FrontmatterBlock;
