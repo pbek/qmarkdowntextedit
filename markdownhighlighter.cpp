@@ -16,6 +16,7 @@
  */
 
 #include "markdownhighlighter.h"
+#include "qownlanguagedata.h"
 
 #include <QDebug>
 #include <QRegularExpression>
@@ -25,8 +26,6 @@
 #include <QTimer>
 #include <utility>
 
-#include "qownlanguagedata.h"
-
 QHash<QString, MarkdownHighlighter::HighlighterState>
     MarkdownHighlighter::_langStringToEnum;
 QHash<MarkdownHighlighter::HighlighterState, QTextCharFormat>
@@ -34,10 +33,6 @@ QHash<MarkdownHighlighter::HighlighterState, QTextCharFormat>
 
 /**
  * Markdown syntax highlighting
- *
- * markdown syntax:
- * http://daringfireball.net/projects/markdown/syntax
- *
  * @param parent
  * @return
  */
@@ -64,9 +59,6 @@ MarkdownHighlighter::MarkdownHighlighter(
  * Does jobs every second
  */
 void MarkdownHighlighter::timerTick() {
-    // qDebug() << "timerTick: " << this << ", " <<
-    // this->parent()->parent()->parent()->objectName();
-
     // re-highlight all dirty blocks
     reHighlightDirtyBlocks();
 
@@ -565,14 +557,14 @@ void MarkdownHighlighter::highlightHeadline(const QString &text) {
 
     if (text.at(spacesOffset) == QLatin1Char('=') && prevSpaces < 4) {
         const bool pattern1 =
-            hasOnlyHeadChars(text, QLatin1Char('='), spacesOffset);
+            !prev.isEmpty() && hasOnlyHeadChars(text, QLatin1Char('='), spacesOffset);
         if (pattern1) {
             highlightSubHeadline(text, H1);
             return;
         }
     } else if (text.at(spacesOffset) == QLatin1Char('-') && prevSpaces < 4) {
         const bool pattern2 =
-            hasOnlyHeadChars(text, QLatin1Char('-'), spacesOffset);
+            !prev.isEmpty() && hasOnlyHeadChars(text, QLatin1Char('-'), spacesOffset);
         if (pattern2) {
             highlightSubHeadline(text, H2);
             return;
@@ -608,9 +600,6 @@ void MarkdownHighlighter::highlightSubHeadline(const QString &text,
     const QTextCharFormat &maskedFormat =
         _formats[HighlighterState::MaskedSyntax];
     QTextBlock previousBlock = currentBlock().previous();
-    bool prevEmpty = previousBlock.text().trimmed().isEmpty();
-
-    if (prevEmpty) return;
 
     // we check for both H1/H2 so that if the user changes his mind, and changes
     // === to ---, changes be reflected immediately
@@ -645,15 +634,15 @@ void MarkdownHighlighter::highlightIndentedCodeBlock(const QString &text) {
     if (text.isEmpty() || (!text.startsWith(QLatin1String("    ")) &&
                            !text.startsWith(QLatin1Char('\t'))))
         return;
+
+    const QString &trimmed = text.trimmed();
     // previous line must be empty according to CommonMark except if it is a
     // heading https://spec.commonmark.org/0.29/#indented-code-block
-    if (!currentBlock().previous().text().trimmed().isEmpty() &&
+    if (!trimmed.isEmpty() &&
         previousBlockState() != CodeBlockIndented &&
         (previousBlockState() < H1 || previousBlockState() > H6) &&
         previousBlockState() != HeadlineEnd)
         return;
-
-    const QString &trimmed = text.trimmed();
 
     // should not be in a list
     if (trimmed.startsWith(QLatin1String("- ")) ||
@@ -1516,7 +1505,6 @@ void MarkdownHighlighter::cssHighlighter(const QString &text) {
                 int semicolon = text.indexOf(QLatin1Char(';'), i);
                 if (semicolon < 0) semicolon = textLen;
                 const QString color = text.mid(i, semicolon - i);
-                QTextCharFormat f = _formats[CodeBlock];
                 QColor c(color);
                 if (color.startsWith(QLatin1String("rgb"))) {
                     const int t = text.indexOf(QLatin1Char('('), i);
@@ -1558,6 +1546,7 @@ void MarkdownHighlighter::cssHighlighter(const QString &text) {
                     foreground = c.lighter(lightness);
                 }
 
+                QTextCharFormat f = _formats[CodeBlock];
                 f.setBackground(c);
                 f.setForeground(foreground);
                 // clear prev format
@@ -1632,11 +1621,6 @@ void MarkdownHighlighter::makeHighlighter(const QString &text) {
  * @param text
  */
 void MarkdownHighlighter::highlightFrontmatterBlock(const QString &text) {
-    // return if there is no frontmatter in this document
-    if (document()->firstBlock().text() != QLatin1String("---")) {
-        return;
-    }
-
     if (text == QLatin1String("---")) {
         const bool foundEnd =
             previousBlockState() == HighlighterState::FrontmatterBlock;
@@ -1698,19 +1682,22 @@ void MarkdownHighlighter::highlightCommentBlock(const QString &text) {
  * @param text
  */
 void MarkdownHighlighter::highlightThematicBreak(const QString &text) {
-    if (text.isEmpty() || text.startsWith(QLatin1String("    ")) ||
-        text.startsWith(QLatin1Char('\t')))
-        return;
-    const auto &sText = text.simplified();
-    if (sText.isEmpty()) return;
+    int i = 0;
+    for (; i < 4 && i < text.length(); ++i) {
+        if (text.at(i) != QLatin1Char(' '))
+            break;
+    }
 
-    if (!sText.startsWith(QLatin1Char('-')) &&
-        !sText.startsWith(QLatin1Char('_')) &&
-        !sText.startsWith(QLatin1Char('*')))
+    const QStringRef sText = text.midRef(i);
+    if (sText.isEmpty() || i == 4 || text.startsWith(QLatin1Char('\t')))
         return;
-    const QChar c = sText.at(0);
-    bool hasSameChars = true;
+
+    const char c = sText.at(0).toLatin1();
+    if (c != '-' && c != '_' && c != '*')
+        return;
+
     int len = 0;
+    bool hasSameChars = true;
     for (int i = 0; i < sText.length(); ++i) {
         if (c != sText.at(i) && sText.at(i) != QLatin1Char(' ')) {
             hasSameChars = false;
@@ -1720,13 +1707,8 @@ void MarkdownHighlighter::highlightThematicBreak(const QString &text) {
     }
     if (len < 3) return;
 
-    QTextCharFormat f = _formats[HorizontalRuler];
-    if (c == QLatin1Char('-'))
-        f.setFontLetterSpacing(80);
-    else if (c == QLatin1Char('_'))
-        f.setFontUnderline(true);
-
-    if (hasSameChars) setFormat(0, text.length(), f);
+    if (hasSameChars)
+        setFormat(0, text.length(), _formats[HorizontalRuler]);
 }
 
 /**
@@ -1910,9 +1892,8 @@ int isInLinkRange(int pos, QVector<QPair<int, int>> &range) {
  * underlines, strikethrough.
  */
 void MarkdownHighlighter::highlightInlineRules(const QString &text) {
-    if (text.isEmpty()) return;
-
     bool isEmStrongDone = false;
+    bool inlineSpans = false;
 
     // TODO: Add Links and Images parsing
     for (int i = 0; i < text.length(); ++i) {
@@ -1925,8 +1906,10 @@ void MarkdownHighlighter::highlightInlineRules(const QString &text) {
             }
         }
 
-        if (text.at(i) == QLatin1Char('`') || text.at(i) == QLatin1Char('~')) {
-            i = highlightInlineSpans(text, i, text.at(i));
+        if (!inlineSpans && (text.at(i) == QLatin1Char('`') ||
+                             text.at(i) == QLatin1Char('~'))) {
+            highlightInlineSpans(text, i, text.at(i));
+            inlineSpans = true;
         } else if (text.at(i) == QLatin1Char('<') && i + 3 < text.length() &&
                    text.at(i + 1) == QLatin1Char('!') &&
                    text.at(i + 2) == QLatin1Char('-') &&
@@ -1956,10 +1939,8 @@ void MarkdownHighlighter::highlightInlineRules(const QString &text) {
 ` foo `` bar `
 <code>foo `` bar</code>
 */
-int MarkdownHighlighter::highlightInlineSpans(const QString &text,
+void MarkdownHighlighter::highlightInlineSpans(const QString &text,
                                               int currentPos, const QChar c) {
-    if (currentPos + 1 >= text.length()) return currentPos;
-
     for (int i = currentPos; i < text.length(); ++i) {
         if (text.at(i) != c) continue;
 
@@ -1980,29 +1961,31 @@ int MarkdownHighlighter::highlightInlineSpans(const QString &text,
         i += len;
         const int next = text.indexOf(seq, i);
         if (next == -1) {
-            return currentPos + len;
+            return;
         }
         if (next + len < text.length() && text.at(next + len) == c) continue;
 
+        //get existing format if any
+        //we want to append to the existing format, not overwrite it
         QTextCharFormat fmt = QSyntaxHighlighter::format(start + 1);
-        QTextCharFormat inlineFmt = _formats[NoState];
+        QTextCharFormat inlineFmt;
+        //select appropriate format for current text
         if (c != QLatin1Char('~')) inlineFmt = _formats[InlineCodeBlock];
         inlineFmt.setFontUnderline(fmt.fontUnderline());
         inlineFmt.setUnderlineStyle(fmt.underlineStyle());
+        //make sure we don't change font size / existing formatting
         if (fmt.fontPointSize() > 0)
             inlineFmt.setFontPointSize(fmt.fontPointSize());
         inlineFmt.setFontItalic(fmt.fontItalic());
         if (c == QLatin1Char('~')) inlineFmt.setFontStrikeOut(true);
+        //format the text
         setFormat(start + 1, next - start, inlineFmt);
-        // highlight backticks as masked
+        // format backticks as masked
         setFormat(start, len, _formats[MaskedSyntax]);
         setFormat(next, len, _formats[MaskedSyntax]);
 
         i = next + len;
-        currentPos = i;
     }
-
-    return currentPos;
 }
 
 /**
