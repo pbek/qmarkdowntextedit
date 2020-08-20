@@ -1,4 +1,5 @@
 # [QMarkdownTextEdit](https://github.com/pbek/qmarkdowntextedit)
+[![Build Status GitHub Actions](https://github.com/pbek/qmarkdowntextedit/workflows/Build/badge.svg?branch=develop)](https://github.com/pbek/qmarkdowntextedit/actions)
 [![Build Status Linux/OS X](https://travis-ci.org/pbek/qmarkdowntextedit.svg?branch=develop)](https://travis-ci.org/pbek/qmarkdowntextedit)
 [![Build Status Windows](https://ci.appveyor.com/api/projects/status/github/pbek/qmarkdowntextedit)](https://ci.appveyor.com/project/pbek/qmarkdowntextedit)
 
