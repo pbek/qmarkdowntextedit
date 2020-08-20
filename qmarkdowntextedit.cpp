@@ -836,12 +836,11 @@ bool QMarkdownTextEdit::handleBracketRemoval() {
 
     int charToRemoveIndex = -1;
     if (isOpener) {
-        bool closer = false;
+        bool closer = true;
         charToRemoveIndex = text.indexOf(charToRemove, positionInBlock);
+        if (charToRemoveIndex == -1) return false;
         if (pos == 5 || pos == 6)
             closer = isQuotCloser(charToRemoveIndex, text);
-        else
-            closer = charToRemoveIndex != -1;
         if (!closer) return false;
         cursor.setPosition(position + (charToRemoveIndex - positionInBlock));
         cursor.deleteChar();
