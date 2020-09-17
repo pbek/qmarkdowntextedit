@@ -30,6 +30,7 @@ QHash<QString, MarkdownHighlighter::HighlighterState>
     MarkdownHighlighter::_langStringToEnum;
 QHash<MarkdownHighlighter::HighlighterState, QTextCharFormat>
     MarkdownHighlighter::_formats;
+QVector<MarkdownHighlighter::HighlightingRule> MarkdownHighlighter::_highlightingRules;
 
 /**
  * Markdown syntax highlighting
@@ -1908,19 +1909,26 @@ void MarkdownHighlighter::highlightInlineRules(const QString &text) {
 
         if (!inlineSpans && (text.at(i) == QLatin1Char('`') ||
                              text.at(i) == QLatin1Char('~'))) {
+
             highlightInlineSpans(text, i, text.at(i));
             inlineSpans = true;
+
         } else if (text.at(i) == QLatin1Char('<') && i + 3 < text.length() &&
                    text.at(i + 1) == QLatin1Char('!') &&
                    text.at(i + 2) == QLatin1Char('-') &&
                    text.at(i + 3) == QLatin1Char('-')) {
+
             i = highlightInlineComment(text, i);
+
         } else if (!isEmStrongDone && (text.at(i) == QLatin1Char('*') ||
                                        text.at(i) == QLatin1Char('_'))) {
+
             highlightEmAndStrong(text, i);
             isEmStrongDone = true;
+
         }
     }
+    _codeSpanRanges.clear();
 }
 
 /** @brief highlight inline code spans -> `code` and highlight strikethroughs
@@ -1969,17 +1977,32 @@ void MarkdownHighlighter::highlightInlineSpans(const QString &text,
         //we want to append to the existing format, not overwrite it
         QTextCharFormat fmt = QSyntaxHighlighter::format(start + 1);
         QTextCharFormat inlineFmt;
+
         //select appropriate format for current text
-        if (c != QLatin1Char('~')) inlineFmt = _formats[InlineCodeBlock];
-        inlineFmt.setFontUnderline(fmt.fontUnderline());
-        inlineFmt.setUnderlineStyle(fmt.underlineStyle());
+        if (c != QLatin1Char('~'))
+            inlineFmt = _formats[InlineCodeBlock];
+
+
         //make sure we don't change font size / existing formatting
         if (fmt.fontPointSize() > 0)
             inlineFmt.setFontPointSize(fmt.fontPointSize());
-        inlineFmt.setFontItalic(fmt.fontItalic());
-        if (c == QLatin1Char('~')) inlineFmt.setFontStrikeOut(true);
+
+        if (c == QLatin1Char('~'))
+        {
+            inlineFmt.setFontStrikeOut(true);
+            //we don't want these properties for "inline code span"
+            inlineFmt.setFontItalic(fmt.fontItalic());
+            inlineFmt.setFontWeight(fmt.fontWeight());
+            inlineFmt.setFontUnderline(fmt.fontUnderline());
+            inlineFmt.setUnderlineStyle(fmt.underlineStyle());
+        }
+
+        if (c == QLatin1Char('`'))
+            _codeSpanRanges.append({start, next});
+
         //format the text
         setFormat(start + 1, next - start, inlineFmt);
+
         // format backticks as masked
         setFormat(start, len, _formats[MaskedSyntax]);
         setFormat(next, len, _formats[MaskedSyntax]);
@@ -2138,6 +2161,15 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text,
     for (int i = pos; i < text.length(); ++i) {
         if (text.at(i) != QLatin1Char('_') && text.at(i) != QLatin1Char('*'))
             continue;
+
+        bool isInCodeSpan = std::find_if(_codeSpanRanges.cbegin(), _codeSpanRanges.cend(), [i](QPair<int, int> pair){
+            if (i >= pair.first && i <= pair.second)
+                return true;
+            return false;
+        }) != _codeSpanRanges.cend();
+        if (isInCodeSpan)
+            continue;
+
         i = collectEmDelims(text, i, delims);
         --i;
     }
