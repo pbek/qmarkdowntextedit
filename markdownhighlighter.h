@@ -271,9 +271,10 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
     HighlightingOptions _highlightingOptions;
     QTimer *_timer;
     QVector<QTextBlock> _dirtyTextBlocks;
-    QVector<HighlightingRule> _highlightingRules;
     QVector<QPair<int,int>> _linkRanges;
+    QVector<QPair<int, int>> _codeSpanRanges;
 
+    static QVector<HighlightingRule> _highlightingRules;
     static QHash<HighlighterState, QTextCharFormat> _formats;
     static QHash<QString, HighlighterState> _langStringToEnum;
     static constexpr int tildeOffset = 300;
