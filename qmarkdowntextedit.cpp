@@ -20,6 +20,7 @@
 #include <QDir>
 #include <QGuiApplication>
 #include <QKeyEvent>
+#include <QWheelEvent>
 #include <QLayout>
 #include <QPainter>
 #include <QPainterPath>
@@ -353,6 +354,19 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
         _mouseButtonDown = true;
     } else if (event->type() == QEvent::MouseButtonDblClick) {
         _mouseButtonDown = true;
+    } else if (event->type() == QEvent::Wheel) {
+        auto *wheel = dynamic_cast<QWheelEvent*>(event);
+
+        // emit zoom signals
+        if (wheel->modifiers() == Qt::ControlModifier) {
+            if (wheel->angleDelta().y() > 0) {
+                emit zoomIn();
+            } else {
+                emit zoomOut();
+            }
+
+            return true;
+        }
     }
 
     return QPlainTextEdit::eventFilter(obj, event);

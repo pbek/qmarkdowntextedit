@@ -95,6 +95,8 @@ class QMarkdownTextEdit : public QPlainTextEdit {
 
    signals:
     void urlClicked(QString url);
+    void zoomIn();
+    void zoomOut();
 
    private:
     bool _handleBracketClosingUsed;
