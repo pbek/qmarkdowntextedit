@@ -287,8 +287,13 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             // jump to the end of the line
             QTextCursor cursor = textCursor();
             if (cursor.position() >= document()->lastBlock().position()) {
-                cursor.movePosition(QTextCursor::EndOfBlock);
-                setTextCursor(cursor);
+                cursor.movePosition(QTextCursor::EndOfLine);
+
+                // check if we are really in the last line, not only in
+                // the last block
+                if (cursor.atBlockEnd()) {
+                    setTextCursor(cursor);
+                }
             }
             return false;
         } else if ((keyEvent->key() == Qt::Key_Up) &&
@@ -300,8 +305,13 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             int endOfFirstLinePos = block.position() + block.length();
 
             if (cursor.position() <= endOfFirstLinePos) {
-                cursor.movePosition(QTextCursor::StartOfBlock);
-                setTextCursor(cursor);
+                cursor.movePosition(QTextCursor::StartOfLine);
+
+                // check if we are really in the first line, not only in
+                // the first block
+                if (cursor.atBlockStart()) {
+                    setTextCursor(cursor);
+                }
             }
             return false;
         } else if (keyEvent->key() == Qt::Key_Return) {
