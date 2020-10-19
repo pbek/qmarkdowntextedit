@@ -821,6 +821,9 @@ bool QMarkdownTextEdit::handleBracketRemoval() {
     int position = cursor.position();
     const int positionInBlock = cursor.positionInBlock();
 
+    if (_highlighter->isPosInCodeSpan(cursor.block().blockNumber(), positionInBlock))
+        return false;
+
     // return if backspace was pressed at the beginning of a block
     if (positionInBlock == 0) {
         return false;
