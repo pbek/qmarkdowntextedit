@@ -68,6 +68,8 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
                state == MarkdownHighlighter::CodeBlockTildeEnd;
     }
 
+    bool isPosInCodeSpan(int blockNum, int pos) const;
+
     // we used some predefined numbers here to be compatible with
     // the peg-markdown parser
     enum HighlighterState {
@@ -272,7 +274,9 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
     QTimer *_timer;
     QVector<QTextBlock> _dirtyTextBlocks;
     QVector<QPair<int,int>> _linkRanges;
-    QVector<QPair<int, int>> _codeSpanRanges;
+
+    using CodeSpanRanges = QVector<QPair<int,int>>;
+    QHash<int, CodeSpanRanges> _codeSpanRanges;
 
     static QVector<HighlightingRule> _highlightingRules;
     static QHash<HighlighterState, QTextCharFormat> _formats;

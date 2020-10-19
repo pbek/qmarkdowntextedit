@@ -84,7 +84,10 @@ void MarkdownHighlighter::reHighlightDirtyBlocks() {
 /**
  * Clears the dirty blocks vector
  */
-void MarkdownHighlighter::clearDirtyBlocks() { _dirtyTextBlocks.clear(); }
+void MarkdownHighlighter::clearDirtyBlocks() {
+    _codeSpanRanges.clear();
+    _dirtyTextBlocks.clear();
+}
 
 /**
  * Adds a dirty block to the list if it doesn't already exist
@@ -1928,7 +1931,6 @@ void MarkdownHighlighter::highlightInlineRules(const QString &text) {
 
         }
     }
-    _codeSpanRanges.clear();
 }
 
 /** @brief highlight inline code spans -> `code` and highlight strikethroughs
@@ -1949,6 +1951,10 @@ void MarkdownHighlighter::highlightInlineRules(const QString &text) {
 */
 void MarkdownHighlighter::highlightInlineSpans(const QString &text,
                                               int currentPos, const QChar c) {
+    //clear code span ranges for this block
+    if (!_codeSpanRanges.value(currentBlock().blockNumber()).isEmpty())
+        _codeSpanRanges[currentBlock().blockNumber()].clear();
+
     for (int i = currentPos; i < text.length(); ++i) {
         if (text.at(i) != c) continue;
 
@@ -1997,8 +2003,9 @@ void MarkdownHighlighter::highlightInlineSpans(const QString &text,
             inlineFmt.setUnderlineStyle(fmt.underlineStyle());
         }
 
-        if (c == QLatin1Char('`'))
-            _codeSpanRanges.append({start, next});
+        if (c == QLatin1Char('`')) {
+            _codeSpanRanges[currentBlock().blockNumber()].append({start, next});
+        }
 
         //format the text
         setFormat(start + 1, next - start, inlineFmt);
@@ -2151,6 +2158,17 @@ void balancePairs(QVector<Delimiter> &delims) {
     }
 }
 
+bool MarkdownHighlighter::isPosInCodeSpan(int blockNum, int pos) const
+{
+    const auto& range = _codeSpanRanges.value(blockNum);
+    bool isInCodeSpan = std::find_if(range.cbegin(), range.cend(), [pos](QPair<int, int> pair){
+        if (pos >= pair.first && pos <= pair.second)
+            return true;
+        return false;
+    }) != range.cend();
+    return isInCodeSpan;
+}
+
 /**
  * @brief highlights Em/Strong in text editor
  */
@@ -2162,11 +2180,7 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text,
         if (text.at(i) != QLatin1Char('_') && text.at(i) != QLatin1Char('*'))
             continue;
 
-        bool isInCodeSpan = std::find_if(_codeSpanRanges.cbegin(), _codeSpanRanges.cend(), [i](QPair<int, int> pair){
-            if (i >= pair.first && i <= pair.second)
-                return true;
-            return false;
-        }) != _codeSpanRanges.cend();
+        bool isInCodeSpan = isPosInCodeSpan(currentBlock().blockNumber(), i);
         if (isInCodeSpan)
             continue;
 
