@@ -639,14 +639,16 @@ void MarkdownHighlighter::highlightIndentedCodeBlock(const QString &text) {
                            !text.startsWith(QLatin1Char('\t'))))
         return;
 
-    const QString &trimmed = text.trimmed();
+    const QString prevTrimmed =  currentBlock().previous().text().trimmed();
     // previous line must be empty according to CommonMark except if it is a
     // heading https://spec.commonmark.org/0.29/#indented-code-block
-    if (!trimmed.isEmpty() &&
+    if (!prevTrimmed.isEmpty() &&
         previousBlockState() != CodeBlockIndented &&
         (previousBlockState() < H1 || previousBlockState() > H6) &&
         previousBlockState() != HeadlineEnd)
         return;
+
+    const QString trimmed = text.trimmed();
 
     // should not be in a list
     if (trimmed.startsWith(QLatin1String("- ")) ||
