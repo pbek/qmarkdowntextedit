@@ -18,8 +18,7 @@
 #include <QPlainTextEdit>
 
 #include "qplaintexteditsearchwidget.h"
-
-class MarkdownHighlighter;
+#include "markdownhighlighter.h"
 
 class QMarkdownTextEdit : public QPlainTextEdit {
     Q_OBJECT
@@ -63,7 +62,7 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     void adjustRightMargin();
     void hide();
     bool openLinkAtCursorPosition();
-    bool handleBracketRemoval();
+    bool handleBackspaceEntered();
     void centerTheCursor();
     void undo();
     void moveTextUpDown(bool up);
@@ -92,6 +91,7 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     bool quotationMarkCheck(const QChar quotationCharacter);
     void focusOutEvent(QFocusEvent *event);
     void paintEvent(QPaintEvent *e);
+    bool handleCharRemoval(MarkdownHighlighter::RangeType type, int block, int position);
 
    signals:
     void urlClicked(QString url);
