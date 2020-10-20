@@ -612,7 +612,7 @@ bool QMarkdownTextEdit::handleBracketClosing(const QChar openingCharacter,
     const QString text = cursor.block().text().remove(QRegExp("^\\s+"));
 
     const int pib = cursor.positionInBlock();
-    bool isPreviousAsterisk = pib > 0 && text.at(pib - 1) == '*';
+    bool isPreviousAsterisk = pib > 0 && pib < text.length() && text.at(pib - 1) == '*';
     bool isNextAsterisk = pib < text.length() && text.at(pib) == '*';
     bool isMaybeBold = isPreviousAsterisk && isNextAsterisk;
     if (pib < text.length() && !isMaybeBold && !text.at(pib).isSpace()) {
@@ -820,6 +820,9 @@ bool QMarkdownTextEdit::handleBracketRemoval() {
 
     int position = cursor.position();
     const int positionInBlock = cursor.positionInBlock();
+
+    if (_highlighter->isPosInCodeSpan(cursor.block().blockNumber(), positionInBlock))
+        return false;
 
     // return if backspace was pressed at the beginning of a block
     if (positionInBlock == 0) {
@@ -1323,8 +1326,13 @@ bool QMarkdownTextEdit::handleReturnEntered() {
     // We are in a list when we have '* ', '- ' or '+ ', possibly with preceding
     // whitespace. If e.g. user has entered '**text**' and pressed enter - we
     // don't want do anymore list-stuff.
-    const QChar char0 = currentLineText.trimmed()[0];
-    const QChar char1 = currentLineText.trimmed()[1];
+    QString currentLine = currentLineText.trimmed();
+    QChar char0;
+    QChar char1;
+    if (currentLine.length() >= 1)
+        char0 = currentLine.at(0);
+    if (currentLine.length() >= 2)
+        char1 = currentLine.at(1);
     const bool inList =
         ((char0 == QLatin1Char('*') || char0 == QLatin1Char('-') ||
           char0 == QLatin1Char('+')) &&
