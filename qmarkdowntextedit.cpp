@@ -161,7 +161,7 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             return true;
             //        } else if (keyEvent->key() == Qt::Key_Delete) {
         } else if (keyEvent->key() == Qt::Key_Backspace) {
-            return handleBracketRemoval();
+            return handleBackspaceEntered();
         } else if (keyEvent->key() == Qt::Key_Asterisk) {
             return handleBracketClosing(QLatin1Char('*'));
         } else if (keyEvent->key() == Qt::Key_QuoteDbl) {
@@ -806,7 +806,7 @@ bool isQuotCloser(int position, const QString &text) {
  *
  * @return
  */
-bool QMarkdownTextEdit::handleBracketRemoval() {
+bool QMarkdownTextEdit::handleBackspaceEntered() {
     if (!(_autoTextOptions & AutoTextOption::BracketRemoval) || isReadOnly()) {
         return false;
     }
@@ -820,8 +820,9 @@ bool QMarkdownTextEdit::handleBracketRemoval() {
 
     int position = cursor.position();
     const int positionInBlock = cursor.positionInBlock();
+    int block = cursor.block().blockNumber();
 
-    if (_highlighter->isPosInCodeSpan(cursor.block().blockNumber(), positionInBlock))
+    if (_highlighter->isPosInACodeSpan(block, positionInBlock - 1))
         return false;
 
     // return if backspace was pressed at the beginning of a block
@@ -836,6 +837,16 @@ bool QMarkdownTextEdit::handleBracketRemoval() {
 
     // current char
     const char charInFront = text.at(positionInBlock - 1).toLatin1();
+
+    if (charInFront == '*')
+        return handleCharRemoval(MarkdownHighlighter::RangeType::Emphasis,
+                                 block, positionInBlock - 1);
+    else if (charInFront == '`')
+        return handleCharRemoval(MarkdownHighlighter::RangeType::CodeSpan,
+                                 block, positionInBlock - 1);
+
+    //handle removal of ", ', and brackets
+
     // is it opener?
     int pos = _openingCharacters.indexOf(charInFront);
     // for " and '
@@ -894,6 +905,33 @@ bool QMarkdownTextEdit::handleBracketRemoval() {
     // moving the cursor back to the old position so the previous character
     // can be removed
     cursor.setPosition(position);
+    setTextCursor(cursor);
+    return false;
+}
+
+bool QMarkdownTextEdit::handleCharRemoval(MarkdownHighlighter::RangeType type,
+                                          int block, int position)
+{
+    auto range = _highlighter->findPositionInRanges(type, block, position);
+    if (range == QPair<int, int>{-1, -1})
+        return false;
+
+    int charToRemovePos = range.first;
+    if (position == range.first)
+        charToRemovePos = range.second;
+
+    QTextCursor cursor = textCursor();
+    auto gpos = cursor.position();
+
+    if (charToRemovePos > position) {
+        cursor.setPosition(gpos + (charToRemovePos - (position + 1)));
+    } else {
+        cursor.setPosition(gpos - (position - charToRemovePos + 1));
+        gpos--;
+    }
+
+    cursor.deleteChar();
+    cursor.setPosition(gpos);
     setTextCursor(cursor);
     return false;
 }

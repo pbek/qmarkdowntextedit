@@ -68,7 +68,13 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
                state == MarkdownHighlighter::CodeBlockTildeEnd;
     }
 
-    bool isPosInCodeSpan(int blockNum, int pos) const;
+    enum class RangeType {
+        CodeSpan,
+        Emphasis
+    };
+
+    QPair<int, int> findPositionInRanges(MarkdownHighlighter::RangeType type, int blockNum, int pos) const;
+    bool isPosInACodeSpan(int blockNumber, int position) const;
 
     // we used some predefined numbers here to be compatible with
     // the peg-markdown parser
@@ -190,6 +196,16 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
         uint8_t capturingGroup = 0;
         uint8_t maskedGroup = 0;
     };
+    struct InlineRange {
+        int begin;
+        int end;
+        RangeType type;
+        InlineRange() = default;
+        InlineRange(int begin_, int end_, RangeType type_) :
+            begin{begin_}, end{end_}, type{type_}
+        {}
+    };
+
 
     void highlightBlock(const QString &text) Q_DECL_OVERRIDE;
 
@@ -269,14 +285,15 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
 
     void reHighlightDirtyBlocks();
 
+    void clearRangesForBlock(int blockNumber, RangeType type);
+
     bool _highlightingFinished;
     HighlightingOptions _highlightingOptions;
     QTimer *_timer;
     QVector<QTextBlock> _dirtyTextBlocks;
     QVector<QPair<int,int>> _linkRanges;
 
-    using CodeSpanRanges = QVector<QPair<int,int>>;
-    QHash<int, CodeSpanRanges> _codeSpanRanges;
+    QHash<int, QVector<InlineRange>> _ranges;
 
     static QVector<HighlightingRule> _highlightingRules;
     static QHash<HighlighterState, QTextCharFormat> _formats;
