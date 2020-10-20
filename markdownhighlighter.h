@@ -200,6 +200,7 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
         int begin;
         int end;
         RangeType type;
+        InlineRange() = default;
         InlineRange(int begin_, int end_, RangeType type_) :
             begin{begin_}, end{end_}, type{type_}
         {}
