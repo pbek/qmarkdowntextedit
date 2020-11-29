@@ -2196,6 +2196,23 @@ bool MarkdownHighlighter::isPosInACodeSpan(int blockNumber, int position) const
     }) != rangeList.cend();
 }
 
+QPair<int, int> MarkdownHighlighter::codeSpanRange(int blockNumber, int position) const
+{
+    const QVector<InlineRange> rangeList = _ranges.value(blockNumber);
+    const auto it = std::find_if(rangeList.cbegin(), rangeList.cend(),
+                                     [position](const InlineRange& range){
+        if (position > range.begin && position < range.end && range.type == RangeType::CodeSpan)
+            return true;
+        return false;
+    });
+
+    if (it == rangeList.cend()) {
+        return {};
+    } else {
+        return QPair<int, int>(it->begin, it->end);
+    }
+}
+
 /**
  * @brief highlights Em/Strong in text editor
  */
