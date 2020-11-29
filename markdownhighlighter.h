@@ -75,7 +75,7 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
 
     QPair<int, int> findPositionInRanges(MarkdownHighlighter::RangeType type, int blockNum, int pos) const;
     bool isPosInACodeSpan(int blockNumber, int position) const;
-    QPair<int, int> codeSpanRange(int blockNumber, int position) const;
+    QPair<int, int> getSpanRange(RangeType rangeType, int blockNumber, int position) const;
 
     // we used some predefined numbers here to be compatible with
     // the peg-markdown parser

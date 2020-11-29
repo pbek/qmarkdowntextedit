@@ -2196,18 +2196,18 @@ bool MarkdownHighlighter::isPosInACodeSpan(int blockNumber, int position) const
     }) != rangeList.cend();
 }
 
-QPair<int, int> MarkdownHighlighter::codeSpanRange(int blockNumber, int position) const
+QPair<int, int> MarkdownHighlighter::getSpanRange(MarkdownHighlighter::RangeType rangeType, int blockNumber, int position) const
 {
     const QVector<InlineRange> rangeList = _ranges.value(blockNumber);
     const auto it = std::find_if(rangeList.cbegin(), rangeList.cend(),
-                                     [position](const InlineRange& range){
-        if (position > range.begin && position < range.end && range.type == RangeType::CodeSpan)
+                                     [position, rangeType](const InlineRange& range){
+        if (position > range.begin && position < range.end && range.type == rangeType)
             return true;
         return false;
     });
 
     if (it == rangeList.cend()) {
-        return {};
+        return QPair<int, int>(-1, -1);
     } else {
         return QPair<int, int>(it->begin, it->end);
     }
