@@ -24,6 +24,9 @@ jobs:
           # win64_mingw73 not found
           - os: windows-latest
             qt-version: '5.15.0'
+          # 'D:\\a\\qmarkdowntextedit/Qt\\5.9\\mingw73_64\\bin\\qt.conf' not found
+          - os: windows-latest
+            qt-version: '5.9'
     steps:
     - uses: actions/checkout@v2
 
