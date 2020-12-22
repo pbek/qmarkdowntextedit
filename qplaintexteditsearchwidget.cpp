@@ -244,6 +244,9 @@ bool QPlainTextEditSearchWidget::doSearch(bool searchDown,
         options |= QTextDocument::FindCaseSensitively;
     }
 
+    // block signal to reduce too many signals being fired and too many updates
+    _textEdit->blockSignals(true);
+
     bool found =
         searchMode == RegularExpressionMode
             ?
@@ -262,6 +265,8 @@ bool QPlainTextEditSearchWidget::doSearch(bool searchDown,
             :
 #endif
             _textEdit->find(text, options);
+
+    _textEdit->blockSignals(false);
 
     if (found) {
         const int result =
