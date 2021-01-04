@@ -35,6 +35,7 @@ class QPlainTextEditSearchWidget : public QWidget {
     void setSearchText(const QString &searchText);
     void setSearchMode(SearchMode searchMode);
     void activate(bool focus);
+    void updateSearchExtraSelections();
 
    private:
     Ui::QPlainTextEditSearchWidget *ui;
@@ -42,8 +43,6 @@ class QPlainTextEditSearchWidget : public QWidget {
     int _currentSearchResult;
     QList<QTextEdit::ExtraSelection> _searchExtraSelections;
     QColor selectionColor;
-
-    void updateSearchExtraSelections();
     void setSearchExtraSelections() const;
 
    protected:
