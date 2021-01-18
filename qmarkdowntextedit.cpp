@@ -204,12 +204,12 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             return bracketClosingCheck(QLatin1Char('{'), QLatin1Char('}'));
         } else if (keyEvent->key() == Qt::Key_BracketRight) {
             return bracketClosingCheck(QLatin1Char('['), QLatin1Char(']'));
-        } else if (keyEvent->key() == Qt::Key_Return &&
+        } else if ((keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter) &&
                    keyEvent->modifiers().testFlag(Qt::ShiftModifier)) {
             QTextCursor cursor = this->textCursor();
             cursor.insertText("  \n");
             return true;
-        } else if (keyEvent->key() == Qt::Key_Return &&
+        } else if ((keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter) &&
                    keyEvent->modifiers().testFlag(Qt::ControlModifier)) {
             QTextCursor cursor = this->textCursor();
             cursor.movePosition(QTextCursor::EndOfBlock);
@@ -314,7 +314,7 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
                 }
             }
             return false;
-        } else if (keyEvent->key() == Qt::Key_Return) {
+        } else if (keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter) {
             return handleReturnEntered();
         } else if ((keyEvent->key() == Qt::Key_F3)) {
             _searchWidget->doSearch(
