@@ -51,7 +51,7 @@ jobs:
       uses: actions/cache@v1
       with:
         path: ../Qt
-        key: ${{ runner.os }}-QtCache-${{ matrix.qt-version }}
+        key: ${{ runner.os }}-QtCache-${{ matrix.qt-version }}-1
     # https://github.com/marketplace/actions/install-qt
     - if: contains( matrix.os, 'windows') && ( matrix.qt-version == '5.7' )
       name: Install Qt 5.7 on Windows
