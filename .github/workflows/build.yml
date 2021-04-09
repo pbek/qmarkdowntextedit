@@ -19,7 +19,8 @@ jobs:
         # Linux:   https://download.qt.io/online/qtsdkrepository/linux_x64/desktop/
         # macOS:   https://download.qt.io/online/qtsdkrepository/mac_x64/desktop/
         # Windows: https://download.qt.io/online/qtsdkrepository/windows_x86/desktop/
-        qt-version: ['5.9', '5.13.2', '5.14.2', '5.15.0']
+        qt-version: ['5.9', '5.13.2', '5.14.2', '5.15.2']
+        experimental: [false]
         exclude:
           # win64_mingw73 not found
           - os: windows-latest
@@ -27,6 +28,16 @@ jobs:
           # 'D:\\a\\qmarkdowntextedit/Qt\\5.9\\mingw73_64\\bin\\qt.conf' not found
           - os: windows-latest
             qt-version: '5.9'
+        include:
+          - os: ubuntu-latest
+            qt-version: '6.1.0'
+            experimental: true
+          - os: macos-latest
+            qt-version: '6.1.0'
+            experimental: true
+          - os: windows-latest
+            qt-version: '6.1.0'
+            experimental: true
     steps:
     - uses: actions/checkout@v2
 
