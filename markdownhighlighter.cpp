@@ -1518,11 +1518,9 @@ void MarkdownHighlighter::cssHighlighter(const QString &text) {
                     const int gPos = text.indexOf(QLatin1Char(','), rPos + 1);
                     const int bPos = text.indexOf(QLatin1Char(')'), gPos);
                     if (rPos > -1 && gPos > -1 && bPos > -1) {
-                        const QStringRef r = text.midRef(t + 1, rPos - (t + 1));
-                        const QStringRef g =
-                            text.midRef(rPos + 1, gPos - (rPos + 1));
-                        const QStringRef b =
-                            text.midRef(gPos + 1, bPos - (gPos + 1));
+                        const QString r = text.mid(t + 1, rPos - (t + 1));
+                        const QString g = text.mid(rPos + 1, gPos - (rPos + 1));
+                        const QString b = text.mid(gPos + 1, bPos - (gPos + 1));
                         c.setRgb(r.toInt(), g.toInt(), b.toInt());
                     } else {
                         c = _formats[HighlighterState::NoState]
@@ -1694,7 +1692,7 @@ void MarkdownHighlighter::highlightThematicBreak(const QString &text) {
             break;
     }
 
-    const QStringRef sText = text.midRef(i);
+    const QString sText = text.mid(i);
     if (sText.isEmpty() || i == 4 || text.startsWith(QLatin1Char('\t')))
         return;
 
@@ -1971,7 +1969,7 @@ void MarkdownHighlighter::highlightInlineSpans(const QString &text,
             ++pos;
         }
 
-        const QStringRef seq = text.midRef(i, len);
+        const QString seq = text.mid(i, len);
         const int start = i;
         i += len;
         const int next = text.indexOf(seq, i);

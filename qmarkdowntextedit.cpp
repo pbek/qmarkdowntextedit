@@ -721,7 +721,7 @@ bool QMarkdownTextEdit::bracketClosingCheck(const QChar openingCharacter,
         return false;
     }
 
-    const QStringRef leftText = text.leftRef(positionInBlock);
+    const QString leftText = text.left(positionInBlock);
     const int openingCharacterCount = leftText.count(openingCharacter);
     const int closingCharacterCount = leftText.count(closingCharacter);
 
