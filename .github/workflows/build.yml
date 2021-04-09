@@ -63,14 +63,21 @@ jobs:
         cached: ${{ steps.cache-qt.outputs.cache-hit }}
         aqtversion: '==0.9.4'
 #        py7zrversion: '==0.9.0'
-    - if: contains( matrix.os, 'windows') && ( matrix.qt-version != '5.7' )
+    - if: contains( matrix.os, 'windows') && ( matrix.qt-version == '5.15.2' )
+      name: Install Qt 5.15.2 on Windows
+      uses: jurplel/install-qt-action@v2
+      with:
+        version: ${{ matrix.qt-version }}
+        arch: win64_mingw81
+        cached: ${{ steps.cache-qt.outputs.cache-hit }}
+    - if: contains( matrix.os, 'windows') && ( matrix.qt-version != '5.7' ) && ( matrix.qt-version != '5.15.2' )
       name: Install Qt on Windows
       uses: jurplel/install-qt-action@v2
       with:
         version: ${{ matrix.qt-version }}
         arch: win64_mingw73
         cached: ${{ steps.cache-qt.outputs.cache-hit }}
-    - if: false == contains( matrix.os, 'windows')
+    - if: false == contains( matrix.os, 'windows') && !startsWith( matrix.qt-version, '6.' )
       name: Install Qt
       uses: jurplel/install-qt-action@v2
       with:
