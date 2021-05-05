@@ -252,8 +252,13 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
         } else if (keyEvent == QKeySequence::Paste) {
             if (qApp->clipboard()->ownsClipboard()) {
                 // Do exact match
+#if QT_VERSION < QT_VERSION_CHECK(5, 12, 0)
+                bool matched = QRegExp(QStringLiteral("[^\n]*\n$")).exactMatch(qApp->clipboard()->text());
+#else
                 static const QRegularExpression re(QRegularExpression::anchoredPattern(QStringLiteral("[^\n]*\n$")));
-                if (!re.match(qApp->clipboard()->text()).hasMatch()) {
+                bool matched = re.match(qApp->clipboard()->text()).hasMatch();
+#endif
+                if (!matched) {
                     return QPlainTextEdit::eventFilter(obj, event);
                 }
                 QTextCursor cursor = this->textCursor();
@@ -658,7 +663,11 @@ bool QMarkdownTextEdit::handleBracketClosing(const QChar openingCharacter,
 
     // Auto completion for ``` pair
     if (openingCharacter == QLatin1Char('`')) {
+#if QT_VERSION < QT_VERSION_CHECK(5, 12, 0)
+        if (QRegExp(QStringLiteral("[^`]*``")).exactMatch(text)) {
+#else
         if (QRegularExpression(QRegularExpression::anchoredPattern(QStringLiteral("[^`]*``"))).match(text).hasMatch()) {
+#endif
             cursor.insertText(QStringLiteral("``"));
             cursorSubtract = 3;
         }

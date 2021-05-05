@@ -95,6 +95,6 @@ jobs:
       # Build qmarkdowntextedit
       #
 
-    - name: Build QOwnNotes
+    - name: Build qmarkdowntextedit
       run: |
         qmake && make
