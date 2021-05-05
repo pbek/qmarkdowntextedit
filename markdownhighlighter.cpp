@@ -26,6 +26,13 @@
 #include <QTimer>
 #include <utility>
 
+// We enable QStringView with Qt 5.15.1
+#if QT_VERSION < QT_VERSION_CHECK(5, 15, 1)
+    #define MH_SUBSTR(pos, len) text.midRef(pos, len)
+#else
+    #define MH_SUBSTR(pos, len) QStringView(text).mid(pos, len)
+#endif
+
 QHash<QString, MarkdownHighlighter::HighlighterState>
     MarkdownHighlighter::_langStringToEnum;
 QHash<MarkdownHighlighter::HighlighterState, QTextCharFormat>
@@ -1009,7 +1016,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
             const QList<QLatin1String> wordList =
                 others.values(text[i].toLatin1());
             for (const QLatin1String &word : wordList) {
-                if (word == text.midRef(i, word.size()) &&
+                if (word == MH_SUBSTR(i, word.size()) &&
                     (i + word.size() == text.length() ||
                      !text.at(i + word.size()).isLetter())) {
                     currentBlockState() == CodeCpp ||
@@ -1293,7 +1300,7 @@ void MarkdownHighlighter::taggerScriptHighlighter(const QString &text) {
     for (int i = 0; i < textLen; ++i) {
         // highlight functions, unless it's a comment function
         if (text.at(i) == QChar('$') &&
-            text.midRef(i, 5) != QLatin1String("$noop")) {
+            MH_SUBSTR(i, 5) != QLatin1String("$noop")) {
             const int next = text.indexOf(QChar('('), i);
             if (next == -1) break;
             setFormat(i, next - i, _formats[CodeKeyWord]);
@@ -1317,7 +1324,7 @@ void MarkdownHighlighter::taggerScriptHighlighter(const QString &text) {
         }
 
         // highlight comments
-        if (text.midRef(i, 5) == QLatin1String("$noop")) {
+        if (MH_SUBSTR(i, 5) == QLatin1String("$noop")) {
             const int next = text.indexOf(QChar(')'), i);
             if (next == -1) break;
             setFormat(i, next - i + 1, _formats[CodeComment]);
@@ -1397,8 +1404,8 @@ void MarkdownHighlighter::ymlHighlighter(const QString &text) {
 
         // underlined links
         if (text.at(i) == QChar('h')) {
-            if (text.midRef(i, 5) == QLatin1String("https") ||
-                text.midRef(i, 4) == QLatin1String("http")) {
+            if (MH_SUBSTR(i, 5) == QLatin1String("https") ||
+                MH_SUBSTR(i, 4) == QLatin1String("http")) {
                 int space = text.indexOf(QChar(' '), i);
                 if (space == -1) space = textLen;
                 QTextCharFormat f = _formats[CodeString];
@@ -1498,7 +1505,7 @@ void MarkdownHighlighter::cssHighlighter(const QString &text) {
             setFormat(i, space - i, _formats[CodeKeyWord]);
             i = space;
         } else if (text[i] == QLatin1Char('c')) {
-            if (text.midRef(i, 5) == QLatin1String("color")) {
+            if (MH_SUBSTR(i, 5) == QLatin1String("color")) {
                 i += 5;
                 const int colon = text.indexOf(QLatin1Char(':'), i);
                 if (colon < 0) continue;
@@ -2338,3 +2345,5 @@ void MarkdownHighlighter::setHighlightingOptions(
     const HighlightingOptions options) {
     _highlightingOptions = options;
 }
+
+#undef MH_SUBSTR
