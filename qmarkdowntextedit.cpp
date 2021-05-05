@@ -250,9 +250,12 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
                 return true;
             }
         } else if (keyEvent == QKeySequence::Paste) {
-            if (qApp->clipboard()->ownsClipboard() &&
-                QRegExp(QStringLiteral("[^\n]*\n$"))
-                    .exactMatch(qApp->clipboard()->text())) {
+            if (qApp->clipboard()->ownsClipboard()) {
+                // Do exact match
+                static const QRegularExpression re(QRegularExpression::anchoredPattern(QStringLiteral("[^\n]*\n$")));
+                if (!re.match(qApp->clipboard()->text()).hasMatch()) {
+                    return QPlainTextEdit::eventFilter(obj, event);
+                }
                 QTextCursor cursor = this->textCursor();
                 if (!cursor.hasSelection()) {
                     cursor.movePosition(QTextCursor::StartOfBlock);
@@ -609,7 +612,7 @@ bool QMarkdownTextEdit::handleBracketClosing(const QChar openingCharacter,
 
     // get the current text from the block (inserted character not included)
     // Remove whitespace at start of string (e.g. in multilevel-lists).
-    const QString text = cursor.block().text().remove(QRegExp("^\\s+"));
+    const QString text = cursor.block().text().remove(QRegularExpression("^\\s+"));
 
     const int pib = cursor.positionInBlock();
     bool isPreviousAsterisk = pib > 0 && pib < text.length() && text.at(pib - 1) == '*';
@@ -655,7 +658,7 @@ bool QMarkdownTextEdit::handleBracketClosing(const QChar openingCharacter,
 
     // Auto completion for ``` pair
     if (openingCharacter == QLatin1Char('`')) {
-        if (QRegExp(QStringLiteral("[^`]*``")).exactMatch(text)) {
+        if (QRegularExpression(QRegularExpression::anchoredPattern(QStringLiteral("[^`]*``"))).match(text).hasMatch()) {
             cursor.insertText(QStringLiteral("``"));
             cursorSubtract = 3;
         }
