@@ -55,7 +55,7 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     void hideSearchWidget(bool reset);
     void updateSettings();
 
-   public slots:
+   public Q_SLOTS:
     void duplicateText();
     void setText(const QString &text);
     void setPlainText(const QString &text);
@@ -93,7 +93,7 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     void paintEvent(QPaintEvent *e);
     bool handleCharRemoval(MarkdownHighlighter::RangeType type, int block, int position);
 
-   signals:
+   Q_SIGNALS:
     void urlClicked(QString url);
     void zoomIn();
     void zoomOut();

@@ -905,7 +905,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
                 // we have a word match check
                 // 1. if we are at the end
                 // 2. if we have a complete word
-                if (word == text.midRef(i, word.size()) &&
+                if (word == MH_SUBSTR(i, word.size()) &&
                     (i + word.size() == text.length() ||
                      (!text.at(i + word.size()).isLetterOrNumber() &&
                       text.at(i + word.size()) != QLatin1Char('_')))) {
