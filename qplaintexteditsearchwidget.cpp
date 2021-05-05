@@ -181,7 +181,7 @@ bool QPlainTextEditSearchWidget::doReplace(bool forAll) {
     const int searchMode = ui->modeComboBox->currentIndex();
     if (searchMode == RegularExpressionMode) {
         QString text = cursor.selectedText();
-        text.replace(QRegExp(ui->searchLineEdit->text()),
+        text.replace(QRegularExpression(ui->searchLineEdit->text()),
                      ui->replaceLineEdit->text());
         cursor.insertText(text);
     } else {
