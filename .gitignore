@@ -4,5 +4,6 @@
 *.plist
 *.pro.user
 .directory
+build*
 build-*
 .idea
