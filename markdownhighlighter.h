@@ -179,10 +179,11 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
     void clearDirtyBlocks();
     void setHighlightingOptions(const HighlightingOptions options);
     void initHighlightingRules();
-   signals:
+
+   Q_SIGNALS:
     void highlightingFinished();
 
-   protected slots:
+   protected Q_SLOTS:
     void timerTick();
 
    protected:
