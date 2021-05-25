@@ -204,6 +204,8 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             return bracketClosingCheck(QLatin1Char('{'), QLatin1Char('}'));
         } else if (keyEvent->key() == Qt::Key_BracketRight) {
             return bracketClosingCheck(QLatin1Char('['), QLatin1Char(']'));
+        } else if (keyEvent->key() == Qt::Key_Greater) {
+            return bracketClosingCheck(QLatin1Char('<'), QLatin1Char('>'));
         } else if ((keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter) &&
                    keyEvent->modifiers().testFlag(Qt::ShiftModifier)) {
             QTextCursor cursor = this->textCursor();
