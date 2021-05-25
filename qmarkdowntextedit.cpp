@@ -769,7 +769,6 @@ bool QMarkdownTextEdit::quotationMarkCheck(const QChar quotationCharacter) {
     const int textLength = text.length();
 
     // if last char is not space, we are at word end, no autocompletion
-
     const bool isBacktick = quotationCharacter == '`';
     if (!isBacktick && positionInBlock != 0 &&
         !text.at(positionInBlock - 1).isSpace()) {
