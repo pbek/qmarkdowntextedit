@@ -1057,14 +1057,15 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
  */
 int MarkdownHighlighter::highlightStringLiterals(QChar strType,
                                                  const QString &text, int i) {
-    setFormat(i, 1, _formats[CodeString]);
+    const auto& strFormat = _formats[CodeString];
+    setFormat(i, 1, strFormat);
     ++i;
 
     while (i < text.length()) {
         // look for string end
         // make sure it's not an escape seq
         if (text.at(i) == strType && text.at(i - 1) != QLatin1Char('\\')) {
-            setFormat(i, 1, _formats[CodeString]);
+            setFormat(i, 1, strFormat);
             ++i;
             break;
         }
@@ -1098,32 +1099,26 @@ int MarkdownHighlighter::highlightStringLiterals(QChar strType,
                 case '6':
                 case '7': {
                     if (i + 4 <= text.length()) {
-                        bool isCurrentOctal = true;
                         if (!isOctal(text.at(i + 2).toLatin1())) {
-                            isCurrentOctal = false;
                             break;
                         }
                         if (!isOctal(text.at(i + 3).toLatin1())) {
-                            isCurrentOctal = false;
                             break;
                         }
-                        len = isCurrentOctal ? 4 : 0;
+                        len = 4;
                     }
                     break;
                 }
                 // hex numbers \xFA
                 case 'x': {
                     if (i + 3 <= text.length()) {
-                        bool isCurrentHex = true;
                         if (!isHex(text.at(i + 2).toLatin1())) {
-                            isCurrentHex = false;
                             break;
                         }
                         if (!isHex(text.at(i + 3).toLatin1())) {
-                            isCurrentHex = false;
                             break;
                         }
-                        len = isCurrentHex ? 4 : 0;
+                        len = 4;
                     }
                     break;
                 }
@@ -1135,7 +1130,7 @@ int MarkdownHighlighter::highlightStringLiterals(QChar strType,
             // if len is zero, that means this wasn't an esc seq
             // increment i so that we skip this backslash
             if (len == 0) {
-                setFormat(i, 1, _formats[CodeString]);
+                setFormat(i, 1, strFormat);
                 ++i;
                 continue;
             }
@@ -1144,10 +1139,10 @@ int MarkdownHighlighter::highlightStringLiterals(QChar strType,
             i += len;
             continue;
         }
-        setFormat(i, 1, _formats[CodeString]);
+        setFormat(i, 1, strFormat);
         ++i;
     }
-    return i;
+    return i - 1;
 }
 
 /**
