@@ -22,6 +22,7 @@ qt5_add_resources(RESOURCE_ADDED ${RESOURCE_FILES})
 
 set(SOURCE_FILES
     markdownhighlighter.cpp
+    linenumberarea.h
     main.cpp
     mainwindow.cpp
     mainwindow.ui
