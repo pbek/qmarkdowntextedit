@@ -34,6 +34,7 @@
 #include <utility>
 
 #include "markdownhighlighter.h"
+#include "linenumberarea.h"
 
 static const QByteArray _openingCharacters = QByteArrayLiteral("([{<*\"'_~");
 static const QByteArray _closingCharacters = QByteArrayLiteral(")]}>*\"'_~");
@@ -43,6 +44,9 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
     installEventFilter(this);
     viewport()->installEventFilter(this);
     _autoTextOptions = AutoTextOption::BracketClosing;
+
+    _lineNumArea = new LineNumArea(this);
+    updateLineNumberAreaWidth(0);
 
     // markdown highlighting is enabled by default
     _highlightingEnabled = true;
@@ -82,6 +86,16 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
             &QMarkdownTextEdit::adjustRightMargin);
     connect(this, &QPlainTextEdit::cursorPositionChanged, this,
             &QMarkdownTextEdit::centerTheCursor);
+    connect(verticalScrollBar(), &QScrollBar::valueChanged, this, [this](int) {
+        _lineNumArea->update();
+    });
+    connect(this, &QPlainTextEdit::cursorPositionChanged, this, [this]() {
+        _lineNumArea->update();
+    });
+    connect(document(), &QTextDocument::blockCountChanged,
+            this, &QMarkdownTextEdit::updateLineNumberAreaWidth);
+    connect(this, &QPlainTextEdit::updateRequest,
+            this, &QMarkdownTextEdit::updateLineNumberArea);
 
     updateSettings();
 
@@ -559,6 +573,12 @@ void QMarkdownTextEdit::moveTextUpDown(bool up) {
     setTextCursor(move);
 }
 
+void QMarkdownTextEdit::setLineNumberEnabled(bool enabled)
+{
+    _lineNumArea->setLineNumAreaEnabled(enabled);
+    updateLineNumberAreaWidth(0);
+}
+
 /**
  * Resets the cursor to Qt::IBeamCursor
  */
@@ -947,6 +967,22 @@ bool QMarkdownTextEdit::handleCharRemoval(MarkdownHighlighter::RangeType type,
     cursor.setPosition(gpos);
     setTextCursor(cursor);
     return false;
+}
+
+void QMarkdownTextEdit::updateLineNumAreaGeometry()
+{
+    const auto contentsRect = this->contentsRect();
+    _lineNumArea->setGeometry(
+        QRect(contentsRect.left(),
+            contentsRect.top(),
+            _lineNumArea->sizeHint().width(),
+            contentsRect.height()));
+}
+
+void QMarkdownTextEdit::resizeEvent(QResizeEvent *event)
+{
+    QPlainTextEdit::resizeEvent(event);
+    updateLineNumAreaGeometry();
 }
 
 /**
@@ -1537,6 +1573,26 @@ bool QMarkdownTextEdit::handleTabEntered(bool reverse,
  */
 void QMarkdownTextEdit::setAutoTextOptions(AutoTextOptions options) {
     _autoTextOptions = options;
+}
+
+void QMarkdownTextEdit::updateLineNumberArea(const QRect &rect, int dy)
+{
+    if (dy)
+        _lineNumArea->scroll(0, dy);
+    else
+        _lineNumArea->update(0, rect.y(), _lineNumArea->sizeHint().width(), rect.height());
+
+    updateLineNumAreaGeometry();
+
+    if (rect.contains(viewport()->rect())) {
+        updateLineNumberAreaWidth(0);
+    }
+}
+
+void QMarkdownTextEdit::updateLineNumberAreaWidth(int)
+{
+    const int width = _lineNumArea->isLineNumAreaEnabled() ? _lineNumArea->sizeHint().width() : 0;
+    setViewportMargins(width, 0, 0, 0);
 }
 
 /**

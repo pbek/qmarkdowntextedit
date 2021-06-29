@@ -20,8 +20,12 @@
 #include "qplaintexteditsearchwidget.h"
 #include "markdownhighlighter.h"
 
+class LineNumArea;
+
 class QMarkdownTextEdit : public QPlainTextEdit {
     Q_OBJECT
+
+    friend class LineNumArea;
 
    public:
     enum AutoTextOption {
@@ -66,6 +70,7 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     void centerTheCursor();
     void undo();
     void moveTextUpDown(bool up);
+    void setLineNumberEnabled(bool enabled);
 
    protected:
     MarkdownHighlighter *_highlighter;
@@ -92,6 +97,7 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     void focusOutEvent(QFocusEvent *event);
     void paintEvent(QPaintEvent *e);
     bool handleCharRemoval(MarkdownHighlighter::RangeType type, int block, int position);
+    void resizeEvent(QResizeEvent *event);
 
    Q_SIGNALS:
     void urlClicked(QString url);
@@ -99,5 +105,11 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     void zoomOut();
 
    private:
+    void updateLineNumAreaGeometry();
+    void updateLineNumberArea(const QRect &rect, int dy);
+    Q_SLOT void updateLineNumberAreaWidth(int);
+
+   private:
     bool _handleBracketClosingUsed;
+    LineNumArea *_lineNumArea;
 };
