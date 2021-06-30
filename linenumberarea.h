@@ -8,7 +8,7 @@
 
 #include "qmarkdowntextedit.h"
 
-class LineNumArea : public QWidget {
+class LineNumArea final : public QWidget {
     Q_OBJECT
 
 public:
@@ -26,6 +26,10 @@ public:
 
     int lineNumAreaWidth() const
     {
+        if (!enabled) {
+            return 0;
+        }
+
         int digits = 2;
         int max = std::max(1, textEdit->blockCount());
         while (max >= 10) {
@@ -73,8 +77,7 @@ protected:
 
         const QPen currentLine = QColor("#eef067");
         const QPen otherLines = QColor("#a6a6a6");
-        auto normalfont = textEdit->font();
-        painter.setFont(normalfont);
+        painter.setFont(font());
 
         while (block.isValid() && top <= event->rect().bottom()) {
             top = bottom;

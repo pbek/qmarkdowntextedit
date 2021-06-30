@@ -98,6 +98,10 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     void paintEvent(QPaintEvent *e);
     bool handleCharRemoval(MarkdownHighlighter::RangeType type, int block, int position);
     void resizeEvent(QResizeEvent *event);
+    LineNumArea *lineNumberArea()
+    {
+        return _lineNumArea;
+    }
 
    Q_SIGNALS:
     void urlClicked(QString url);
