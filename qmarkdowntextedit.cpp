@@ -972,11 +972,12 @@ bool QMarkdownTextEdit::handleCharRemoval(MarkdownHighlighter::RangeType type,
 void QMarkdownTextEdit::updateLineNumAreaGeometry()
 {
     const auto contentsRect = this->contentsRect();
-    _lineNumArea->setGeometry(
-        QRect(contentsRect.left(),
-            contentsRect.top(),
-            _lineNumArea->sizeHint().width(),
-            contentsRect.height()));
+    const QRect newGeometry = {contentsRect.left(), contentsRect.top(),
+                               _lineNumArea->sizeHint().width(), contentsRect.height()};
+    auto oldGeometry = _lineNumArea->geometry();
+    if (newGeometry != oldGeometry) {
+        _lineNumArea->setGeometry(newGeometry);
+    }
 }
 
 void QMarkdownTextEdit::resizeEvent(QResizeEvent *event)
@@ -1591,8 +1592,12 @@ void QMarkdownTextEdit::updateLineNumberArea(const QRect &rect, int dy)
 
 void QMarkdownTextEdit::updateLineNumberAreaWidth(int)
 {
-    const int width = _lineNumArea->isLineNumAreaEnabled() ? _lineNumArea->sizeHint().width() : 0;
-    setViewportMargins(width, 0, 0, 0);
+    const auto oldMargins = viewportMargins();
+    const int width = _lineNumArea->isLineNumAreaEnabled() ? _lineNumArea->sizeHint().width() : oldMargins.left();
+    const auto newMargins = QMargins{width, oldMargins.top(), oldMargins.right(), oldMargins.bottom()};
+    if (newMargins != oldMargins) {
+        setViewportMargins(newMargins);
+    }
 }
 
 /**
