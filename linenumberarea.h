@@ -73,6 +73,8 @@ protected:
         auto block = textEdit->firstVisibleBlock();
         int blockNumber = block.blockNumber();
         qreal top = textEdit->blockBoundingGeometry(block).translated(textEdit->contentOffset()).top();
+        // Maybe the top is not 0?
+        top += textEdit->viewportMargins().top();
         qreal bottom = top;
 
         const QPen currentLine = QColor("#eef067");
@@ -82,8 +84,7 @@ protected:
         while (block.isValid() && top <= event->rect().bottom()) {
             top = bottom;
             bottom = top + textEdit->blockBoundingRect(block).height();
-            if (block.isVisible() && bottom >= event->rect().top())
-            {
+            if (block.isVisible() && bottom >= event->rect().top()) {
                 QString number = QString::number(blockNumber + 1);
 
                 auto isCurrentLine = textEdit->textCursor().blockNumber() == blockNumber;
