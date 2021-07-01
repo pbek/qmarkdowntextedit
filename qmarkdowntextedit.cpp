@@ -1594,8 +1594,11 @@ void QMarkdownTextEdit::updateLineNumberAreaWidth(int)
 {
     QSignalBlocker blocker(this);
     const auto oldMargins = viewportMargins();
-    const int width = _lineNumArea->isLineNumAreaEnabled() ? _lineNumArea->sizeHint().width() : oldMargins.left();
+    const int width = _lineNumArea->isLineNumAreaEnabled() ?
+           _lineNumArea->sizeHint().width() + _lineNumberLeftMarginOffset :
+           oldMargins.left();
     const auto newMargins = QMargins{width, oldMargins.top(), oldMargins.right(), oldMargins.bottom()};
+
     if (newMargins != oldMargins) {
         setViewportMargins(newMargins);
     }
@@ -1770,4 +1773,8 @@ void QMarkdownTextEdit::hideSearchWidget(bool reset) {
 void QMarkdownTextEdit::updateSettings() {
     // if true: centers the screen if cursor reaches bottom (but not top)
     setCenterOnScroll(_centerCursor);
+}
+
+void QMarkdownTextEdit::setLineNumberLeftMarginOffset(int offset) {
+    _lineNumberLeftMarginOffset = offset;
 }

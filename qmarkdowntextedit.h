@@ -98,6 +98,8 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     void paintEvent(QPaintEvent *e);
     bool handleCharRemoval(MarkdownHighlighter::RangeType type, int block, int position);
     void resizeEvent(QResizeEvent *event);
+    void setLineNumberLeftMarginOffset(int offset);
+    int _lineNumberLeftMarginOffset = 0;
     LineNumArea *lineNumberArea()
     {
         return _lineNumArea;
