@@ -18,6 +18,9 @@ public:
     {
         Q_ASSERT(parent);
 
+        // TODO: Make _otherLinesColor and _currentLineColor overridable
+        _currentLineColor = QColor("#eef067");
+        _otherLinesColor = QColor("#a6a6a6");
         setHidden(true);
 
         // We always use fixed font to avoid "width" issues
@@ -77,8 +80,8 @@ protected:
         top += textEdit->viewportMargins().top();
         qreal bottom = top;
 
-        const QPen currentLine = QColor("#eef067");
-        const QPen otherLines = QColor("#a6a6a6");
+        const QPen currentLine = _currentLineColor;
+        const QPen otherLines = _otherLinesColor;
         painter.setFont(font());
 
         while (block.isValid() && top <= event->rect().bottom()) {
@@ -108,6 +111,8 @@ protected:
 private:
     bool enabled = false;
     QMarkdownTextEdit *textEdit;
+    QColor _currentLineColor;
+    QColor _otherLinesColor;
 };
 
 #endif // LINENUMBERAREA_H
