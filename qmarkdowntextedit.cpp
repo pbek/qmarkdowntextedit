@@ -1592,6 +1592,7 @@ void QMarkdownTextEdit::updateLineNumberArea(const QRect &rect, int dy)
 
 void QMarkdownTextEdit::updateLineNumberAreaWidth(int)
 {
+    QSignalBlocker blocker(this);
     const auto oldMargins = viewportMargins();
     const int width = _lineNumArea->isLineNumAreaEnabled() ? _lineNumArea->sizeHint().width() : oldMargins.left();
     const auto newMargins = QMargins{width, oldMargins.top(), oldMargins.right(), oldMargins.bottom()};
