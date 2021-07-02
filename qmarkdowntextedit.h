@@ -58,6 +58,8 @@ class QMarkdownTextEdit : public QPlainTextEdit {
                       QPlainTextEditSearchWidget::SearchMode::PlainTextMode);
     void hideSearchWidget(bool reset);
     void updateSettings();
+    void setLineNumbersCurrentLineColor(QColor color);
+    void setLineNumbersOtherLineColor(QColor color);
 
    public Q_SLOTS:
     void duplicateText();

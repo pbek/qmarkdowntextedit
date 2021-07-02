@@ -103,6 +103,14 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
     QTimer::singleShot(300, this, SLOT(adjustRightMargin()));
 }
 
+void QMarkdownTextEdit::setLineNumbersCurrentLineColor(QColor color) {
+    _lineNumArea->setCurrentLineColor(std::move(color));
+}
+
+void QMarkdownTextEdit::setLineNumbersOtherLineColor(QColor color) {
+    _lineNumArea->setOtherLineColor(std::move(color));
+}
+
 /**
  * Enables or disables the markdown highlighting
  *

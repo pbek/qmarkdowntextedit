@@ -18,13 +18,20 @@ public:
     {
         Q_ASSERT(parent);
 
-        // TODO: Make _otherLinesColor and _currentLineColor overridable
-        _currentLineColor = QColor("#eef067");
-        _otherLinesColor = QColor("#a6a6a6");
+        _currentLineColor = QColor(QStringLiteral("#eef067"));
+        _otherLinesColor = QColor(QStringLiteral("#a6a6a6"));
         setHidden(true);
 
         // We always use fixed font to avoid "width" issues
         setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+    }
+
+    void setCurrentLineColor(QColor color) {
+        _currentLineColor = color;
+    }
+
+    void setOtherLineColor(QColor color) {
+        _otherLinesColor = color;
     }
 
     int lineNumAreaWidth() const
