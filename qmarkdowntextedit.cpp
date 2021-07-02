@@ -1778,3 +1778,11 @@ void QMarkdownTextEdit::updateSettings() {
 void QMarkdownTextEdit::setLineNumberLeftMarginOffset(int offset) {
     _lineNumberLeftMarginOffset = offset;
 }
+
+QMargins QMarkdownTextEdit::viewportMargins() {
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 5, 0))
+    return QPlainTextEdit::viewportMargins();
+#else
+    return QMargins();
+#endif
+}

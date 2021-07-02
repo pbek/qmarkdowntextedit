@@ -83,6 +83,7 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     bool _centerCursor = false;
 
     bool eventFilter(QObject *obj, QEvent *event);
+    QMargins viewportMargins();
     bool increaseSelectedTextIndention(
         bool reverse, const QString &indentCharacters = QChar('\t'));
     bool handleTabEntered(bool reverse,
