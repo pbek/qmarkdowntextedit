@@ -2274,7 +2274,7 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text,
                     fmt.setForeground(_formats[Bold].foreground());
                 if (underline)
                     fmt.setFontUnderline(true);
-                else
+                else if (_formats[Bold].font().bold())
                     fmt.setFontWeight(QFont::Bold);
                 setFormat(k, 1, fmt);
                 ++k;
