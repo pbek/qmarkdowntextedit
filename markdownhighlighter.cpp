@@ -1899,7 +1899,6 @@ int isInLinkRange(int pos, QVector<QPair<int, int>> &range) {
  */
 void MarkdownHighlighter::highlightInlineRules(const QString &text) {
     bool isEmStrongDone = false;
-    bool inlineSpans = false;
 
     // TODO: Add Links and Images parsing
     for (int i = 0; i < text.length(); ++i) {
@@ -1912,11 +1911,10 @@ void MarkdownHighlighter::highlightInlineRules(const QString &text) {
             }
         }
 
-        if (!inlineSpans && (text.at(i) == QLatin1Char('`') ||
+        if ((text.at(i) == QLatin1Char('`') ||
                              text.at(i) == QLatin1Char('~'))) {
 
             highlightInlineSpans(text, i, text.at(i));
-            inlineSpans = true;
 
         } else if (text.at(i) == QLatin1Char('<') && i + 3 < text.length() &&
                    text.at(i + 1) == QLatin1Char('!') &&

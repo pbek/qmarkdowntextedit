@@ -28,6 +28,7 @@
 - markdown highlighting
 - syntax highlighting
 - clickable links with `Ctrl + Click`
+- ~strikedout~ text and `inline code;`
 - block indent with `Tab` and `Shift + Tab`
 - duplicate text with `Ctrl + Alt + Down`
 - searching of text with `Ctrl + F`
