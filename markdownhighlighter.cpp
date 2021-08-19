@@ -1717,68 +1717,87 @@ void MarkdownHighlighter::highlightThematicBreak(const QString &text) {
         setFormat(0, text.length(), _formats[HorizontalRuler]);
 }
 
+void MarkdownHighlighter::highlightCheckbox(const QString &text, int curPos)
+{
+    if (curPos + 4 >= text.length())
+        return;
+
+    const bool hasOpeningBracket = text.at(curPos + 2) == QLatin1Char('[');
+    const bool hasClosingBracked = text.at(curPos + 4) == QLatin1Char(']');
+    const QChar midChar = text.at(curPos + 3);
+    const bool hasXorSpace = midChar == QLatin1Char(' ') || midChar == QLatin1Char('x');
+
+    if (hasOpeningBracket && hasClosingBracked && hasXorSpace) {
+        const int start = curPos + 2;
+        constexpr int length = 3;
+        const auto fmt = midChar == QLatin1Char(' ') ? CheckBoxUnChecked : CheckBoxChecked;
+        setFormat(start, length, _formats[fmt]);
+    }
+}
+
+static bool isBeginningOfList(QChar front)
+{
+    return front == QLatin1Char('-') || front == QLatin1Char('+') ||
+           front == QLatin1Char('*') || front.isNumber();
+}
+
 /**
  * @brief Highlight lists in markdown
  * @param text - current text block
  */
 void MarkdownHighlighter::highlightLists(const QString &text) {
     int spaces = 0;
+    // Skip any spaces in the beginning
     while (spaces < text.length() && text.at(spaces).isSpace()) ++spaces;
 
-    if (spaces >= text.length()) return;
+    // return if we reached the end
+    if (spaces >= text.length())
+        return;
 
+    const QChar front = text.at(spaces);
     // check for start of list
-    if (text.at(spaces) != QLatin1Char('-') &&
-        text.at(spaces) != QLatin1Char('+') &&
-        text.at(spaces) != QLatin1Char('*') &&
-        !text.at(spaces).isNumber()) {    // ordered
+    if (!isBeginningOfList(front)) {
         return;
     }
 
-    /* Ordered List */
-    if (text.at(spaces).isNumber()) {
-        int number = spaces;
+    const int curPos = spaces;
+
+    // Ordered List
+    if (front.isNumber()) {
+        int number = curPos;
+        // move forward till first non-number char
         while (number < text.length() && text.at(number).isNumber()) ++number;
 
+        // reached end?
         if (number + 1 >= text.length()) return;
+
         // there should be a '.' or ')' after a number
         if ((text.at(number) == QLatin1Char('.') ||
              text.at(number) == QLatin1Char(')')) &&
             (text.at(number + 1) == QLatin1Char(' '))) {
             setCurrentBlockState(List);
-            setFormat(spaces, number - spaces + 1, _formats[List]);
+        setFormat(curPos, number - curPos + 1, _formats[List]);
+
+            // highlight checkbox if any
+            highlightCheckbox(text, number);
         }
+
         return;
     }
 
-    if (spaces + 1 >= text.length()) return;
+    // if its just a '-' etc, no highlighting
+    if (curPos + 1 >= text.length()) return;
+
     // check for a space after it
-    if (text.at(spaces + 1) != QLatin1Char(' ')) return;
+    if (text.at(curPos + 1) != QLatin1Char(' '))
+        return;
 
     // check if we are in checkbox list
-    if (spaces + 2 < text.length() && text.at(spaces + 2) == QLatin1Char('[')) {
-        if (spaces + 4 >= text.length()) return;
-        const int start = spaces + 2;
-        constexpr int length = 3;
-        // checked checkbox
-        if (text.at(spaces + 3) == QLatin1Char('x') &&
-            text.at(spaces + 4) == QLatin1Char(']')) {
-            setFormat(start, length, _formats[CheckBoxChecked]);
-        }
-        // unchecked checkbox
-        else if (text.at(spaces + 3) == QLatin1Char(' ') &&
-                 text.at(spaces + 4) == QLatin1Char(']')) {
-            setFormat(start, length, _formats[CheckBoxUnChecked]);
-        }
-        // unchecked checkbox with no space bw brackets
-        else if (text.at(spaces + 3) == QLatin1Char(']')) {
-            setFormat(start, 2, _formats[CheckBoxUnChecked]);
-        }
-    }
+    highlightCheckbox(text, curPos);
 
     /* Unordered List */
     setCurrentBlockState(List);
-    setFormat(spaces, 1, _formats[List]);
+    setFormat(curPos, 1, _formats[List]);
 }
 
 /**
