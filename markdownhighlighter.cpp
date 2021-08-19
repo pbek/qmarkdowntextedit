@@ -1914,7 +1914,7 @@ void MarkdownHighlighter::highlightInlineRules(const QString &text) {
         if ((text.at(i) == QLatin1Char('`') ||
                              text.at(i) == QLatin1Char('~'))) {
 
-            highlightInlineSpans(text, i, text.at(i));
+            i = highlightInlineSpans(text, i, text.at(i));
 
         } else if (text.at(i) == QLatin1Char('<') && i + 3 < text.length() &&
                    text.at(i + 1) == QLatin1Char('!') &&
@@ -1949,72 +1949,70 @@ void MarkdownHighlighter::highlightInlineRules(const QString &text) {
 ` foo `` bar `
 <code>foo `` bar</code>
 */
-void MarkdownHighlighter::highlightInlineSpans(const QString &text,
+int MarkdownHighlighter::highlightInlineSpans(const QString &text,
                                               int currentPos, const QChar c) {
     //clear code span ranges for this block
     clearRangesForBlock(currentBlock().blockNumber(), RangeType::CodeSpan);
 
-    for (int i = currentPos; i < text.length(); ++i) {
-        if (text.at(i) != c) continue;
+    int i = currentPos;
+    // found a backtick
+    int len = 0;
+    int pos = i;
 
-        // found a backtick
-        int len = 0;
-        int pos = i;
+    if (i != 0 && text.at(i - 1) == QChar('\\')) return currentPos;
 
-        if (i != 0 && text.at(i - 1) == QChar('\\')) continue;
-
-        // keep moving forward in backtick sequence;
-        while (pos < text.length() && text.at(pos) == c) {
-            ++len;
-            ++pos;
-        }
-
-        const QString seq = text.mid(i, len);
-        const int start = i;
-        i += len;
-        const int next = text.indexOf(seq, i);
-        if (next == -1) {
-            return;
-        }
-        if (next + len < text.length() && text.at(next + len) == c) continue;
-
-        //get existing format if any
-        //we want to append to the existing format, not overwrite it
-        QTextCharFormat fmt = QSyntaxHighlighter::format(start + 1);
-        QTextCharFormat inlineFmt;
-
-        //select appropriate format for current text
-        if (c != QLatin1Char('~'))
-            inlineFmt = _formats[InlineCodeBlock];
-
-
-        //make sure we don't change font size / existing formatting
-        if (fmt.fontPointSize() > 0)
-            inlineFmt.setFontPointSize(fmt.fontPointSize());
-
-        if (c == QLatin1Char('~'))
-        {
-            inlineFmt.setFontStrikeOut(true);
-            //we don't want these properties for "inline code span"
-            inlineFmt.setFontItalic(fmt.fontItalic());
-            inlineFmt.setFontWeight(fmt.fontWeight());
-            inlineFmt.setFontUnderline(fmt.fontUnderline());
-            inlineFmt.setUnderlineStyle(fmt.underlineStyle());
-        }
-
-        if (c == QLatin1Char('`')) {
-            _ranges[currentBlock().blockNumber()].append(InlineRange(start, next, RangeType::CodeSpan));
-        }
-
-        //format the text
-        setFormat(start + 1, next - start, inlineFmt);
-
-        // format backticks as masked
-        setFormat(start, len, _formats[MaskedSyntax]);
-        setFormat(next, len, _formats[MaskedSyntax]);
-
-        i = next + len;
+    // keep moving forward in backtick sequence;
+    while (pos < text.length() && text.at(pos) == c) {
+        ++len;
+        ++pos;
     }
+
+    const QString seq = text.mid(i, len);
+    const int start = i;
+    i += len;
+    const int next = text.indexOf(seq, i);
+    if (next == -1) {
+        return currentPos;
+    }
+    if (next + len < text.length() && text.at(next + len) == c) return currentPos;
+
+    //get existing format if any
+    //we want to append to the existing format, not overwrite it
+    QTextCharFormat fmt = QSyntaxHighlighter::format(start + 1);
+    QTextCharFormat inlineFmt;
+
+    //select appropriate format for current text
+    if (c != QLatin1Char('~'))
+        inlineFmt = _formats[InlineCodeBlock];
+
+
+    //make sure we don't change font size / existing formatting
+    if (fmt.fontPointSize() > 0)
+        inlineFmt.setFontPointSize(fmt.fontPointSize());
+
+    if (c == QLatin1Char('~'))
+    {
+        inlineFmt.setFontStrikeOut(true);
+        //we don't want these properties for "inline code span"
+        inlineFmt.setFontItalic(fmt.fontItalic());
+        inlineFmt.setFontWeight(fmt.fontWeight());
+        inlineFmt.setFontUnderline(fmt.fontUnderline());
+        inlineFmt.setUnderlineStyle(fmt.underlineStyle());
+    }
+
+    if (c == QLatin1Char('`')) {
+        _ranges[currentBlock().blockNumber()].append(InlineRange(start, next, RangeType::CodeSpan));
+    }
+
+    //format the text
+    setFormat(start + len, next - (start + len), inlineFmt);
+
+    // format backticks as masked
+    setFormat(start, len, _formats[MaskedSyntax]);
+    setFormat(next, len, _formats[MaskedSyntax]);
+
+    i = next + len;
+    return i;
 }
 
 /**
