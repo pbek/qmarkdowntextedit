@@ -236,6 +236,8 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
 
     void highlightLists(const QString &text);
 
+    void highlightCheckbox(const QString &text, int curPos);
+
     /******************************
      *  INLINE FUNCTIONS
      ******************************/
