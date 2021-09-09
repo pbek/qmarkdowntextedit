@@ -1726,11 +1726,16 @@ void MarkdownHighlighter::highlightCheckbox(const QString &text, int curPos)
     const bool hasClosingBracked = text.at(curPos + 4) == QLatin1Char(']');
     const QChar midChar = text.at(curPos + 3);
     const bool hasXorSpace = midChar == QLatin1Char(' ') || midChar == QLatin1Char('x');
+    const bool hasDash = midChar == QLatin1Char('-');
 
-    if (hasOpeningBracket && hasClosingBracked && hasXorSpace) {
+    if (hasOpeningBracket && hasClosingBracked && (hasXorSpace | hasDash)) {
         const int start = curPos + 2;
         constexpr int length = 3;
-        const auto fmt = midChar == QLatin1Char(' ') ? CheckBoxUnChecked : CheckBoxChecked;
+
+        const auto fmt = hasXorSpace ?
+         (midChar == QLatin1Char(' ') ? CheckBoxUnChecked : CheckBoxChecked) :
+         MaskedSyntax;
+
         setFormat(start, length, _formats[fmt]);
     }
 }
