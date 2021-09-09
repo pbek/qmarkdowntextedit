@@ -299,7 +299,7 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize) {
     format = QTextCharFormat();
     format.setForeground(QColor(123, 100, 223));
     _formats[CheckBoxUnChecked] = std::move(format);
-    // set character format for checkced checkbox
+    // set character format for checked checkbox
     format = QTextCharFormat();
     format.setForeground(QColor(223, 50, 123));
     _formats[CheckBoxChecked] = std::move(format);
