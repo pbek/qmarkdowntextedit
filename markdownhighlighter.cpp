@@ -149,11 +149,18 @@ void MarkdownHighlighter::initHighlightingRules() {
     {
         HighlightingRule rule(HighlighterState::Link);
 
-        // highlight urls without any other markup
+        // highlight urls without any other markup like http://www.github.com
         rule.pattern =
             QRegularExpression(QStringLiteral(R"(\b\w+?:\/\/[^\s>]+)"));
         rule.capturingGroup = 0;
         rule.shouldContain = QStringLiteral("://");
+        _highlightingRules.append(rule);
+
+        // highlight urls without any other markup like www.github.com
+        rule.pattern =
+            QRegularExpression(QStringLiteral(R"(\bwww\.[^\s]+\.[^\s]+\b)"));
+        rule.capturingGroup = 0;
+        rule.shouldContain = QStringLiteral("www.");
         _highlightingRules.append(rule);
 
         // highlight urls with <> but without any . in it

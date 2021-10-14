@@ -1238,6 +1238,15 @@ QMap<QString, QString> QMarkdownTextEdit::parseMarkdownUrlsFromText(
         urlMap[url] = url;
     }
 
+    // match urls like this: www.github.com
+    regex = QRegularExpression(R"(\bwww\.[^\s]+\.[^\s]+\b)");
+    iterator = regex.globalMatch(text);
+    while (iterator.hasNext()) {
+        QRegularExpressionMatch match = iterator.next();
+        QString url = match.captured(0);
+        urlMap[url] = QStringLiteral("http://") + url;
+    }
+
     // match reference urls like this: [this url][1] with this later:
     // [1]: http://domain
     regex = QRegularExpression(R"(\[(.*?)\]\[(.+?)\])");
