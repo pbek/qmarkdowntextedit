@@ -240,7 +240,7 @@ void MarkdownHighlighter::initHighlightingRules() {
     {
         HighlightingRule rule(HighlighterState::TrailingSpace);
         rule.pattern = QRegularExpression(QStringLiteral("( +)$"));
-        // waqar144: dont use QStringLiteral here.
+        // waqar144: don't use QStringLiteral here.
         rule.shouldContain = QString(" \0");
         rule.capturingGroup = 1;
         _highlightingRules.append(rule);
