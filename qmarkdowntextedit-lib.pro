@@ -5,7 +5,8 @@ CONFIG += c++11
 
 include(qmarkdowntextedit.pri)
 
-TRANSLATIONS += trans/qmarkdowntextedit_de.ts
+TRANSLATIONS += trans/qmarkdowntextedit_de.ts \
+                trans/qmarkdowntextedit_zh_CN.ts
 
 target.path = $$[QT_INSTALL_LIBS]
 
