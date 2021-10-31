@@ -106,6 +106,7 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
         TrailingSpace,
         CheckBoxUnChecked,
         CheckBoxChecked,
+        StUnderline,
 
         // code highlighting
         CodeKeyWord = 1000,

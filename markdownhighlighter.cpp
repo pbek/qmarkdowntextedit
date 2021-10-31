@@ -336,6 +336,11 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize) {
     format.setFontItalic(true);
     _formats[Italic] = std::move(format);
 
+    // set character format for underline
+    format = QTextCharFormat();
+    format.setFontUnderline(true);
+    _formats[StUnderline] = std::move(format);
+
     // set character format for bold
     format = QTextCharFormat();
     format.setFontWeight(QFont::Bold);
@@ -2302,7 +2307,7 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text,
                 if (fmt.foreground() == QTextCharFormat().foreground())
                     fmt.setForeground(_formats[Bold].foreground());
                 if (underline)
-                    fmt.setFontUnderline(true);
+                    fmt.setFontUnderline(_formats[StUnderline].fontUnderline());
                 else if (_formats[Bold].font().bold())
                     fmt.setFontWeight(QFont::Bold);
                 setFormat(k, 1, fmt);
@@ -2338,10 +2343,13 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text,
 
                 if (fmt.foreground() == QTextCharFormat().foreground())
                     fmt.setForeground(_formats[Italic].foreground());
-                if (underline)
-                    fmt.setFontUnderline(true);
+                if (underline) {
+                    fmt.setForeground(_formats[StUnderline].foreground());
+                    fmt.setFont(_formats[StUnderline].font());
+                    fmt.setFontUnderline(_formats[StUnderline].fontUnderline());
+                }
                 else
-                    fmt.setFontItalic(true);
+                    fmt.setFontItalic(_formats[Italic].fontItalic());
                 setFormat(k, 1, fmt);
                 ++k;
             }
