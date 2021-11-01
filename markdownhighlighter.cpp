@@ -2306,9 +2306,11 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text,
                 // if we are in plain text, use the format's specified color
                 if (fmt.foreground() == QTextCharFormat().foreground())
                     fmt.setForeground(_formats[Bold].foreground());
-                if (underline)
+                if (underline) {
+                    fmt.setForeground(_formats[StUnderline].foreground());
+                    fmt.setFont(_formats[StUnderline].font());
                     fmt.setFontUnderline(_formats[StUnderline].fontUnderline());
-                else if (_formats[Bold].font().bold())
+                } else if (_formats[Bold].font().bold())
                     fmt.setFontWeight(QFont::Bold);
                 setFormat(k, 1, fmt);
                 ++k;
@@ -2343,11 +2345,9 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text,
 
                 if (fmt.foreground() == QTextCharFormat().foreground())
                     fmt.setForeground(_formats[Italic].foreground());
-                if (underline) {
-                    fmt.setForeground(_formats[StUnderline].foreground());
-                    fmt.setFont(_formats[StUnderline].font());
+
+                if (underline)
                     fmt.setFontUnderline(_formats[StUnderline].fontUnderline());
-                }
                 else
                     fmt.setFontItalic(_formats[Italic].fontItalic());
                 setFormat(k, 1, fmt);
