@@ -35,6 +35,7 @@ class QPlainTextEditSearchWidget : public QWidget {
     void setSearchText(const QString &searchText);
     void setSearchMode(SearchMode searchMode);
     void activate(bool focus);
+    void clearSearchExtraSelections();
     void updateSearchExtraSelections();
 
    private:

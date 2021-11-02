@@ -86,6 +86,10 @@ void QPlainTextEditSearchWidget::activateReplace() {
 
 void QPlainTextEditSearchWidget::deactivate() {
     hide();
+
+    // Clear the search extra selections when closing the search bar
+    clearSearchExtraSelections();
+
     _textEdit->setFocus();
 }
 
@@ -137,6 +141,11 @@ void QPlainTextEditSearchWidget::searchLineEditTextChanged(
     doSearchCount();
     updateSearchExtraSelections();
     doSearchDown();
+}
+
+void QPlainTextEditSearchWidget::clearSearchExtraSelections() {
+    _searchExtraSelections.clear();
+    setSearchExtraSelections();
 }
 
 void QPlainTextEditSearchWidget::updateSearchExtraSelections() {
@@ -392,6 +401,7 @@ void QPlainTextEditSearchWidget::activate(bool focus) {
     }
 
     ui->searchLineEdit->selectAll();
+    updateSearchExtraSelections();
     doSearchDown();
 }
 
