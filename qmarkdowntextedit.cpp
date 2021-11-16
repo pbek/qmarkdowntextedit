@@ -273,24 +273,6 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
                 qApp->clipboard()->setText(text);
                 return true;
             }
-        } else if (keyEvent == QKeySequence::Paste) {
-            if (qApp->clipboard()->ownsClipboard()) {
-                // Do exact match
-#if QT_VERSION < QT_VERSION_CHECK(5, 12, 0)
-                bool matched = QRegExp(QStringLiteral("[^\n]*\n$")).exactMatch(qApp->clipboard()->text());
-#else
-                static const QRegularExpression re(QRegularExpression::anchoredPattern(QStringLiteral("[^\n]*\n$")));
-                bool matched = re.match(qApp->clipboard()->text()).hasMatch();
-#endif
-                if (!matched) {
-                    return QPlainTextEdit::eventFilter(obj, event);
-                }
-                QTextCursor cursor = this->textCursor();
-                if (!cursor.hasSelection()) {
-                    cursor.movePosition(QTextCursor::StartOfBlock);
-                    setTextCursor(cursor);
-                }
-            }
         } else if ((keyEvent->key() == Qt::Key_Down) &&
                    keyEvent->modifiers().testFlag(Qt::ControlModifier) &&
                    keyEvent->modifiers().testFlag(Qt::AltModifier)) {
