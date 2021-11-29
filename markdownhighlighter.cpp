@@ -1737,7 +1737,7 @@ void MarkdownHighlighter::highlightCheckbox(const QString &text, int curPos)
     const bool hasOpeningBracket = text.at(curPos + 2) == QLatin1Char('[');
     const bool hasClosingBracked = text.at(curPos + 4) == QLatin1Char(']');
     const QChar midChar = text.at(curPos + 3);
-    const bool hasXorSpace = midChar == QLatin1Char(' ') || midChar == QLatin1Char('x');
+    const bool hasXorSpace = midChar == QLatin1Char(' ') || midChar == QLatin1Char('x') || midChar == QLatin1Char('X');
     const bool hasDash = midChar == QLatin1Char('-');
 
     if (hasOpeningBracket && hasClosingBracked && (hasXorSpace | hasDash)) {
