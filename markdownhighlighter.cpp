@@ -636,7 +636,7 @@ void MarkdownHighlighter::highlightSubHeadline(const QString &text,
         setCurrentBlockState(HeadlineEnd);
 
         // we want to re-highlight the previous block
-        // this must not done directly, but with a queue, otherwise it
+        // this must not be done directly, but with a queue, otherwise it
         // will crash
         // setting the character format of the previous text, because this
         // causes text to be formatted the same way when writing after
