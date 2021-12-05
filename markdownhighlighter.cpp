@@ -558,7 +558,13 @@ void MarkdownHighlighter::highlightHeadline(const QString &text) {
             const auto state =
                 HighlighterState(HighlighterState::H1 + headingLevel - 1);
 
-            setFormat(0, text.length(), _formats[state]);
+            // Set styling of the "#"s to "masked syntax", but with the size of the heading
+            auto maskedFormat = _formats[MaskedSyntax];
+            maskedFormat.setFontPointSize(_formats[state].fontPointSize());
+            setFormat(0, headingLevel, maskedFormat);
+
+            // Set the styling of the rest of the heading
+            setFormat(headingLevel + 1, text.length() - 1 - headingLevel, _formats[state]);
 
             setCurrentBlockState(state);
             return;
