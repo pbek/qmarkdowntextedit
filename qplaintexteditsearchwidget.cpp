@@ -137,7 +137,18 @@ bool QPlainTextEditSearchWidget::eventFilter(QObject *obj, QEvent *event) {
 
 void QPlainTextEditSearchWidget::searchLineEditTextChanged(
     const QString &arg1) {
-    Q_UNUSED(arg1)
+    const int searchMode = ui->modeComboBox->currentIndex();
+
+    if (searchMode == RegularExpressionMode) {
+        // Prevent stuck application when the user enters just start or end markers
+        static const QRegularExpression regExp(R"(^[\^\$]+$)");
+        if (regExp.match(arg1).hasMatch()) {
+            clearSearchExtraSelections();
+
+            return;
+        }
+    }
+
     doSearchCount();
     updateSearchExtraSelections();
     doSearchDown();
