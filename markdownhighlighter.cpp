@@ -1,6 +1,6 @@
 
 /*
- * Copyright (c) 2014-2021 Patrizio Bekerle -- <patrizio@bekerle.com>
+ * Copyright (c) 2014-2022 Patrizio Bekerle -- <patrizio@bekerle.com>
  * Copyright (c) 2019-2021 Waqar Ahmed      -- <waqar.17a@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
