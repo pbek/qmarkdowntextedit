@@ -46,7 +46,7 @@ class QPlainTextEditSearchWidget : public QWidget {
     int _currentSearchResult;
     QList<QTextEdit::ExtraSelection> _searchExtraSelections;
     QColor selectionColor;
-    QTimer _debounceTimer;
+    QTimer debounceTimer_;
     QString searchTerm_;
     void setSearchExtraSelections() const;
     void stopDebounce();

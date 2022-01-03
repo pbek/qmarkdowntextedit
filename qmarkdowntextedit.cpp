@@ -111,7 +111,7 @@ void QMarkdownTextEdit::setLineNumbersOtherLineColor(QColor color) {
     _lineNumArea->setOtherLineColor(std::move(color));
 }
 
-void QMarkdownTextEdit::setDebounceDelay(uint debounceDelay)
+void QMarkdownTextEdit::setSearchWidgetDebounceDelay(uint debounceDelay)
 {
     _debounceDelay = debounceDelay;
     searchWidget()->setDebounceDelay(_debounceDelay);

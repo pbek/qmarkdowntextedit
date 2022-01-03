@@ -60,7 +60,7 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     void updateSettings();
     void setLineNumbersCurrentLineColor(QColor color);
     void setLineNumbersOtherLineColor(QColor color);
-    void setDebounceDelay(uint debounceDelay);
+    void setSearchWidgetDebounceDelay(uint debounceDelay);
 
    public Q_SLOTS:
     void duplicateText();
