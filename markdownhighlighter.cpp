@@ -918,11 +918,12 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
         // check if we are at the beginning OR if this is the start of a word
         if (i == 0 || (!text.at(i - 1).isLetterOrNumber() &&
                        text.at(i-1) != QLatin1Char('_'))) {
-            const auto wordList = data.values(text.at(i).toLatin1());
-            for (const QLatin1String &word : wordList) {
+            auto it = data.find(text.at(i).toLatin1());
+            for (; it != data.end() && it.key() == text.at(i).toLatin1(); ++it) {
                 // we have a word match check
                 // 1. if we are at the end
                 // 2. if we have a complete word
+                const QLatin1String &word = it.value();
                 if (word == MH_SUBSTR(i, word.size()) &&
                     (i + word.size() == text.length() ||
                      (!text.at(i + word.size()).isLetterOrNumber() &&
@@ -1031,9 +1032,9 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
 
         /* Highlight other stuff (preprocessor etc.) */
         if (i == 0 || !text.at(i - 1).isLetter()) {
-            const QList<QLatin1String> wordList =
-                others.values(text[i].toLatin1());
-            for (const QLatin1String &word : wordList) {
+            auto it = others.find(text.at(i).toLatin1());
+            for (; it != others.end() && it.key() == text.at(i).toLatin1(); ++it) {
+                const QLatin1String &word = it.value();
                 if (word == MH_SUBSTR(i, word.size()) &&
                     (i + word.size() == text.length() ||
                      !text.at(i + word.size()).isLetter())) {
