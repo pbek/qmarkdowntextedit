@@ -49,7 +49,7 @@ QPlainTextEditSearchWidget::QPlainTextEditSearchWidget(QPlainTextEdit *parent)
     connect(ui->replaceAllButton, &QPushButton::clicked, this,
             &QPlainTextEditSearchWidget::doReplaceAll);
 
-    connect(&_debounceTimer, &QTimer::timeout,
+    connect(&debounceTimer_, &QTimer::timeout,
             this, &QPlainTextEditSearchWidget::performSearch);
 
     installEventFilter(this);
@@ -114,18 +114,18 @@ bool QPlainTextEditSearchWidget::eventFilter(QObject *obj, QEvent *event) {
         if (keyEvent->key() == Qt::Key_Escape) {
             deactivate();
             return true;
-        } else if (!_debounceTimer.isActive() &&
+        } else if (!debounceTimer_.isActive() &&
                     (keyEvent->modifiers().testFlag(Qt::ShiftModifier) &&
                     (keyEvent->key() == Qt::Key_Return)) ||
                     (keyEvent->key() == Qt::Key_Up)) {
             doSearchUp();
             return true;
-        } else if (!_debounceTimer.isActive() &&
+        } else if (!debounceTimer_.isActive() &&
                     ((keyEvent->key() == Qt::Key_Return) ||
                      (keyEvent->key() == Qt::Key_Down))) {
             doSearchDown();
             return true;
-        } else if (!_debounceTimer.isActive() && keyEvent->key() == Qt::Key_F3) {
+        } else if (!debounceTimer_.isActive() && keyEvent->key() == Qt::Key_F3) {
             doSearch(!keyEvent->modifiers().testFlag(Qt::ShiftModifier));
             return true;
         }
@@ -147,8 +147,8 @@ void QPlainTextEditSearchWidget::searchLineEditTextChanged(
 
     searchTerm_ = arg1;
 
-    if (_debounceTimer.interval() != 0 && !searchTerm_.isEmpty()) {
-        _debounceTimer.start();
+    if (debounceTimer_.interval() != 0 && !searchTerm_.isEmpty()) {
+        debounceTimer_.start();
         ui->searchDownButton->setEnabled(false);
         ui->searchUpButton->setEnabled(false);
     } else {
@@ -167,7 +167,7 @@ void QPlainTextEditSearchWidget::performSearch()
         if (regExp.match(searchTerm_).hasMatch()) {
             clearSearchExtraSelections();
 
-            if (_debounceTimer.isActive()) {
+            if (debounceTimer_.isActive()) {
                 stopDebounce();
             }
             return;
@@ -210,7 +210,7 @@ void QPlainTextEditSearchWidget::setSearchExtraSelections() const {
 
 void QPlainTextEditSearchWidget::stopDebounce()
 {
-    _debounceTimer.stop();
+    debounceTimer_.stop();
     ui->searchDownButton->setEnabled(true);
     ui->searchUpButton->setEnabled(true);
 }
@@ -273,7 +273,7 @@ void QPlainTextEditSearchWidget::doReplaceAll() {
 bool QPlainTextEditSearchWidget::doSearch(bool searchDown,
                                           bool allowRestartAtTop,
                                           bool updateUI) {
-    if (_debounceTimer.isActive()) {
+    if (debounceTimer_.isActive()) {
         stopDebounce();
     }
 
@@ -433,7 +433,7 @@ void QPlainTextEditSearchWidget::setSearchMode(SearchMode searchMode) {
 
 void QPlainTextEditSearchWidget::setDebounceDelay(uint debounceDelay)
 {
-    _debounceTimer.setInterval(static_cast<int>(debounceDelay));
+    debounceTimer_.setInterval(static_cast<int>(debounceDelay));
 }
 
 void QPlainTextEditSearchWidget::activate(bool focus) {
