@@ -433,7 +433,7 @@ void QPlainTextEditSearchWidget::setSearchMode(SearchMode searchMode) {
 
 void QPlainTextEditSearchWidget::setDebounceDelay(uint debounceDelay)
 {
-    _debounceTimer.setInterval(debounceDelay);
+    _debounceTimer.setInterval(static_cast<int>(debounceDelay));
 }
 
 void QPlainTextEditSearchWidget::activate(bool focus) {
