@@ -60,6 +60,7 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     void updateSettings();
     void setLineNumbersCurrentLineColor(QColor color);
     void setLineNumbersOtherLineColor(QColor color);
+    void setDebounceDelay(uint debounceDelay);
 
    public Q_SLOTS:
     void duplicateText();
@@ -83,6 +84,7 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     AutoTextOptions _autoTextOptions;
     bool _mouseButtonDown = false;
     bool _centerCursor = false;
+    uint _debounceDelay = 0;
 
     bool eventFilter(QObject *obj, QEvent *event);
     QMargins viewportMargins();
