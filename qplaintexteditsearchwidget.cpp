@@ -157,8 +157,7 @@ void QPlainTextEditSearchWidget::searchLineEditTextChanged(
 }
 
 void QPlainTextEditSearchWidget::performSearch()
-{   qDebug() << "perform search";
-
+{
     const int searchMode = ui->modeComboBox->currentIndex();
 
     if (searchMode == RegularExpressionMode) {
