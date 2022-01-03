@@ -27,6 +27,7 @@ QPlainTextEditSearchWidget::QPlainTextEditSearchWidget(QPlainTextEdit *parent)
     ui->setupUi(this);
     _textEdit = parent;
     _darkMode = false;
+    _autoSearch = true;
     hide();
     ui->searchCountLabel->setStyleSheet(QStringLiteral("* {color: grey}"));
     // hiding will leave a open space in the horizontal layout
@@ -137,12 +138,22 @@ bool QPlainTextEditSearchWidget::eventFilter(QObject *obj, QEvent *event) {
 
 void QPlainTextEditSearchWidget::searchLineEditTextChanged(
     const QString &arg1) {
+
+    if (!_autoSearch) {
+        return;
+    }
+
+    performSearch(arg1);
+}
+
+void QPlainTextEditSearchWidget::performSearch(const QString &searchTerm)
+{
     const int searchMode = ui->modeComboBox->currentIndex();
 
     if (searchMode == RegularExpressionMode) {
         // Prevent stuck application when the user enters just start or end markers
         static const QRegularExpression regExp(R"(^[\^\$]+$)");
-        if (regExp.match(arg1).hasMatch()) {
+        if (regExp.match(searchTerm).hasMatch()) {
             clearSearchExtraSelections();
 
             return;
@@ -393,6 +404,11 @@ void QPlainTextEditSearchWidget::setSearchText(const QString &searchText) {
 
 void QPlainTextEditSearchWidget::setSearchMode(SearchMode searchMode) {
     ui->modeComboBox->setCurrentIndex(searchMode);
+}
+
+void QPlainTextEditSearchWidget::setAutoSearch(bool autoSearch)
+{
+    _autoSearch = autoSearch;
 }
 
 void QPlainTextEditSearchWidget::activate(bool focus) {

@@ -111,6 +111,12 @@ void QMarkdownTextEdit::setLineNumbersOtherLineColor(QColor color) {
     _lineNumArea->setOtherLineColor(std::move(color));
 }
 
+void QMarkdownTextEdit::setAutoSearch(bool autoSearch)
+{
+    _autoSearch = autoSearch;
+    searchWidget()->setAutoSearch(_autoSearch);
+}
+
 /**
  * Enables or disables the markdown highlighting
  *
@@ -1771,6 +1777,7 @@ void QMarkdownTextEdit::hideSearchWidget(bool reset) {
 
 void QMarkdownTextEdit::updateSettings() {
     // if true: centers the screen if cursor reaches bottom (but not top)
+    searchWidget()->setAutoSearch(_autoSearch);
     setCenterOnScroll(_centerCursor);
 }
 

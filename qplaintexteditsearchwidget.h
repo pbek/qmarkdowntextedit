@@ -34,6 +34,7 @@ class QPlainTextEditSearchWidget : public QWidget {
     ~QPlainTextEditSearchWidget();
     void setSearchText(const QString &searchText);
     void setSearchMode(SearchMode searchMode);
+    void setAutoSearch(bool autoSearch);
     void activate(bool focus);
     void clearSearchExtraSelections();
     void updateSearchExtraSelections();
@@ -49,6 +50,7 @@ class QPlainTextEditSearchWidget : public QWidget {
    protected:
     QPlainTextEdit *_textEdit;
     bool _darkMode;
+    bool _autoSearch;
     bool eventFilter(QObject *obj, QEvent *event);
 
    public slots:
@@ -61,6 +63,7 @@ class QPlainTextEditSearchWidget : public QWidget {
     bool doReplace(bool forAll = false);
     void doReplaceAll();
     void reset();
+    void performSearch(const QString &searchTerm);
     void doSearchCount();
 
    protected slots:
