@@ -18,6 +18,8 @@
 #include <QTimer>
 #include <QWidget>
 
+#include "searchoptions.h"
+
 namespace Ui {
 class QPlainTextEditSearchWidget;
 }
@@ -25,55 +27,60 @@ class QPlainTextEditSearchWidget;
 class QPlainTextEditSearchWidget : public QWidget {
     Q_OBJECT
 
-   public:
+public:
     enum SearchMode { PlainTextMode, WholeWordsMode, RegularExpressionMode };
 
     explicit QPlainTextEditSearchWidget(QPlainTextEdit *parent = nullptr);
-    bool doSearch(bool searchDown = true, bool allowRestartAtTop = true,
-                  bool updateUI = true);
-    void setDarkMode(bool enabled);
     ~QPlainTextEditSearchWidget();
+
     void setSearchText(const QString &searchText);
     void setSearchMode(SearchMode searchMode);
     void setDebounceDelay(uint debounceDelay);
+    void setDarkMode(bool enabled);
     void activate(bool focus);
-    void clearSearchExtraSelections();
-    void updateSearchExtraSelections();
 
-   private:
-    Ui::QPlainTextEditSearchWidget *ui;
-    int _searchResultCount;
-    int _currentSearchResult;
-    QList<QTextEdit::ExtraSelection> _searchExtraSelections;
-    QColor selectionColor;
-    QTimer _debounceTimer;
-    QString _searchTerm;
-    void setSearchExtraSelections() const;
-    void stopDebounce();
-
-   protected:
+protected:
     QPlainTextEdit *_textEdit;
     bool _darkMode;
     bool eventFilter(QObject *obj, QEvent *event);
 
-   public slots:
+private:
+    Ui::QPlainTextEditSearchWidget *_ui;
+
+    QString _searchTermUsedInLatestSearch;
+    SearchDirection _directionUsedInLatestSearch;
+    QList<QTextCursor> _latestSearchResults;
+    int _latestSearchLowestCursorIndex;
+    int _latestSearchSelectionIndex;
+    bool _modeChangedFlag;
+    QColor _selectionColor;
+    QTimer _debounceTimer;
+
+    void performSearch(SearchDirection direction);
+    QList<QTextCursor> doSearch(const SearchOptions &searchOptions);
+    void stepSelectionIndexInCurrentSearch(int stepOffset);
+    void clearSearchExtraSelections();
+    void updateSearchExtraSelections();
+    void stopDebounce();
+
+public slots:
+    void setReplaceMode(bool enabled);
     void activate();
     void deactivate();
+    void activateReplace();
+    void triggerSearch();
     void doSearchDown();
     void doSearchUp();
-    void setReplaceMode(bool enabled);
-    void activateReplace();
-    bool doReplace(bool forAll = false);
+    bool doReplace();
     void doReplaceAll();
     void reset();
-    void doSearchCount();
 
-   protected slots:
-    void searchLineEditTextChanged(const QString &arg1);
-    void performSearch();
+private slots:
+    void invalidateSearch();
+    void searchLineEditTextChanged(const QString &searchTerm);
     void updateSearchCountLabelText();
-    void setSearchSelectionColor(const QColor &color);
-   private slots:
+    void clearSearchCountLabelText();
+
     void on_modeComboBox_currentIndexChanged(int index);
     void on_matchCaseSensitiveButton_toggled(bool checked);
 };

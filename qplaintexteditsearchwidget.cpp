@@ -14,7 +14,6 @@
 
 #include "qplaintexteditsearchwidget.h"
 
-#include <QDebug>
 #include <QEvent>
 #include <QKeyEvent>
 
@@ -22,39 +21,43 @@
 
 QPlainTextEditSearchWidget::QPlainTextEditSearchWidget(QPlainTextEdit *parent)
     : QWidget(parent),
-      ui(new Ui::QPlainTextEditSearchWidget),
-      selectionColor(0, 180, 0, 100) {
-    ui->setupUi(this);
-    _textEdit = parent;
-    _darkMode = false;
+      _textEdit(parent),
+      _darkMode(false),
+      _ui(new Ui::QPlainTextEditSearchWidget),
+      _latestSearchLowestCursorIndex(0),
+      _latestSearchSelectionIndex(0),
+      _modeChangedFlag(false),
+      _selectionColor(0, 180, 0, 100) {
+
+    _ui->setupUi(this);
     hide();
-    ui->searchCountLabel->setStyleSheet(QStringLiteral("* {color: grey}"));
-    // hiding will leave a open space in the horizontal layout
-    ui->searchCountLabel->setEnabled(false);
-    _currentSearchResult = 0;
-    _searchResultCount = 0;
 
-    connect(ui->closeButton, &QPushButton::clicked, this,
+    _ui->searchCountLabel->setStyleSheet(QStringLiteral("* {color: grey}"));
+    // hiding will leave an open space in the horizontal layout
+    _ui->searchCountLabel->setEnabled(false);
+
+    connect(_ui->closeButton, &QPushButton::clicked, this,
             &QPlainTextEditSearchWidget::deactivate);
-    connect(ui->searchLineEdit, &QLineEdit::textChanged, this,
+    connect(_ui->searchLineEdit, &QLineEdit::textChanged, this,
             &QPlainTextEditSearchWidget::searchLineEditTextChanged);
-    connect(ui->searchDownButton, &QPushButton::clicked, this,
+    connect(_ui->searchDownButton, &QPushButton::clicked, this,
             &QPlainTextEditSearchWidget::doSearchDown);
-    connect(ui->searchUpButton, &QPushButton::clicked, this,
+    connect(_ui->searchUpButton, &QPushButton::clicked, this,
             &QPlainTextEditSearchWidget::doSearchUp);
-    connect(ui->replaceToggleButton, &QPushButton::toggled, this,
+    connect(_ui->replaceToggleButton, &QPushButton::toggled, this,
             &QPlainTextEditSearchWidget::setReplaceMode);
-    connect(ui->replaceButton, &QPushButton::clicked, this,
+    connect(_ui->replaceButton, &QPushButton::clicked, this,
             &QPlainTextEditSearchWidget::doReplace);
-    connect(ui->replaceAllButton, &QPushButton::clicked, this,
+    connect(_ui->replaceAllButton, &QPushButton::clicked, this,
             &QPlainTextEditSearchWidget::doReplaceAll);
-
     connect(&_debounceTimer, &QTimer::timeout,
-            this, &QPlainTextEditSearchWidget::performSearch);
+            this, &QPlainTextEditSearchWidget::triggerSearch);
+    connect(_textEdit, &QPlainTextEdit::textChanged, this,
+            &QPlainTextEditSearchWidget::invalidateSearch);
 
     installEventFilter(this);
-    ui->searchLineEdit->installEventFilter(this);
-    ui->replaceLineEdit->installEventFilter(this);
+    _ui->searchLineEdit->installEventFilter(this);
+    _ui->replaceLineEdit->installEventFilter(this);
 
 #ifdef Q_OS_MAC
     // set the spacing to 8 for OS X
@@ -71,20 +74,28 @@ QPlainTextEditSearchWidget::QPlainTextEditSearchWidget(QPlainTextEdit *parent)
 #endif
 }
 
-QPlainTextEditSearchWidget::~QPlainTextEditSearchWidget() { delete ui; }
+QPlainTextEditSearchWidget::~QPlainTextEditSearchWidget() {
+    delete _ui;
+}
 
-void QPlainTextEditSearchWidget::activate() { activate(true); }
+void QPlainTextEditSearchWidget::setSearchText(const QString &searchText) {
+    _ui->searchLineEdit->setText(searchText);
+}
 
-void QPlainTextEditSearchWidget::activateReplace() {
-    // replacing is prohibited if the text edit is readonly
-    if (_textEdit->isReadOnly()) {
-        return;
-    }
+void QPlainTextEditSearchWidget::setSearchMode(SearchMode searchMode) {
+    _ui->modeComboBox->setCurrentIndex(searchMode);
+}
 
-    ui->searchLineEdit->setText(_textEdit->textCursor().selectedText());
-    ui->searchLineEdit->selectAll();
-    activate();
-    setReplaceMode(true);
+void QPlainTextEditSearchWidget::setDebounceDelay(uint debounceDelay) {
+    _debounceTimer.setInterval(static_cast<int>(debounceDelay));
+}
+
+void QPlainTextEditSearchWidget::setDarkMode(bool enabled) {
+    _darkMode = enabled;
+}
+
+void QPlainTextEditSearchWidget::activate() {
+    activate(true);
 }
 
 void QPlainTextEditSearchWidget::deactivate() {
@@ -92,19 +103,44 @@ void QPlainTextEditSearchWidget::deactivate() {
 
     hide();
 
-    // Clear the search extra selections when closing the search bar
     clearSearchExtraSelections();
 
     _textEdit->setFocus();
 }
 
+void QPlainTextEditSearchWidget::activateReplace() {
+    // replacing is prohibited if the text edit is readonly
+    if (_textEdit->isReadOnly()) {
+        return;
+    }
+
+    _ui->searchLineEdit->setText(_textEdit->textCursor().selectedText());
+    _ui->searchLineEdit->selectAll();
+
+    activate();
+    setReplaceMode(true);
+}
+
+void QPlainTextEditSearchWidget::triggerSearch()
+{
+    performSearch(SearchDirection::Down);
+}
+
 void QPlainTextEditSearchWidget::setReplaceMode(bool enabled) {
-    ui->replaceToggleButton->setChecked(enabled);
-    ui->replaceLabel->setVisible(enabled);
-    ui->replaceLineEdit->setVisible(enabled);
-    ui->modeLabel->setVisible(enabled);
-    ui->buttonFrame->setVisible(enabled);
-    ui->matchCaseSensitiveButton->setVisible(enabled);
+    _ui->replaceToggleButton->setChecked(enabled);
+    _ui->replaceLabel->setVisible(enabled);
+    _ui->replaceLineEdit->setVisible(enabled);
+    _ui->modeLabel->setVisible(enabled);
+    _ui->buttonFrame->setVisible(enabled);
+    _ui->matchCaseSensitiveButton->setVisible(enabled);
+}
+
+void QPlainTextEditSearchWidget::invalidateSearch()
+{
+    _searchTermUsedInLatestSearch.clear();
+    _latestSearchResults.clear();
+    _latestSearchSelectionIndex = 0;
+    _latestSearchLowestCursorIndex = 0;
 }
 
 bool QPlainTextEditSearchWidget::eventFilter(QObject *obj, QEvent *event) {
@@ -115,19 +151,17 @@ bool QPlainTextEditSearchWidget::eventFilter(QObject *obj, QEvent *event) {
             deactivate();
             return true;
         } else if (!_debounceTimer.isActive() &&
-                    (keyEvent->modifiers().testFlag(Qt::ShiftModifier) &&
-                    (keyEvent->key() == Qt::Key_Return)) ||
-                    (keyEvent->key() == Qt::Key_Up)) {
+                   (keyEvent->modifiers().testFlag(Qt::ShiftModifier) &&
+                    (keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter || keyEvent->key() == Qt::Key_Up))) {
             doSearchUp();
             return true;
         } else if (!_debounceTimer.isActive() &&
-                    ((keyEvent->key() == Qt::Key_Return) ||
-                     (keyEvent->key() == Qt::Key_Down))) {
+                    (keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter || keyEvent->key() == Qt::Key_Down)) {
             doSearchDown();
             return true;
         } else if (!_debounceTimer.isActive() && keyEvent->key() == Qt::Key_F3) {
-            doSearch(!keyEvent->modifiers().testFlag(Qt::ShiftModifier));
-            return true;
+//            doSearch(!keyEvent->modifiers().testFlag(Qt::ShiftModifier));
+//            return true;
         }
 
         //        if ((obj == ui->replaceLineEdit) && (keyEvent->key() ==
@@ -142,349 +176,384 @@ bool QPlainTextEditSearchWidget::eventFilter(QObject *obj, QEvent *event) {
     return QWidget::eventFilter(obj, event);
 }
 
-void QPlainTextEditSearchWidget::searchLineEditTextChanged(
-    const QString &arg1) {
-    _searchTerm = arg1;
-
-    if (_debounceTimer.interval() != 0 && !_searchTerm.isEmpty()) {
+void QPlainTextEditSearchWidget::searchLineEditTextChanged(const QString &searchTerm) {
+    if (_debounceTimer.interval() != 0 && !searchTerm.isEmpty()) {
         _debounceTimer.start();
-        ui->searchDownButton->setEnabled(false);
-        ui->searchUpButton->setEnabled(false);
+        _ui->searchDownButton->setEnabled(false);
+        _ui->searchUpButton->setEnabled(false);
     } else {
-        performSearch();
+        triggerSearch();
     }
 }
 
-void QPlainTextEditSearchWidget::performSearch()
+void QPlainTextEditSearchWidget::performSearch(SearchDirection direction)
 {
-    const int searchMode = ui->modeComboBox->currentIndex();
+    stopDebounce();
+
+    const auto searchTerm = _ui->searchLineEdit->text();
+    if (searchTerm.isEmpty()) {
+        return;
+    }
+
+    _directionUsedInLatestSearch = direction;
+
+    const auto searchMode = static_cast<SearchMode>(_ui->modeComboBox->currentIndex());
 
     if (searchMode == RegularExpressionMode) {
         // Prevent stuck application when the user enters just start or end markers
         static const QRegularExpression regExp(R"(^[\^\$]+$)");
-        if (regExp.match(_searchTerm).hasMatch()) {
+        if (regExp.match(searchTerm).hasMatch()) {
             clearSearchExtraSelections();
-
-            if (_debounceTimer.isActive()) {
-                stopDebounce();
-            }
             return;
         }
     }
 
-    doSearchCount();
-    updateSearchExtraSelections();
-    doSearchDown();
+    if (searchTerm == _searchTermUsedInLatestSearch && !_modeChangedFlag) {
+        if (_latestSearchResults.size() == 0) {
+            return;
+        }
+
+        const auto currentCursor = _textEdit->textCursor();
+        int selectionIndexInSearchResults;
+        int numeElementsSearched{0};
+
+        for (selectionIndexInSearchResults = _latestSearchLowestCursorIndex;
+             _latestSearchResults[selectionIndexInSearchResults] < currentCursor &&
+             numeElementsSearched != _latestSearchResults.size();
+             ++selectionIndexInSearchResults) {
+            ++numeElementsSearched;
+            if (selectionIndexInSearchResults == _latestSearchResults.size() - 1) {
+                selectionIndexInSearchResults = -1;
+            }
+        }
+
+        if (numeElementsSearched >= _latestSearchResults.size()) {
+            selectionIndexInSearchResults = _latestSearchLowestCursorIndex;
+        }
+
+        _latestSearchSelectionIndex = selectionIndexInSearchResults;
+        stepSelectionIndexInCurrentSearch(0);
+    } else {
+        if (_modeChangedFlag) {
+            _modeChangedFlag = false;
+        }
+
+        _latestSearchLowestCursorIndex = 0;
+
+        _latestSearchResults = doSearch(SearchOptions {
+                                               .searchDirection = direction,
+                                               .searchFromTheBeginning = false,
+                                               .wrapSearch = true,
+                                               .findMultiOccurances = true
+                                           });
+        _searchTermUsedInLatestSearch = searchTerm;
+
+        _latestSearchSelectionIndex = 0;
+        stepSelectionIndexInCurrentSearch(0);
+    }
 }
 
-void QPlainTextEditSearchWidget::clearSearchExtraSelections() {
-    _searchExtraSelections.clear();
-    setSearchExtraSelections();
+QList<QTextCursor> QPlainTextEditSearchWidget::doSearch(const SearchOptions &searchOptions)
+{
+    const QString searchTerm = _ui->searchLineEdit->text();
+    if (searchTerm.isEmpty()) {
+        return {};
+    }
+
+    const SearchMode searchMode = static_cast<SearchMode>(_ui->modeComboBox->currentIndex());
+    const bool caseSensitive = _ui->matchCaseSensitiveButton->isChecked();
+
+    QFlags<QTextDocument::FindFlag> findFlags{};
+
+    if (searchMode == WholeWordsMode) {
+        findFlags |= QTextDocument::FindWholeWords;
+    }
+    if (caseSensitive) {
+        findFlags |= QTextDocument::FindCaseSensitively;
+    }
+    if (searchOptions.searchDirection == SearchDirection::Up) {
+        findFlags |= QTextDocument::FindBackward;
+    }
+
+    _textEdit->blockSignals(true);
+
+    const auto document = _textEdit->document();
+
+    QList<QTextCursor> searchResults;
+    QTextCursor searchResult;
+    QTextCursor firstSearchResult;
+    QTextCursor lowestPosResult;
+    bool continueSearch{false};
+    bool wrappedSearch{false};
+
+    QTextCursor nextSearchPosition =_textEdit->textCursor();
+    if (searchOptions.searchFromTheBeginning) {
+        nextSearchPosition.movePosition(searchOptions.searchDirection == SearchDirection::Down ? QTextCursor::Start : QTextCursor::End);
+    } else {
+        nextSearchPosition.movePosition(QTextCursor::StartOfBlock);
+    }
+
+    do {
+        continueSearch = false;
+
+        searchResult = (searchMode == SearchMode::RegularExpressionMode ?
+                            document->find(QRegularExpression(searchTerm, caseSensitive
+                                                              ? QRegularExpression::NoPatternOption
+                                                              : QRegularExpression::CaseInsensitiveOption),
+                                           nextSearchPosition,
+                                           findFlags)
+                          :
+                            document->find(searchTerm, nextSearchPosition, findFlags));
+
+        if (!searchResult.isNull()) {
+            if (firstSearchResult.isNull()) {
+                firstSearchResult = searchResult;
+            } else if (firstSearchResult == searchResult) {
+                // wrapped and found again
+                break;
+            }
+
+            if (lowestPosResult.isNull() || searchResult < lowestPosResult) {
+                lowestPosResult = searchResult;
+                _latestSearchLowestCursorIndex = searchResults.size();
+            }
+
+            searchResults.push_back(searchResult);
+            nextSearchPosition = searchResult;
+            nextSearchPosition.movePosition(searchOptions.searchDirection == SearchDirection::Down ? QTextCursor::NextCharacter :
+                                                                                                     QTextCursor::PreviousCharacter);
+        }
+
+        if (searchOptions.findMultiOccurances) {
+            if (!searchResult.isNull()) {
+                continueSearch = true;
+            } else if (!wrappedSearch && searchOptions.wrapSearch) {
+                nextSearchPosition.movePosition(searchOptions.searchDirection == SearchDirection::Down ? QTextCursor::Start :
+                                                                                                         QTextCursor::End);
+
+                _textEdit->moveCursor(searchOptions.searchDirection == SearchDirection :: Down ? QTextCursor::Start :
+                                                                                                 QTextCursor::End);
+                wrappedSearch = true;
+                continueSearch = true;
+            }
+        } else {
+            if (searchResult.isNull() && (!wrappedSearch && searchOptions.wrapSearch)) {
+                _textEdit->moveCursor(searchOptions.searchDirection == SearchDirection :: Down ? QTextCursor::Start :
+                                                                                                 QTextCursor::End);
+                wrappedSearch = true;
+                continueSearch = true;
+            }
+        }
+    } while (continueSearch);
+
+    _textEdit->blockSignals(false);
+
+    return searchResults;
+}
+
+void QPlainTextEditSearchWidget::doSearchUp()
+{
+    if (_searchTermUsedInLatestSearch.isEmpty()) {
+        performSearch(SearchDirection::Up);
+    } else {
+        stepSelectionIndexInCurrentSearch(-1);
+    }
+}
+
+void QPlainTextEditSearchWidget::doSearchDown()
+{
+    if (_searchTermUsedInLatestSearch.isEmpty()) {
+        performSearch(SearchDirection::Down);
+    } else {
+        stepSelectionIndexInCurrentSearch(1);
+    }
+}
+
+void QPlainTextEditSearchWidget::stepSelectionIndexInCurrentSearch(int stepOffset)
+{
+    // add a background color according if we found the text or not
+    const QString bgColorCode =
+            _darkMode
+            ? (_latestSearchResults.size() != 0 ? QStringLiteral("#135a13")
+                     : QStringLiteral("#8d2b36"))
+            : _latestSearchResults.size() != 0 ? QStringLiteral("#D5FAE2") : QStringLiteral("#FAE9EB");
+    const QString fgColorCode =
+            _darkMode ? QStringLiteral("#cccccc") : QStringLiteral("#404040");
+
+    _ui->searchLineEdit->setStyleSheet(
+                QStringLiteral("* { background: ") + bgColorCode +
+                QStringLiteral("; color: ") + fgColorCode + QStringLiteral("; }"));
+
+    const QRect rect = _textEdit->cursorRect();
+    QMargins margins = _textEdit->layout()->contentsMargins();
+    const int searchWidgetHotArea = _textEdit->height() - this->height();
+    const int marginBottom =
+            (rect.y() > searchWidgetHotArea) ? (this->height() + 10) : 0;
+
+    // move the search box a bit up if we would block the search result
+    if (margins.bottom() != marginBottom) {
+        margins.setBottom(marginBottom);
+        _textEdit->layout()->setContentsMargins(margins);
+    }
+
+    if (_latestSearchResults.size() == 0) {
+        clearSearchCountLabelText();
+        return;
+    }
+
+    if (stepOffset != 0) {
+        bool negativeOffset = (stepOffset < 0);
+        stepOffset = abs(stepOffset) % _latestSearchResults.size();
+        if (negativeOffset) { stepOffset *= -1; };
+        if (_directionUsedInLatestSearch == SearchDirection::Up) { stepOffset *= -1; }
+
+        _latestSearchSelectionIndex += stepOffset;
+        if (_latestSearchSelectionIndex >= _latestSearchResults.size()) {
+            _latestSearchSelectionIndex -= _latestSearchResults.size();
+        } else if (_latestSearchSelectionIndex < 0) {
+            _latestSearchSelectionIndex += _latestSearchResults.size();
+        }
+    }
+
+    updateSearchCountLabelText();
+
+    _textEdit->setTextCursor(_latestSearchResults[_latestSearchSelectionIndex]);
+
+    updateSearchExtraSelections();
+}
+
+void QPlainTextEditSearchWidget::updateSearchCountLabelText() {
+    _ui->searchCountLabel->setEnabled(true);
+
+    int currentPositionInSearch{0};
+    if (_directionUsedInLatestSearch == SearchDirection::Down) {
+        currentPositionInSearch = (_latestSearchSelectionIndex + _latestSearchResults.size() - _latestSearchLowestCursorIndex) % _latestSearchResults.size() + 1;
+    } else {
+        currentPositionInSearch = (_latestSearchResults.size() - _latestSearchSelectionIndex + _latestSearchLowestCursorIndex) % _latestSearchResults.size() + 1;
+    }
+
+    _ui->searchCountLabel->setText(QString("%1/%2").arg(
+                                      QString::number(currentPositionInSearch),
+                                      QString::number(_latestSearchResults.size())));
+}
+
+void QPlainTextEditSearchWidget::clearSearchCountLabelText() {
+    _ui->searchCountLabel->setText("0/0");
 }
 
 void QPlainTextEditSearchWidget::updateSearchExtraSelections() {
-    _searchExtraSelections.clear();
-    const auto textCursor = _textEdit->textCursor();
-    _textEdit->moveCursor(QTextCursor::Start);
-    const QColor color = selectionColor;
-    QTextCharFormat extraFmt;
-    extraFmt.setBackground(color);
-
-    while (doSearch(true, false, false)) {
-        QTextEdit::ExtraSelection extra = QTextEdit::ExtraSelection();
-        extra.format = extraFmt;
-
-        extra.cursor = _textEdit->textCursor();
-        _searchExtraSelections.append(extra);
+    if (_latestSearchResults.size() == 0) {
+        return;
     }
 
-    _textEdit->setTextCursor(textCursor);
-    this->setSearchExtraSelections();
+    QList<QTextEdit::ExtraSelection> searchExtraSelections;
+    const QColor color = _selectionColor;
+    QTextCharFormat extraFormat;
+    extraFormat.setBackground(color);
+
+    for (const auto cursor: _latestSearchResults) {
+        QTextEdit::ExtraSelection extra = QTextEdit::ExtraSelection();
+        extra.format = extraFormat;
+        extra.cursor = cursor;
+        searchExtraSelections.push_back(extra);
+    }
+
+    _textEdit->setExtraSelections(searchExtraSelections);
 }
 
-void QPlainTextEditSearchWidget::setSearchExtraSelections() const {
-    this->_textEdit->setExtraSelections(this->_searchExtraSelections);
+void QPlainTextEditSearchWidget::clearSearchExtraSelections() {
+    this->_textEdit->setExtraSelections({});
 }
 
 void QPlainTextEditSearchWidget::stopDebounce()
 {
     _debounceTimer.stop();
-    ui->searchDownButton->setEnabled(true);
-    ui->searchUpButton->setEnabled(true);
+    _ui->searchDownButton->setEnabled(true);
+    _ui->searchUpButton->setEnabled(true);
 }
 
-void QPlainTextEditSearchWidget::doSearchUp() { doSearch(false); }
-
-void QPlainTextEditSearchWidget::doSearchDown() { doSearch(true); }
-
-bool QPlainTextEditSearchWidget::doReplace(bool forAll) {
-    if (_textEdit->isReadOnly()) {
+bool QPlainTextEditSearchWidget::doReplace() {
+    if (_textEdit->isReadOnly() || _latestSearchResults.isEmpty()) {
         return false;
     }
 
-    QTextCursor cursor = _textEdit->textCursor();
+    _textEdit->blockSignals(true);
 
-    if (!forAll && cursor.selectedText().isEmpty()) {
-        return false;
-    }
+    const auto replacementText = _ui->replaceLineEdit->text();
 
-    const int searchMode = ui->modeComboBox->currentIndex();
-    if (searchMode == RegularExpressionMode) {
-        QString text = cursor.selectedText();
-        text.replace(QRegularExpression(ui->searchLineEdit->text()),
-                     ui->replaceLineEdit->text());
-        cursor.insertText(text);
+    _latestSearchResults[_latestSearchSelectionIndex].insertText(replacementText);
+    _latestSearchResults.removeAt(_latestSearchSelectionIndex);
+
+    if (_directionUsedInLatestSearch == SearchDirection::Down) {
+        if (_latestSearchSelectionIndex < _latestSearchLowestCursorIndex) {
+            _latestSearchLowestCursorIndex -= 1;
+        } else if (_latestSearchSelectionIndex == _latestSearchLowestCursorIndex && _latestSearchLowestCursorIndex >= _latestSearchResults.size()) {
+            _latestSearchLowestCursorIndex = 0;
+        }
+
+        if (_latestSearchSelectionIndex == _latestSearchResults.size()) {
+            _latestSearchSelectionIndex = 0;
+        }
     } else {
-        cursor.insertText(ui->replaceLineEdit->text());
-    }
-
-    if (!forAll) {
-        const int position = cursor.position();
-
-        if (!doSearch(true)) {
-            // restore the last cursor position if text wasn't found any more
-            cursor.setPosition(position);
-            _textEdit->setTextCursor(cursor);
+        if (_latestSearchSelectionIndex <= _latestSearchLowestCursorIndex) {
+            --_latestSearchLowestCursorIndex;
+        }
+        --_latestSearchSelectionIndex;
+        if (_latestSearchSelectionIndex < 0) {
+            _latestSearchSelectionIndex = _latestSearchResults.size() - 1;
+        }
+        if (_latestSearchLowestCursorIndex < 0) {
+            _latestSearchLowestCursorIndex = _latestSearchResults.size() - 1;
         }
     }
+
+    stepSelectionIndexInCurrentSearch(0);
+
+    _textEdit->blockSignals(false);
 
     return true;
 }
 
 void QPlainTextEditSearchWidget::doReplaceAll() {
-    if (_textEdit->isReadOnly()) {
-        return;
-    }
-
-    // start at the top
-    _textEdit->moveCursor(QTextCursor::Start);
-
-    // replace until everything to the bottom is replaced
-    while (doSearch(true, false) && doReplace(true)) {
-    }
-}
-
-/**
- * @brief Searches for text in the text edit
- * @returns true if found
- */
-bool QPlainTextEditSearchWidget::doSearch(bool searchDown,
-                                          bool allowRestartAtTop,
-                                          bool updateUI) {
-    if (_debounceTimer.isActive()) {
-        stopDebounce();
-    }
-
-    const QString text = ui->searchLineEdit->text();
-
-    if (text.isEmpty()) {
-        if (updateUI) {
-            ui->searchLineEdit->setStyleSheet(QLatin1String(""));
-        }
-
-        return false;
-    }
-
-    const int searchMode = ui->modeComboBox->currentIndex();
-    const bool caseSensitive = ui->matchCaseSensitiveButton->isChecked();
-
-    QFlags<QTextDocument::FindFlag> options =
-        searchDown ? QTextDocument::FindFlag(0) : QTextDocument::FindBackward;
-    if (searchMode == WholeWordsMode) {
-        options |= QTextDocument::FindWholeWords;
-    }
-
-    if (caseSensitive) {
-        options |= QTextDocument::FindCaseSensitively;
-    }
-
-    // block signal to reduce too many signals being fired and too many updates
-    _textEdit->blockSignals(true);
-
-    bool found =
-        searchMode == RegularExpressionMode
-            ?
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 13, 0))
-            _textEdit->find(
-                QRegularExpression(
-                    text, caseSensitive
-                              ? QRegularExpression::NoPatternOption
-                              : QRegularExpression::CaseInsensitiveOption),
-                options)
-            :
-#else
-            _textEdit->find(QRegExp(text, caseSensitive ? Qt::CaseSensitive
-                                                        : Qt::CaseInsensitive),
-                            options)
-            :
-#endif
-            _textEdit->find(text, options);
-
-    _textEdit->blockSignals(false);
-
-    if (found) {
-        const int result =
-            searchDown ? ++_currentSearchResult : --_currentSearchResult;
-        _currentSearchResult = std::min(result, _searchResultCount);
-
-        updateSearchCountLabelText();
-    }
-
-    // start at the top (or bottom) if not found
-    if (!found && allowRestartAtTop) {
-        _textEdit->moveCursor(searchDown ? QTextCursor::Start
-                                         : QTextCursor::End);
-        found =
-            searchMode == RegularExpressionMode
-                ?
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 13, 0))
-                _textEdit->find(
-                    QRegularExpression(
-                        text, caseSensitive
-                                  ? QRegularExpression::NoPatternOption
-                                  : QRegularExpression::CaseInsensitiveOption),
-                    options)
-                :
-#else
-                _textEdit->find(
-                    QRegExp(text, caseSensitive ? Qt::CaseSensitive
-                                                : Qt::CaseInsensitive),
-                    options)
-                :
-#endif
-                _textEdit->find(text, options);
-
-        if (found && updateUI) {
-            _currentSearchResult = searchDown ? 1 : _searchResultCount;
-            updateSearchCountLabelText();
-        }
-    }
-
-    if (updateUI) {
-        const QRect rect = _textEdit->cursorRect();
-        QMargins margins = _textEdit->layout()->contentsMargins();
-        const int searchWidgetHotArea = _textEdit->height() - this->height();
-        const int marginBottom =
-            (rect.y() > searchWidgetHotArea) ? (this->height() + 10) : 0;
-
-        // move the search box a bit up if we would block the search result
-        if (margins.bottom() != marginBottom) {
-            margins.setBottom(marginBottom);
-            _textEdit->layout()->setContentsMargins(margins);
-        }
-
-        // add a background color according if we found the text or not
-        const QString bgColorCode =
-            _darkMode
-                ? (found ? QStringLiteral("#135a13")
-                         : QStringLiteral("#8d2b36"))
-                : found ? QStringLiteral("#D5FAE2") : QStringLiteral("#FAE9EB");
-        const QString fgColorCode =
-            _darkMode ? QStringLiteral("#cccccc") : QStringLiteral("#404040");
-
-        ui->searchLineEdit->setStyleSheet(
-            QStringLiteral("* { background: ") + bgColorCode +
-            QStringLiteral("; color: ") + fgColorCode + QStringLiteral("; }"));
-
-        // restore the search extra selections after the find command
-        this->setSearchExtraSelections();
-    }
-
-    return found;
-}
-
-/**
- * @brief Counts the search results
- */
-void QPlainTextEditSearchWidget::doSearchCount() {
-    // Note that we are moving the anchor, so the search will start from the top
-    // again! Alternative: Restore cursor position afterwards, but then we will
-    // not know
-    //              at what _currentSearchResult we currently are
-    _textEdit->moveCursor(QTextCursor::Start, QTextCursor::MoveAnchor);
-
-    bool found;
-    _searchResultCount = 0;
-    _currentSearchResult = 0;
-
-    do {
-        found = doSearch(true, false, false);
-        if (found) {
-            _searchResultCount++;
-        }
-    } while (found);
-
-    updateSearchCountLabelText();
-}
-
-void QPlainTextEditSearchWidget::setDarkMode(bool enabled) {
-    _darkMode = enabled;
-}
-
-void QPlainTextEditSearchWidget::setSearchText(const QString &searchText) {
-    ui->searchLineEdit->setText(searchText);
-}
-
-void QPlainTextEditSearchWidget::setSearchMode(SearchMode searchMode) {
-    ui->modeComboBox->setCurrentIndex(searchMode);
-}
-
-void QPlainTextEditSearchWidget::setDebounceDelay(uint debounceDelay)
-{
-    _debounceTimer.setInterval(static_cast<int>(debounceDelay));
+    while (doReplace());
 }
 
 void QPlainTextEditSearchWidget::activate(bool focus) {
-    setReplaceMode(ui->modeComboBox->currentIndex() !=
+    setReplaceMode(_ui->modeComboBox->currentIndex() !=
                    SearchMode::PlainTextMode);
     show();
 
-    // preset the selected text as search text if there is any and there is no
-    // other search text
+    // preset the selected text as search text
     const QString selectedText = _textEdit->textCursor().selectedText();
-    if (!selectedText.isEmpty() && ui->searchLineEdit->text().isEmpty()) {
-        ui->searchLineEdit->setText(selectedText);
+    if (!selectedText.isEmpty()) {
+        _ui->searchLineEdit->setText(selectedText);
     }
 
     if (focus) {
-        ui->searchLineEdit->setFocus();
+        _ui->searchLineEdit->setFocus();
     }
+    _ui->searchLineEdit->selectAll();
 
-    ui->searchLineEdit->selectAll();
-    updateSearchExtraSelections();
-    doSearchDown();
+    triggerSearch();
 }
 
 void QPlainTextEditSearchWidget::reset() {
-    ui->searchLineEdit->clear();
+    _ui->searchLineEdit->clear();
     setSearchMode(SearchMode::PlainTextMode);
     setReplaceMode(false);
-    ui->searchCountLabel->setEnabled(false);
-}
-
-void QPlainTextEditSearchWidget::updateSearchCountLabelText() {
-    ui->searchCountLabel->setEnabled(true);
-    ui->searchCountLabel->setText(QString("%1/%2").arg(
-        _currentSearchResult == 0 ? QChar('-')
-                                  : QString::number(_currentSearchResult),
-        _searchResultCount == 0 ? QChar('-')
-                                : QString::number(_searchResultCount)));
-}
-
-void QPlainTextEditSearchWidget::setSearchSelectionColor(const QColor &color) {
-    selectionColor = color;
+    _ui->searchCountLabel->setEnabled(false);
 }
 
 void QPlainTextEditSearchWidget::on_modeComboBox_currentIndexChanged(
     int index) {
-    Q_UNUSED(index)
-    doSearchCount();
-    doSearchDown();
+    Q_UNUSED(index);
+    _modeChangedFlag = true;
+    triggerSearch();
 }
 
 void QPlainTextEditSearchWidget::on_matchCaseSensitiveButton_toggled(
     bool checked) {
     Q_UNUSED(checked)
-    doSearchCount();
-    doSearchDown();
+    _modeChangedFlag = true;
+    triggerSearch();
 }
