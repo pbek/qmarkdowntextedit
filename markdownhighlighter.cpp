@@ -2289,6 +2289,7 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text,
         if (startDelim.end == -1) continue;
 
         const auto &endDelim = delims.at(startDelim.end);
+        auto state = static_cast<HighlighterState>(currentBlockState());
 
         const bool isStrong =
             i > 0 && delims.at(i - 1).end == startDelim.end + 1 &&
@@ -2309,6 +2310,9 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text,
             while (k != (startDelim.pos + boldLen)) {
                 QTextCharFormat fmt = QSyntaxHighlighter::format(k);
                 fmt.setFont(_formats[Bold].font());
+
+                if (_formats[state].fontPointSize() > 0)
+                    fmt.setFontPointSize(_formats[state].fontPointSize());
 
                 // if we are in plain text, use the format's specified color
                 if (fmt.foreground() == QTextCharFormat().foreground())
@@ -2349,6 +2353,9 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text,
             while (k != (startDelim.pos + itLen)) {
                 QTextCharFormat fmt = QSyntaxHighlighter::format(k);
                 fmt.setFont(_formats[Italic].font());
+
+                if (_formats[state].fontPointSize() > 0)
+                    fmt.setFontPointSize(_formats[state].fontPointSize());
 
                 if (fmt.foreground() == QTextCharFormat().foreground())
                     fmt.setForeground(_formats[Italic].foreground());
