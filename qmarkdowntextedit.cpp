@@ -92,6 +92,8 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
     connect(this, &QPlainTextEdit::cursorPositionChanged, this, [this]() {
         _lineNumArea->update();
     });
+    connect(this, &QPlainTextEdit::cursorPositionChanged, this,
+            &QMarkdownTextEdit::signalNewLinePosition);
     connect(document(), &QTextDocument::blockCountChanged,
             this, &QMarkdownTextEdit::updateLineNumberAreaWidth);
     connect(this, &QPlainTextEdit::updateRequest,
@@ -472,6 +474,13 @@ void QMarkdownTextEdit::centerTheCursor() {
 
     //    setViewportMargins(0, 0, 0, bottom);
     */
+}
+
+void QMarkdownTextEdit::signalNewLinePosition()
+{
+    auto cursor = textCursor();
+    cursor.movePosition(QTextCursor::StartOfLine);
+    emit newLinePosition(cursor.position());
 }
 
 /*

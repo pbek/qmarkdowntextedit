@@ -71,6 +71,7 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     bool openLinkAtCursorPosition();
     bool handleBackspaceEntered();
     void centerTheCursor();
+    void signalNewLinePosition();
     void undo();
     void moveTextUpDown(bool up);
     void setLineNumberEnabled(bool enabled);
@@ -114,6 +115,7 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     void urlClicked(QString url);
     void zoomIn();
     void zoomOut();
+    void newLinePosition(int position);
 
    private:
     void updateLineNumAreaGeometry();
