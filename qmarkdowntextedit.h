@@ -71,7 +71,7 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     bool openLinkAtCursorPosition();
     bool handleBackspaceEntered();
     void centerTheCursor();
-    void signalNewLinePosition();
+    void emitNewLinePosition();
     void undo();
     void moveTextUpDown(bool up);
     void setLineNumberEnabled(bool enabled);
