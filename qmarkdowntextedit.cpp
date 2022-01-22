@@ -337,8 +337,8 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
         } else if (keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter) {
             return handleReturnEntered();
         } else if ((keyEvent->key() == Qt::Key_F3)) {
-            _searchWidget->doSearch(
-                !keyEvent->modifiers().testFlag(Qt::ShiftModifier));
+//            _searchWidget->doSearch(
+//                !keyEvent->modifiers().testFlag(Qt::ShiftModifier));
             return true;
         } else if ((keyEvent->key() == Qt::Key_Z) &&
                    (keyEvent->modifiers().testFlag(Qt::ControlModifier)) &&
@@ -1763,7 +1763,7 @@ void QMarkdownTextEdit::doSearch(
     QString &searchText, QPlainTextEditSearchWidget::SearchMode searchMode) {
     _searchWidget->setSearchText(searchText);
     _searchWidget->setSearchMode(searchMode);
-    _searchWidget->doSearchCount();
+    _searchWidget->triggerSearch();
     _searchWidget->activate(false);
 }
 
