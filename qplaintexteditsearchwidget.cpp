@@ -114,7 +114,7 @@ bool QPlainTextEditSearchWidget::eventFilter(QObject *obj, QEvent *event) {
         if (keyEvent->key() == Qt::Key_Escape) {
             deactivate();
             return true;
-        } else if (!(_debounceTimer.isActive() &&
+        } else if ((!_debounceTimer.isActive() &&
                     keyEvent->modifiers().testFlag(Qt::ShiftModifier) &&
                     (keyEvent->key() == Qt::Key_Return)) ||
                     (keyEvent->key() == Qt::Key_Up)) {
