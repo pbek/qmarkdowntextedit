@@ -1926,7 +1926,7 @@ void MarkdownHighlighter::highlightAdditionalRules(
  */
 int isInLinkRange(int pos, QVector<QPair<int, int>> &range) {
     int j = 0;
-    for (const auto i : range) {
+    for (const auto &i : range) {
         if (pos >= i.first && pos <= i.second) {
             // return the length of the range so that we can skip it
             const int len = i.second - i.first;
