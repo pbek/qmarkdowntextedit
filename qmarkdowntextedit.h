@@ -62,6 +62,11 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     void setLineNumbersOtherLineColor(QColor color);
     void setSearchWidgetDebounceDelay(uint debounceDelay);
 
+    void setHighlightCurrentLine(bool set);
+    bool highlightCurrentLine();
+    void setCurrentLineHighlightColor(const QColor &c);
+    QColor currentLineHighlightColor();
+
    public Q_SLOTS:
     void duplicateText();
     void setText(const QString &text);
@@ -76,6 +81,7 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     void setLineNumberEnabled(bool enabled);
 
    protected:
+    QTextCursor _textCursor;
     MarkdownHighlighter *_highlighter;
     bool _highlightingEnabled;
     QStringList _ignoredClickUrlSchemata;
@@ -84,6 +90,8 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     AutoTextOptions _autoTextOptions;
     bool _mouseButtonDown = false;
     bool _centerCursor = false;
+    bool _highlightCurrentLine = false;
+    QColor _currentLineHighlightColor = QColor();
     uint _debounceDelay = 0;
 
     bool eventFilter(QObject *obj, QEvent *event);
