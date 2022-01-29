@@ -581,7 +581,7 @@ void MarkdownHighlighter::highlightHeadline(const QString &text) {
     };
 
     // take care of ==== and ---- headlines
-    const QString &prev = currentBlock().previous().text();
+    const QString prev = currentBlock().previous().text();
     auto prevSpaces = getIndentation(prev);
 
     if (text.at(spacesOffset) == QLatin1Char('=') && prevSpaces < 4) {
@@ -600,7 +600,7 @@ void MarkdownHighlighter::highlightHeadline(const QString &text) {
         }
     }
 
-    const QString &nextBlockText = currentBlock().next().text();
+    const QString nextBlockText = currentBlock().next().text();
     if (nextBlockText.isEmpty()) return;
     const int nextSpaces = getIndentation(nextBlockText);
 

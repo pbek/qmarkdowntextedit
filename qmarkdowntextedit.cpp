@@ -809,7 +809,7 @@ bool QMarkdownTextEdit::quotationMarkCheck(const QChar quotationCharacter) {
     const int positionInBlock = cursor.positionInBlock();
 
     // get the current text from the block
-    const QString &text = cursor.block().text();
+    const QString text = cursor.block().text();
     const int textLength = text.length();
 
     // if last char is not space, we are at word end, no autocompletion
