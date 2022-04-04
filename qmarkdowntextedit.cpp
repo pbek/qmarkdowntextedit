@@ -1596,7 +1596,7 @@ bool QMarkdownTextEdit::handleTabEntered(bool reverse,
         }
     }
 
-    // check if we want to intent the whole text
+    // check if we want to indent the whole text
     return increaseSelectedTextIndention(reverse, indentCharacters);
 }
 
