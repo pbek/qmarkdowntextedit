@@ -1019,6 +1019,14 @@ bool QMarkdownTextEdit::increaseSelectedTextIndention(
     QString selectedText = cursor.selectedText();
 
     if (!selectedText.isEmpty()) {
+        // Start the selection at start of the first block of the selection
+        int end = cursor.selectionEnd();
+        cursor.setPosition(cursor.selectionStart());
+        cursor.movePosition(QTextCursor::StartOfBlock, QTextCursor::MoveAnchor);
+        cursor.setPosition(end, QTextCursor::KeepAnchor);
+        this->setTextCursor(cursor);
+        selectedText = cursor.selectedText();
+
         // we need this strange newline character we are getting in the
         // selected text for newlines
         const QString newLine =
