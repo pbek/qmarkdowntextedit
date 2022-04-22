@@ -905,8 +905,8 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
             comment = QLatin1Char('#');
             break;
         default:
-            comment = QChar('\0');
-            break;
+            setFormat(0, textLen, _formats[CodeBlock]);
+            return;
     }
 
     // apply the default code block format first
