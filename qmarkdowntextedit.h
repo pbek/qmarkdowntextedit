@@ -82,7 +82,7 @@ class QMarkdownTextEdit : public QPlainTextEdit {
 
    protected:
     QTextCursor _textCursor;
-    MarkdownHighlighter *_highlighter;
+    MarkdownHighlighter *_highlighter = nullptr;
     bool _highlightingEnabled;
     QStringList _ignoredClickUrlSchemata;
     QPlainTextEditSearchWidget *_searchWidget;
