@@ -49,11 +49,10 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
     updateLineNumberAreaWidth(0);
 
     // markdown highlighting is enabled by default
-    _highlightingEnabled = true;
+    _highlightingEnabled = initHighlighter;
     if (initHighlighter) {
         _highlighter = new MarkdownHighlighter(document());
     }
-    //    setHighlightingEnabled(true);
 
     QFont font = this->font();
 
@@ -877,8 +876,9 @@ bool QMarkdownTextEdit::handleBackspaceEntered() {
     const int positionInBlock = cursor.positionInBlock();
     int block = cursor.block().blockNumber();
 
-    if (_highlighter->isPosInACodeSpan(block, positionInBlock - 1))
-        return false;
+    if (_highlighter)
+        if (_highlighter->isPosInACodeSpan(block, positionInBlock - 1))
+            return false;
 
     // return if backspace was pressed at the beginning of a block
     if (positionInBlock == 0) {
@@ -967,6 +967,9 @@ bool QMarkdownTextEdit::handleBackspaceEntered() {
 bool QMarkdownTextEdit::handleCharRemoval(MarkdownHighlighter::RangeType type,
                                           int block, int position)
 {
+    if (!_highlighter)
+        return false;
+
     auto range = _highlighter->findPositionInRanges(type, block, position);
     if (range == QPair<int, int>{-1, -1})
         return false;
@@ -1377,7 +1380,8 @@ void QMarkdownTextEdit::setText(const QString &text) { setPlainText(text); }
 void QMarkdownTextEdit::setPlainText(const QString &text) {
     // clear the dirty blocks vector to increase performance and prevent
     // a possible crash in QSyntaxHighlighter::rehighlightBlock
-    _highlighter->clearDirtyBlocks();
+    if (_highlighter)
+        _highlighter->clearDirtyBlocks();
 
     QPlainTextEdit::setPlainText(text);
     adjustRightMargin();
