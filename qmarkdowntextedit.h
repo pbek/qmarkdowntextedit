@@ -53,7 +53,7 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     static bool isValidUrl(const QString &urlString);
     void resetMouseCursor() const;
     void setReadOnly(bool ro);
-    void doSearch(QString &searchText,
+    void doSearch(const QString &searchText,
                   QPlainTextEditSearchWidget::SearchMode searchMode =
                       QPlainTextEditSearchWidget::SearchMode::PlainTextMode);
     void hideSearchWidget(bool reset);
@@ -64,7 +64,7 @@ class QMarkdownTextEdit : public QPlainTextEdit {
 
     void setHighlightCurrentLine(bool set);
     bool highlightCurrentLine();
-    void setCurrentLineHighlightColor(const QColor &c);
+    void setCurrentLineHighlightColor(const QColor &color);
     QColor currentLineHighlightColor();
 
    public Q_SLOTS:
@@ -120,8 +120,8 @@ class QMarkdownTextEdit : public QPlainTextEdit {
 
    Q_SIGNALS:
     void urlClicked(QString url);
-    void zoomIn();
-    void zoomOut();
+    void zoomInTriggered();
+    void zoomOutTriggered();
 
    private:
     void updateLineNumAreaGeometry();

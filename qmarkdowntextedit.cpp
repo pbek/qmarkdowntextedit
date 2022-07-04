@@ -175,16 +175,16 @@ void QMarkdownTextEdit::adjustRightMargin() {
 bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
     // qDebug() << event->type();
     if (event->type() == QEvent::HoverMove) {
-        auto *mouseEvent = static_cast<QMouseEvent *>(event);
+        QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
 
-        QWidget *viewPort = this->viewport();
+        QWidget *viewPort = viewport();
         // toggle cursor when control key has been pressed or released
         viewPort->setCursor(
             mouseEvent->modifiers().testFlag(Qt::ControlModifier)
                 ? Qt::PointingHandCursor
                 : Qt::IBeamCursor);
     } else if (event->type() == QEvent::KeyPress) {
-        auto *keyEvent = static_cast<QKeyEvent *>(event);
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
 
         // set cursor to pointing hand if control key was pressed
         if (keyEvent->modifiers().testFlag(Qt::ControlModifier)) {
@@ -193,7 +193,7 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
         }
 
         // disallow keys if text edit hasn't focus
-        if (!this->hasFocus()) {
+        if (!hasFocus()) {
             return true;
         }
 
@@ -415,9 +415,9 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
         // emit zoom signals
         if (wheel->modifiers() == Qt::ControlModifier) {
             if (wheel->angleDelta().y() > 0) {
-                emit zoomIn();
+                emit zoomInTriggered();
             } else {
-                emit zoomOut();
+                emit zoomOutTriggered();
             }
 
             return true;
@@ -1809,7 +1809,7 @@ void QMarkdownTextEdit::setReadOnly(bool ro) {
 }
 
 void QMarkdownTextEdit::doSearch(
-    QString &searchText, QPlainTextEditSearchWidget::SearchMode searchMode) {
+    const QString &searchText, QPlainTextEditSearchWidget::SearchMode searchMode) {
     _searchWidget->setSearchText(searchText);
     _searchWidget->setSearchMode(searchMode);
     _searchWidget->doSearchCount();

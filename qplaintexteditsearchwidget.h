@@ -36,7 +36,7 @@ class QPlainTextEditSearchWidget : public QWidget {
     void setSearchText(const QString &searchText);
     void setSearchMode(SearchMode searchMode);
     void setDebounceDelay(uint debounceDelay);
-    void activate(bool focus);
+    void activate(const bool &focus);
     void clearSearchExtraSelections();
     void updateSearchExtraSelections();
 
@@ -73,7 +73,8 @@ class QPlainTextEditSearchWidget : public QWidget {
     void performSearch();
     void updateSearchCountLabelText();
     void setSearchSelectionColor(const QColor &color);
+
    private slots:
-    void on_modeComboBox_currentIndexChanged(int index);
-    void on_matchCaseSensitiveButton_toggled(bool checked);
+    void onModeChanged(const int &index);
+    void onCaseSensitiveChanged(const bool &checked);
 };

@@ -14,7 +14,6 @@
 
 #include "qplaintexteditsearchwidget.h"
 
-#include <QDebug>
 #include <QEvent>
 #include <QKeyEvent>
 
@@ -48,6 +47,10 @@ QPlainTextEditSearchWidget::QPlainTextEditSearchWidget(QPlainTextEdit *parent)
             &QPlainTextEditSearchWidget::doReplace);
     connect(ui->replaceAllButton, &QPushButton::clicked, this,
             &QPlainTextEditSearchWidget::doReplaceAll);
+    connect(ui->modeComboBox, qOverload<int>(&QComboBox::currentIndexChanged),
+            this, &QPlainTextEditSearchWidget::onModeChanged);
+    connect(ui->matchCaseSensitiveButton, &QPushButton::toggled, this,
+            &QPlainTextEditSearchWidget::onCaseSensitiveChanged);
 
     connect(&_debounceTimer, &QTimer::timeout,
             this, &QPlainTextEditSearchWidget::performSearch);
@@ -431,10 +434,10 @@ void QPlainTextEditSearchWidget::setSearchMode(SearchMode searchMode) {
 
 void QPlainTextEditSearchWidget::setDebounceDelay(uint debounceDelay)
 {
-    _debounceTimer.setInterval(static_cast<int>(debounceDelay));
+    _debounceTimer.setInterval(int(debounceDelay));
 }
 
-void QPlainTextEditSearchWidget::activate(bool focus) {
+void QPlainTextEditSearchWidget::activate(const bool &focus) {
     setReplaceMode(ui->modeComboBox->currentIndex() !=
                    SearchMode::PlainTextMode);
     show();
@@ -475,15 +478,13 @@ void QPlainTextEditSearchWidget::setSearchSelectionColor(const QColor &color) {
     selectionColor = color;
 }
 
-void QPlainTextEditSearchWidget::on_modeComboBox_currentIndexChanged(
-    int index) {
+void QPlainTextEditSearchWidget::onModeChanged(const int &index) {
     Q_UNUSED(index)
     doSearchCount();
     doSearchDown();
 }
 
-void QPlainTextEditSearchWidget::on_matchCaseSensitiveButton_toggled(
-    bool checked) {
+void QPlainTextEditSearchWidget::onCaseSensitiveChanged(const bool &checked) {
     Q_UNUSED(checked)
     doSearchCount();
     doSearchDown();
