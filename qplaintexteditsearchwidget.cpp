@@ -47,7 +47,7 @@ QPlainTextEditSearchWidget::QPlainTextEditSearchWidget(QPlainTextEdit *parent)
             &QPlainTextEditSearchWidget::doReplace);
     connect(ui->replaceAllButton, &QPushButton::clicked, this,
             &QPlainTextEditSearchWidget::doReplaceAll);
-    connect(ui->modeComboBox, qOverload<int>(&QComboBox::currentIndexChanged),
+    connect(ui->modeComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, &QPlainTextEditSearchWidget::onModeChanged);
     connect(ui->matchCaseSensitiveButton, &QPushButton::toggled, this,
             &QPlainTextEditSearchWidget::onCaseSensitiveChanged);
