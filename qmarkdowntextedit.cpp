@@ -63,7 +63,7 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
 #if QT_VERSION < QT_VERSION_CHECK(5, 11, 0)
     setTabStopWidth(tabStop * metrics.width(' '));
 #else
-    setTabStopDistance(tabStop * metrics.horizontalAdvance(QLatin1Char(' ')));
+    setTabStopDistance(tabStop * metrics.horizontalAdvance(QChar(' ')));
 #endif
 
     // add shortcuts for duplicating text
@@ -216,9 +216,9 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
         } else if (keyEvent->key() == Qt::Key_Backspace) {
             return handleBackspaceEntered();
         } else if (keyEvent->key() == Qt::Key_Asterisk) {
-            return handleBracketClosing(QLatin1Char('*'));
+            return handleBracketClosing(QChar('*'));
         } else if (keyEvent->key() == Qt::Key_QuoteDbl) {
-            return quotationMarkCheck(QLatin1Char('"'));
+            return quotationMarkCheck(QChar('"'));
             // apostrophe bracket closing is temporary disabled because
             // apostrophes are used in different contexts
             //        } else if (keyEvent->key() == Qt::Key_Apostrophe) {
@@ -228,37 +228,37 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             //        } else if (keyEvent->key() == Qt::Key_Underscore) {
             //            return handleBracketClosing("_");
         } else if (keyEvent->key() == Qt::Key_QuoteLeft) {
-            return quotationMarkCheck(QLatin1Char('`'));
+            return quotationMarkCheck(QChar('`'));
         } else if (keyEvent->key() == Qt::Key_AsciiTilde) {
-            return handleBracketClosing(QLatin1Char('~'));
+            return handleBracketClosing(QChar('~'));
 #ifdef Q_OS_MAC
         } else if (keyEvent->modifiers().testFlag(Qt::AltModifier) &&
                    keyEvent->key() == Qt::Key_ParenLeft) {
             // bracket closing for US keyboard on macOS
-            return handleBracketClosing(QLatin1Char('{'), QLatin1Char('}'));
+            return handleBracketClosing(QChar('{'), QChar('}'));
 #endif
         } else if (keyEvent->key() == Qt::Key_ParenLeft) {
-            return handleBracketClosing(QLatin1Char('('), QLatin1Char(')'));
+            return handleBracketClosing(QChar('('), QChar(')'));
         } else if (keyEvent->key() == Qt::Key_BraceLeft) {
-            return handleBracketClosing(QLatin1Char('{'), QLatin1Char('}'));
+            return handleBracketClosing(QChar('{'), QChar('}'));
         } else if (keyEvent->key() == Qt::Key_BracketLeft) {
-            return handleBracketClosing(QLatin1Char('['), QLatin1Char(']'));
+            return handleBracketClosing(QChar('['), QChar(']'));
         } else if (keyEvent->key() == Qt::Key_Less) {
-            return handleBracketClosing(QLatin1Char('<'), QLatin1Char('>'));
+            return handleBracketClosing(QChar('<'), QChar('>'));
 #ifdef Q_OS_MAC
         } else if (keyEvent->modifiers().testFlag(Qt::AltModifier) &&
                    keyEvent->key() == Qt::Key_ParenRight) {
             // bracket closing for US keyboard on macOS
-            return bracketClosingCheck(QLatin1Char('{'), QLatin1Char('}'));
+            return bracketClosingCheck(QChar('{'), QChar('}'));
 #endif
         } else if (keyEvent->key() == Qt::Key_ParenRight) {
-            return bracketClosingCheck(QLatin1Char('('), QLatin1Char(')'));
+            return bracketClosingCheck(QChar('('), QChar(')'));
         } else if (keyEvent->key() == Qt::Key_BraceRight) {
-            return bracketClosingCheck(QLatin1Char('{'), QLatin1Char('}'));
+            return bracketClosingCheck(QChar('{'), QChar('}'));
         } else if (keyEvent->key() == Qt::Key_BracketRight) {
-            return bracketClosingCheck(QLatin1Char('['), QLatin1Char(']'));
+            return bracketClosingCheck(QChar('['), QChar(']'));
         } else if (keyEvent->key() == Qt::Key_Greater) {
-            return bracketClosingCheck(QLatin1Char('<'), QLatin1Char('>'));
+            return bracketClosingCheck(QChar('<'), QChar('>'));
         } else if ((keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter) &&
                    keyEvent->modifiers().testFlag(Qt::ShiftModifier)) {
             QTextCursor cursor = this->textCursor();
@@ -675,14 +675,14 @@ bool QMarkdownTextEdit::handleBracketClosing(const QChar openingCharacter,
     // Special handling for `*` opening character, as this could be:
     // - start of a list (or sublist);
     // - start of a bold text;
-    if (openingCharacter == QLatin1Char('*')) {
+    if (openingCharacter == QChar('*')) {
         // don't auto complete in code block
         bool isInCode =
             MarkdownHighlighter::isCodeBlock(cursor.block().userState());
         // we only do auto completion if there is a space before the cursor pos
         bool hasSpaceOrAsteriskBefore = !text.isEmpty() && pib > 0 &&
                                         (text.at(pib - 1).isSpace() ||
-                                         text.at(pib - 1) == QLatin1Char('*'));
+                                         text.at(pib - 1) == QChar('*'));
         // This could be the start of a list, don't autocomplete.
         bool isEmpty = text.isEmpty();
 
@@ -705,7 +705,7 @@ bool QMarkdownTextEdit::handleBracketClosing(const QChar openingCharacter,
     }
 
     // Auto completion for ``` pair
-    if (openingCharacter == QLatin1Char('`')) {
+    if (openingCharacter == QChar('`')) {
 #if QT_VERSION < QT_VERSION_CHECK(5, 12, 0)
         if (QRegExp(QStringLiteral("[^`]*``")).exactMatch(text)) {
 #else
@@ -717,7 +717,7 @@ bool QMarkdownTextEdit::handleBracketClosing(const QChar openingCharacter,
     }
 
     // don't auto complete in code block
-    if (openingCharacter == QLatin1Char('<') &&
+    if (openingCharacter == QChar('<') &&
         MarkdownHighlighter::isCodeBlock(cursor.block().userState())) {
         return false;
     }
@@ -1465,9 +1465,9 @@ bool QMarkdownTextEdit::handleReturnEntered() {
     if (currentLine.length() >= 2)
         char1 = currentLine.at(1);
     const bool inList =
-        ((char0 == QLatin1Char('*') || char0 == QLatin1Char('-') ||
-          char0 == QLatin1Char('+')) &&
-         char1 == QLatin1Char(' '));
+        ((char0 == QChar('*') || char0 == QChar('-') ||
+          char0 == QChar('+')) &&
+         char1 == QChar(' '));
 
     if (inList) {
         // if the current line starts with a list character (possibly after

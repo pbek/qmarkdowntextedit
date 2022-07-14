@@ -49,9 +49,9 @@ public:
 
         QFontMetrics fm(font());
 #if QT_VERSION >= 0x050B00
-        int space = 13 + textEdit->fontMetrics().horizontalAdvance(QLatin1Char('9')) * digits;
+        int space = 13 + textEdit->fontMetrics().horizontalAdvance(QChar('9')) * digits;
 #else
-        int space = 13 + textEdit->fontMetrics().width(QLatin1Char('9')) * digits;
+        int space = 13 + textEdit->fontMetrics().width(QChar('9')) * digits;
 #endif
 
         return space;
