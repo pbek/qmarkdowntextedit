@@ -157,21 +157,6 @@ void QPlainTextEditSearchWidget::searchLineEditTextChanged(
 
 void QPlainTextEditSearchWidget::performSearch()
 {
-    const int searchMode = ui->modeComboBox->currentIndex();
-
-    if (searchMode == RegularExpressionMode) {
-        // Prevent stuck application when the user enters just start or end markers
-        static const QRegularExpression regExp(R"(^[\^\$]+$)");
-        if (regExp.match(_searchTerm).hasMatch()) {
-            clearSearchExtraSelections();
-
-            if (_debounceTimer.isActive()) {
-                stopDebounce();
-            }
-            return;
-        }
-    }
-
     doSearchCount();
     updateSearchExtraSelections();
     doSearchDown();
@@ -286,6 +271,20 @@ bool QPlainTextEditSearchWidget::doSearch(bool searchDown,
     }
 
     const int searchMode = ui->modeComboBox->currentIndex();
+
+    if (searchMode == RegularExpressionMode) {
+        // Prevent stuck application when the user enters just start or end markers
+        static const QRegularExpression regExp(R"(^[\^\$]+$)");
+        if (regExp.match(text).hasMatch()) {
+            clearSearchExtraSelections();
+
+            if (_debounceTimer.isActive()) {
+                stopDebounce();
+            }
+            return false;
+        }
+    }
+
     const bool caseSensitive = ui->matchCaseSensitiveButton->isChecked();
 
     QFlags<QTextDocument::FindFlag> options =
