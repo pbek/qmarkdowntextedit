@@ -14,8 +14,8 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 option(QMARKDOWNTEXTEDIT_EXE "Build test executable" ON)
 
 # find qt
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Svg)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Svg)
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
 # needed for windows
 if(WIN32)
@@ -50,7 +50,7 @@ set(QMARKDOWNTEXTEDIT_FILES
 
 add_library(qmarkdowntextedit ${QMARKDOWNTEXTEDIT_FILES})
 
-target_link_libraries(qmarkdowntextedit Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Svg ${INTL_LDFLAGS})
+target_link_libraries(qmarkdowntextedit Qt${QT_VERSION_MAJOR}::Widgets ${INTL_LDFLAGS})
 
 # QMarkdownTextEdit executable
 if(QMARKDOWNTEXTEDIT_EXE)
