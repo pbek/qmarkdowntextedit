@@ -44,9 +44,17 @@ Commonmark compliance is enforced where possible however we are not fully Common
 
 There are multiple ways to use this. You can use the editor directly, or you can subclass it or you can just use the highlighter.
 ### Using the editor
+
+#### QMake
 - Include [qmarkdowntextedit.pri](https://github.com/pbek/qmarkdowntextedit/blob/develop/qmarkdowntextedit.pri) 
   to your project like this `include (qmarkdowntextedit/qmarkdowntextedit.pri)`
 - add a normal `QPlainTextEdit` to your UI and promote it to `QMarkdownTextEdit` (base class `QPlainTextEdit`)
+
+#### CMake
+- Include [CMakeLists.txt](https://github.com/pbek/qmarkdowntextedit/blob/develop/CMakeLists.txt)
+  to your project like this `add_subdirectory(qmarkdowntextedit)`
+- add a normal `QPlainTextEdit` to your UI and promote it to `QMarkdownTextEdit` (base class `QPlainTextEdit`)
+
 
 ### Using the highlighter only
 Highlighter can work with both `QPlainTextEdit` and `QTextEdit`. Example:

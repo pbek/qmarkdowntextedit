@@ -1,47 +1,66 @@
 cmake_minimum_required(VERSION 3.3)
-project(qmarkdowntextedit)
+project(qmarkdowntextedit LANGUAGES CXX)
 
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+#set(CMAKE_CXX_STANDARD 11) Use this instead
+#set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-find_package( Qt5Core REQUIRED )
-find_package( Qt5Widgets REQUIRED )
-find_package( Qt5Gui REQUIRED )
+# add option to disable test executable
+option(QMARKDOWNTEXTEDIT_EXE "Build test executable" ON)
 
-qt5_wrap_ui(ui_qplaintexteditsearchwidget.h qplaintexteditsearchwidget.ui)
+# find qt
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Svg)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Svg)
 
-set(RESOURCE_FILES
-        media.qrc
-        )
+# needed for windows
+if(WIN32)
+    set(INTL_LDFLAGS -lintl)
+endif(WIN32)
 
-qt5_add_resources(RESOURCE_ADDED ${RESOURCE_FILES})
+# QMarkdownTextEdit library
+set(RC_FILES
+    media.qrc
+)
 
-set(SOURCE_FILES
+# Translations arent loaded so don't include them
+set(TS_FILES
+    trans/qmarkdowntextedit_de.ts
+    trans/qmarkdowntextedit_ur.ts
+    trans/qmarkdowntextedit_zh_CN.ts
+)
+
+set(QMARKDOWNTEXTEDIT_FILES
+    markdownhighlighter.h
     markdownhighlighter.cpp
     linenumberarea.h
-    main.cpp
-    mainwindow.cpp
-    mainwindow.ui
+    qmarkdowntextedit.h
     qmarkdowntextedit.cpp
+    qownlanguagedata.h
     qownlanguagedata.cpp
+    qplaintexteditsearchwidget.h
     qplaintexteditsearchwidget.ui
     qplaintexteditsearchwidget.cpp
+    media.qrc
+)
+
+add_library(qmarkdowntextedit ${QMARKDOWNTEXTEDIT_FILES})
+
+target_link_libraries(qmarkdowntextedit Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Svg ${INTL_LDFLAGS})
+
+# QMarkdownTextEdit executable
+if(QMARKDOWNTEXTEDIT_EXE)
+    set(SOURCE_FILES
+        main.cpp
+        mainwindow.cpp
+        mainwindow.h
+        mainwindow.ui
     )
 
-add_executable(qmarkdowntextedit ${SOURCE_FILES} ${RESOURCE_ADDED})
-
-include_directories(${Qt5Widgets_INCLUDES})
-
-# We need add -DQT_WIDGETS_LIB when using QtWidgets in Qt 5.
-add_definitions(${Qt5Widgets_DEFINITIONS})
-
-# Executables fail to build with Qt 5 in the default configuration
-# without -fPIE. We add that here.
-set(CMAKE_CXX_FLAGS "${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
-
-# The Qt5Widgets_LIBRARIES variable also includes QtGui and QtCore
-target_link_libraries(qmarkdowntextedit Qt5::Widgets)
+    add_executable(qmarkdowntextedit-exe ${SOURCE_FILES})
+    target_link_libraries(qmarkdowntextedit-exe Qt${QT_VERSION_MAJOR}::Widgets ${INTL_LDFLAGS} qmarkdowntextedit)
+endif()
