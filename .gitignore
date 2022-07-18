@@ -2,7 +2,7 @@
 *.log
 *.dSYM
 *.plist
-*.pro.user
+*.user
 .directory
 build*
 build-*

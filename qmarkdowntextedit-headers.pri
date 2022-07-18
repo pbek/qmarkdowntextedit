@@ -6,4 +6,3 @@ HEADERS += \
     $$PWD/qmarkdowntextedit.h \
     $$PWD/qownlanguagedata.h \
     $$PWD/qplaintexteditsearchwidget.h
-    $$PWD/qownlanguagedata.h
