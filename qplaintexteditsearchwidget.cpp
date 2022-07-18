@@ -174,8 +174,17 @@ void QPlainTextEditSearchWidget::updateSearchExtraSelections() {
     const QColor color = selectionColor;
     QTextCharFormat extraFmt;
     extraFmt.setBackground(color);
+    int findCounter = 0;
+    const int searchMode = ui->modeComboBox->currentIndex();
 
     while (doSearch(true, false, false)) {
+        findCounter++;
+
+        // prevent infinite loops from regular expression searches like "$", "^" or "\b"
+        if (searchMode == RegularExpressionMode && findCounter >= 10000) {
+            break;
+        }
+
         QTextEdit::ExtraSelection extra = QTextEdit::ExtraSelection();
         extra.format = extraFmt;
 
@@ -271,20 +280,6 @@ bool QPlainTextEditSearchWidget::doSearch(bool searchDown,
     }
 
     const int searchMode = ui->modeComboBox->currentIndex();
-
-    if (searchMode == RegularExpressionMode) {
-        // Prevent stuck application when the user enters just start or end markers
-        static const QRegularExpression regExp(R"(^[\^\$]+$)");
-        if (regExp.match(text).hasMatch()) {
-            clearSearchExtraSelections();
-
-            if (_debounceTimer.isActive()) {
-                stopDebounce();
-            }
-            return false;
-        }
-    }
-
     const bool caseSensitive = ui->matchCaseSensitiveButton->isChecked();
 
     QFlags<QTextDocument::FindFlag> options =
@@ -405,11 +400,17 @@ void QPlainTextEditSearchWidget::doSearchCount() {
     bool found;
     _searchResultCount = 0;
     _currentSearchResult = 0;
+    const int searchMode = ui->modeComboBox->currentIndex();
 
     do {
         found = doSearch(true, false, false);
         if (found) {
             _searchResultCount++;
+        }
+
+        // prevent infinite loops from regular expression searches like "$", "^" or "\b"
+        if (searchMode == RegularExpressionMode && _searchResultCount >= 10000) {
+            break;
         }
     } while (found);
 
