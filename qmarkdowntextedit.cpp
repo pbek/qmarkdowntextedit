@@ -1042,7 +1042,7 @@ bool QMarkdownTextEdit::increaseSelectedTextIndention(
             //          QSettings settings;
             const int indentSize = indentCharacters == QStringLiteral("\t")
                                        ? 4
-                                       : indentCharacters.count();
+                                       : indentCharacters.length();
 
             // remove leading \t or spaces in following lines
             newText = selectedText.replace(
@@ -1081,7 +1081,7 @@ bool QMarkdownTextEdit::increaseSelectedTextIndention(
 
         return true;
     } else if (reverse) {
-        const int indentSize = indentCharacters.count();
+        const int indentSize = indentCharacters.length();
 
         // do the check as often as we have characters to un-indent
         for (int i = 1; i <= indentSize; i++) {
