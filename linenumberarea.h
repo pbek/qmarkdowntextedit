@@ -47,7 +47,6 @@ public:
             ++digits;
         }
 
-        QFontMetrics fm(font());
 #if QT_VERSION >= 0x050B00
         int space = 13 + textEdit->fontMetrics().horizontalAdvance(QLatin1Char('9')) * digits;
 #else
