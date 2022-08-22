@@ -59,7 +59,7 @@ MarkdownHighlighter::MarkdownHighlighter(
     // initialize the text formats
     initTextFormats();
 
-    // initialize code langs
+    // initialize code languages
     initCodeLangs();
 }
 
@@ -248,7 +248,7 @@ void MarkdownHighlighter::initHighlightingRules() {
 
     // highlight inline comments
     {
-        // highlight comments for Rmarkdown for academic papers
+        // highlight comments for Markdown for academic papers
         HighlightingRule rule(HighlighterState::Comment);
         rule.pattern =
             QRegularExpression(QStringLiteral(R"(^\[.+?\]: # \(.+?\)$)"));
@@ -1143,7 +1143,7 @@ int MarkdownHighlighter::highlightStringLiterals(QChar strType,
                     }
                     break;
                 }
-                // TODO: implement unicode code point escaping
+                // TODO: implement Unicode code point escaping
                 default:
                     break;
             }
@@ -1182,7 +1182,7 @@ int MarkdownHighlighter::highlightNumericLiterals(const QString &text, int i) {
     } else {
         // these values are allowed before a number
         switch (text.at(i - 1).toLatin1()) {
-            // css number
+            // CSS number
             case ':':
                 if (currentBlockState() == CodeCSS) {
                     isPrefixAllowed = true;
@@ -1234,7 +1234,7 @@ int MarkdownHighlighter::highlightNumericLiterals(const QString &text, int i) {
     bool isPostfixAllowed = false;
     if (i == text.length()) {
         // cant have e at the end
-        if (isCurrentHex || (!isCurrentHex && text.at(i - 1) != QChar('e'))) {
+        if (isCurrentHex || text.at(i - 1) != QChar('e')) {
             isPostfixAllowed = true;
         }
     } else {
@@ -1420,8 +1420,7 @@ void MarkdownHighlighter::ymlHighlighter(const QString &text) {
 
         // underlined links
         if (text.at(i) == QChar('h')) {
-            if (MH_SUBSTR(i, 5) == QLatin1String("https") ||
-                MH_SUBSTR(i, 4) == QLatin1String("http")) {
+            if (MH_SUBSTR(i, 4) == QLatin1String("http")) {
                 int space = text.indexOf(QChar(' '), i);
                 if (space == -1) space = textLen;
                 QTextCharFormat f = _formats[CodeString];
@@ -1749,7 +1748,7 @@ void MarkdownHighlighter::highlightCheckbox(const QString &text, int curPos)
     const bool hasXorSpace = midChar == QLatin1Char(' ') || midChar == QLatin1Char('x') || midChar == QLatin1Char('X');
     const bool hasDash = midChar == QLatin1Char('-');
 
-    if (hasOpeningBracket && hasClosingBracked && (hasXorSpace | hasDash)) {
+    if (hasOpeningBracket && hasClosingBracked && (hasXorSpace || hasDash)) {
         const int start = curPos + 2;
         constexpr int length = 3;
 

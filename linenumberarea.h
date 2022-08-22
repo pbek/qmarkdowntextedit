@@ -12,7 +12,7 @@ class LineNumArea final : public QWidget {
     Q_OBJECT
 
 public:
-    LineNumArea(QMarkdownTextEdit *parent)
+    explicit LineNumArea(QMarkdownTextEdit *parent)
         : QWidget(parent),
           textEdit(parent)
     {
