@@ -248,7 +248,7 @@ void MarkdownHighlighter::initHighlightingRules() {
 
     // highlight inline comments
     {
-        // highlight comments for Markdown for academic papers
+        // highlight comments for Rmarkdown for academic papers
         HighlightingRule rule(HighlighterState::Comment);
         rule.pattern =
             QRegularExpression(QStringLiteral(R"(^\[.+?\]: # \(.+?\)$)"));
@@ -1743,12 +1743,12 @@ void MarkdownHighlighter::highlightCheckbox(const QString &text, int curPos)
         return;
 
     const bool hasOpeningBracket = text.at(curPos + 2) == QLatin1Char('[');
-    const bool hasClosingBracked = text.at(curPos + 4) == QLatin1Char(']');
+    const bool hasClosingBracket = text.at(curPos + 4) == QLatin1Char(']');
     const QChar midChar = text.at(curPos + 3);
     const bool hasXorSpace = midChar == QLatin1Char(' ') || midChar == QLatin1Char('x') || midChar == QLatin1Char('X');
     const bool hasDash = midChar == QLatin1Char('-');
 
-    if (hasOpeningBracket && hasClosingBracked && (hasXorSpace || hasDash)) {
+    if (hasOpeningBracket && hasClosingBracket && (hasXorSpace || hasDash)) {
         const int start = curPos + 2;
         constexpr int length = 3;
 
