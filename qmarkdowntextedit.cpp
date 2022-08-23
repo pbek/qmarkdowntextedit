@@ -1152,7 +1152,7 @@ bool QMarkdownTextEdit::openLinkAtCursorPosition() {
 
     qDebug() << __func__ << " - 'emit urlClicked( urlString )': " << urlString;
 
-    emit urlClicked(urlString);
+    Q_EMIT urlClicked(urlString);
 
     if ((url.isValid() && isValidUrl(urlString)) || isRelativeFileUrl ||
         isLegacyAttachmentUrl) {

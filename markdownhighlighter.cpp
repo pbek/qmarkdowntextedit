@@ -73,7 +73,7 @@ void MarkdownHighlighter::timerTick() {
     // emit a signal every second if there was some highlighting done
     if (_highlightingFinished) {
         _highlightingFinished = false;
-        emit highlightingFinished();
+        Q_EMIT highlightingFinished();
     }
 }
 
@@ -248,7 +248,7 @@ void MarkdownHighlighter::initHighlightingRules() {
 
     // highlight inline comments
     {
-        // highlight comments for Rmarkdown for academic papers
+        // highlight comments for R Markdown for academic papers
         HighlightingRule rule(HighlighterState::Comment);
         rule.pattern =
             QRegularExpression(QStringLiteral(R"(^\[.+?\]: # \(.+?\)$)"));
