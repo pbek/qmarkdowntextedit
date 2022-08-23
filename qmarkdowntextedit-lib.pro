@@ -1,7 +1,7 @@
 TARGET = QMarkdownTextedit
 TEMPLATE = lib
 QT += core gui widgets
-CONFIG += c++11
+CONFIG += c++11 create_prl no_install_prl create_pc
 
 include(qmarkdowntextedit.pri)
 
@@ -23,5 +23,11 @@ license.path = $${DSRDIR}/licenses/
 
 trans.files = trans/*.qm
 trans.path = $${DSRDIR}/translations/
+
+QMAKE_PKGCONFIG_NAME = QMarkdownTextedit
+QMAKE_PKGCONFIG_DESCRIPTION = C++ Qt QPlainTextEdit widget with markdown highlighting and some other goodies
+QMAKE_PKGCONFIG_INCDIR = $${headers.path}
+QMAKE_PKGCONFIG_LIBDIR = $${LIBDIR}
+QMAKE_PKGCONFIG_DESTDIR = pkgconfig
 
 INSTALLS += target license headers trans
