@@ -12,7 +12,7 @@ class LineNumArea final : public QWidget {
     Q_OBJECT
 
 public:
-    LineNumArea(QMarkdownTextEdit *parent)
+    explicit LineNumArea(QMarkdownTextEdit *parent)
         : QWidget(parent),
           textEdit(parent)
     {
@@ -48,7 +48,7 @@ public:
         }
 
 #if QT_VERSION >= 0x050B00
-        int space = 13 + textEdit->fontMetrics().horizontalAdvance(QLatin1Char('9')) * digits;
+        int space = 13 + textEdit->fontMetrics().horizontalAdvance(u'9') * digits;
 #else
         int space = 13 + textEdit->fontMetrics().width(QLatin1Char('9')) * digits;
 #endif

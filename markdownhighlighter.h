@@ -172,7 +172,7 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
         CodeCMake = 242,
         CodeMake = 244
     };
-    Q_ENUMS(HighlighterState)
+    Q_ENUM(HighlighterState)
 
     static void setTextFormats(
         QHash<HighlighterState, QTextCharFormat> formats);

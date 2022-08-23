@@ -105,7 +105,7 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
     updateSettings();
 
     // workaround for disabled signals up initialization
-    QTimer::singleShot(300, this, SLOT(adjustRightMargin()));
+    QTimer::singleShot(300, this, &QMarkdownTextEdit::adjustRightMargin);
 }
 
 void QMarkdownTextEdit::setLineNumbersCurrentLineColor(QColor color) {
@@ -415,9 +415,9 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
         // emit zoom signals
         if (wheel->modifiers() == Qt::ControlModifier) {
             if (wheel->angleDelta().y() > 0) {
-                emit zoomIn();
+                Q_EMIT zoomIn();
             } else {
-                emit zoomOut();
+                Q_EMIT zoomOut();
             }
 
             return true;
@@ -1152,7 +1152,7 @@ bool QMarkdownTextEdit::openLinkAtCursorPosition() {
 
     qDebug() << __func__ << " - 'emit urlClicked( urlString )': " << urlString;
 
-    emit urlClicked(urlString);
+    Q_EMIT urlClicked(urlString);
 
     if ((url.isValid() && isValidUrl(urlString)) || isRelativeFileUrl ||
         isLegacyAttachmentUrl) {
