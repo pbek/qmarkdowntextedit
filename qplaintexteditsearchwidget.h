@@ -56,7 +56,7 @@ class QPlainTextEditSearchWidget : public QWidget {
     bool _darkMode;
     bool eventFilter(QObject *obj, QEvent *event);
 
-   public slots:
+   public Q_SLOTS:
     void activate();
     void deactivate();
     void doSearchDown();
@@ -68,12 +68,12 @@ class QPlainTextEditSearchWidget : public QWidget {
     void reset();
     void doSearchCount();
 
-   protected slots:
+   protected Q_SLOTS:
     void searchLineEditTextChanged(const QString &arg1);
     void performSearch();
     void updateSearchCountLabelText();
     void setSearchSelectionColor(const QColor &color);
-   private slots:
+   private Q_SLOTS:
     void on_modeComboBox_currentIndexChanged(int index);
     void on_matchCaseSensitiveButton_toggled(bool checked);
 };
