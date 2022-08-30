@@ -20,7 +20,6 @@
 #include <QDir>
 #include <QGuiApplication>
 #include <QKeyEvent>
-#include <QWheelEvent>
 #include <QLayout>
 #include <QPainter>
 #include <QPainterPath>
@@ -31,10 +30,11 @@
 #include <QSettings>
 #include <QTextBlock>
 #include <QTimer>
+#include <QWheelEvent>
 #include <utility>
 
-#include "markdownhighlighter.h"
 #include "linenumberarea.h"
+#include "markdownhighlighter.h"
 
 static const QByteArray _openingCharacters = QByteArrayLiteral("([{<*\"'_~");
 static const QByteArray _closingCharacters = QByteArrayLiteral(")]}>*\"'_~");
@@ -340,7 +340,7 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
                     setTextCursor(cursor);
                 }
             }
-            return false;
+            return QPlainTextEdit::eventFilter(obj, event);
         } else if ((keyEvent->key() == Qt::Key_Up) &&
                    keyEvent->modifiers().testFlag(Qt::NoModifier)) {
             // if you are in the first line and press cursor up the cursor will
@@ -358,7 +358,7 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
                     setTextCursor(cursor);
                 }
             }
-            return false;
+            return QPlainTextEdit::eventFilter(obj, event);
         } else if (keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter) {
             return handleReturnEntered();
         } else if ((keyEvent->key() == Qt::Key_F3)) {
@@ -382,7 +382,7 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             return true;
         }
 
-        return false;
+        return QPlainTextEdit::eventFilter(obj, event);
     } else if (event->type() == QEvent::KeyRelease) {
         auto *keyEvent = static_cast<QKeyEvent *>(event);
 
@@ -391,7 +391,7 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             resetMouseCursor();
         }
 
-        return false;
+        return QPlainTextEdit::eventFilter(obj, event);
     } else if (event->type() == QEvent::MouseButtonRelease) {
         _mouseButtonDown = false;
         auto *mouseEvent = static_cast<QMouseEvent *>(event);
@@ -920,7 +920,7 @@ bool QMarkdownTextEdit::handleBackspaceEntered() {
         if (pos == 5 || pos == 6)
             isCloser = isQuotCloser(positionInBlock - 1, text);
         else
-            isCloser = pos == -1 ? false : true;
+            isCloser = pos != -1;
         if (isCloser)
             charToRemove = _openingCharacters.at(pos);
         else
@@ -1619,7 +1619,7 @@ void QMarkdownTextEdit::setAutoTextOptions(AutoTextOptions options) {
     _autoTextOptions = options;
 }
 
-void QMarkdownTextEdit::updateLineNumberArea(const QRect &rect, int dy)
+void QMarkdownTextEdit::updateLineNumberArea(const QRect rect, int dy)
 {
     if (dy)
         _lineNumArea->scroll(0, dy);

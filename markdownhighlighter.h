@@ -210,7 +210,7 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
     };
 
 
-    void highlightBlock(const QString &text) Q_DECL_OVERRIDE;
+    void highlightBlock(const QString &text);
 
     static void initTextFormats(int defaultFontSize = 12);
 

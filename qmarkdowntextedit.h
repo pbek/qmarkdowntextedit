@@ -17,8 +17,8 @@
 #include <QEvent>
 #include <QPlainTextEdit>
 
-#include "qplaintexteditsearchwidget.h"
 #include "markdownhighlighter.h"
+#include "qplaintexteditsearchwidget.h"
 
 class LineNumArea;
 
@@ -64,6 +64,7 @@ class QMarkdownTextEdit : public QPlainTextEdit {
 
     void setHighlightCurrentLine(bool set);
     bool highlightCurrentLine();
+
     void setCurrentLineHighlightColor(const QColor &c);
     QColor currentLineHighlightColor();
 
@@ -125,7 +126,7 @@ class QMarkdownTextEdit : public QPlainTextEdit {
 
    private:
     void updateLineNumAreaGeometry();
-    void updateLineNumberArea(const QRect &rect, int dy);
+    void updateLineNumberArea(const QRect rect, int dy);
     Q_SLOT void updateLineNumberAreaWidth(int);
 
    private:
