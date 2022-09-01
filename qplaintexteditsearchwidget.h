@@ -33,6 +33,7 @@ class QPlainTextEditSearchWidget : public QWidget {
                   bool updateUI = true);
     void setDarkMode(bool enabled);
     ~QPlainTextEditSearchWidget();
+
     void setSearchText(const QString &searchText);
     void setSearchMode(SearchMode searchMode);
     void setDebounceDelay(uint debounceDelay);
@@ -54,7 +55,7 @@ class QPlainTextEditSearchWidget : public QWidget {
    protected:
     QPlainTextEdit *_textEdit;
     bool _darkMode;
-    bool eventFilter(QObject *obj, QEvent *event);
+    bool eventFilter(QObject *obj, QEvent *event) override;
 
    public Q_SLOTS:
     void activate();

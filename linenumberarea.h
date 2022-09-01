@@ -1,10 +1,10 @@
 #ifndef LINENUMBERAREA_H
 #define LINENUMBERAREA_H
 
-#include <QWidget>
+#include <QDebug>
 #include <QPainter>
 #include <QScrollBar>
-#include <QDebug>
+#include <QWidget>
 
 #include "qmarkdowntextedit.h"
 
@@ -31,7 +31,7 @@ public:
     }
 
     void setOtherLineColor(QColor color) {
-        _otherLinesColor = color;
+        _otherLinesColor = std::move(color);
     }
 
     int lineNumAreaWidth() const
