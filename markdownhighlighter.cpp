@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c) 2014-2022 Patrizio Bekerle -- <patrizio@bekerle.com>
  * Copyright (c) 2019-2021 Waqar Ahmed      -- <waqar.17a@gmail.com>
@@ -241,7 +240,7 @@ void MarkdownHighlighter::initHighlightingRules() {
         HighlightingRule rule(HighlighterState::TrailingSpace);
         rule.pattern = QRegularExpression(QStringLiteral("( +)$"));
         // waqar144: don't use QStringLiteral here.
-        rule.shouldContain = QString(" \0");
+        rule.shouldContain = QString::fromLatin1(" \0");
         rule.capturingGroup = 1;
         _highlightingRules.append(rule);
     }
@@ -1218,14 +1217,14 @@ int MarkdownHighlighter::highlightNumericLiterals(const QString &text, int i) {
     ++i;
     // hex numbers highlighting (only if there's a preceding zero)
     bool isCurrentHex = false;
-    if (text.at(i) == QChar('x') && text.at(i - 1) == QChar('0')) {
+    if (text.at(i) == QLatin1Char('x') && text.at(i - 1) == QLatin1Char('0')) {
         isCurrentHex = true;
         ++i;
     }
 
     while (i < text.length()) {
-        if (!text.at(i).isNumber() && text.at(i) != QChar('.') &&
-            text.at(i) != QChar('e') &&
+        if (!text.at(i).isNumber() && text.at(i) != QLatin1Char('.') &&
+            text.at(i) != QLatin1Char('e') &&
             !(isCurrentHex && isHex(text.at(i).toLatin1())))
             break;
         ++i;
@@ -1234,7 +1233,7 @@ int MarkdownHighlighter::highlightNumericLiterals(const QString &text, int i) {
     bool isPostfixAllowed = false;
     if (i == text.length()) {
         // cant have e at the end
-        if (isCurrentHex || text.at(i - 1) != QChar('e')) {
+        if (isCurrentHex || text.at(i - 1) != QLatin1Char('e')) {
             isPostfixAllowed = true;
         }
     } else {
@@ -1259,7 +1258,7 @@ int MarkdownHighlighter::highlightNumericLiterals(const QString &text, int i) {
             // for 100u, 1.0F
             case 'p':
                 if (currentBlockState() == CodeCSS) {
-                    if (i + 1 < text.length() && text.at(i + 1) == QChar('x')) {
+                    if (i + 1 < text.length() && text.at(i + 1) == QLatin1Char('x')) {
                         if (i + 2 == text.length() ||
                             !text.at(i + 2).isLetterOrNumber()) {
                             isPostfixAllowed = true;
@@ -1269,7 +1268,7 @@ int MarkdownHighlighter::highlightNumericLiterals(const QString &text, int i) {
                 break;
             case 'e':
                 if (currentBlockState() == CodeCSS) {
-                    if (i + 1 < text.length() && text.at(i + 1) == QChar('m')) {
+                    if (i + 1 < text.length() && text.at(i + 1) == QLatin1Char('m')) {
                         if (i + 2 == text.length() ||
                             !text.at(i + 2).isLetterOrNumber()) {
                             isPostfixAllowed = true;
@@ -1315,17 +1314,17 @@ void MarkdownHighlighter::taggerScriptHighlighter(const QString &text) {
 
     for (int i = 0; i < textLen; ++i) {
         // highlight functions, unless it's a comment function
-        if (text.at(i) == QChar('$') &&
+        if (text.at(i) == QLatin1Char('$') &&
             MH_SUBSTR(i, 5) != QLatin1String("$noop")) {
-            const int next = text.indexOf(QChar('('), i);
+            const int next = text.indexOf(QLatin1Char('('), i);
             if (next == -1) break;
             setFormat(i, next - i, _formats[CodeKeyWord]);
             i = next;
         }
 
         // highlight variables
-        if (text.at(i) == QChar('%')) {
-            const int next = text.indexOf(QChar('%'), i + 1);
+        if (text.at(i) == QLatin1Char('%')) {
+            const int next = text.indexOf(QLatin1Char('%'), i + 1);
             const int start = i;
             i++;
             if (next != -1) {
@@ -1341,14 +1340,14 @@ void MarkdownHighlighter::taggerScriptHighlighter(const QString &text) {
 
         // highlight comments
         if (MH_SUBSTR(i, 5) == QLatin1String("$noop")) {
-            const int next = text.indexOf(QChar(')'), i);
+            const int next = text.indexOf(QLatin1Char(')'), i);
             if (next == -1) break;
             setFormat(i, next - i + 1, _formats[CodeComment]);
             i = next;
         }
 
         // highlight escape chars
-        if (text.at(i) == QChar('\\')) {
+        if (text.at(i) == QLatin1Char('\\')) {
             setFormat(i, 2, _formats[CodeOther]);
             i++;
         }
@@ -1378,29 +1377,29 @@ void MarkdownHighlighter::ymlHighlighter(const QString &text) {
     bool colonNotFound = false;
 
     // if this is a comment don't do anything and just return
-    if (text.trimmed().at(0) == QChar('#')) return;
+    if (text.trimmed().at(0) == QLatin1Char('#')) return;
 
     for (int i = 0; i < textLen; ++i) {
         if (!text.at(i).isLetter()) continue;
 
-        if (colonNotFound && text.at(i) != QChar('h')) continue;
+        if (colonNotFound && text.at(i) != QLatin1Char('h')) continue;
 
         // we found a string literal, skip it
-        if (i != 0 && text.at(i - 1) == QChar('"')) {
-            const int next = text.indexOf(QChar('"'), i);
+        if (i != 0 && text.at(i - 1) == QLatin1Char('"')) {
+            const int next = text.indexOf(QLatin1Char('"'), i);
             if (next == -1) break;
             i = next;
             continue;
         }
 
-        if (i != 0 && text.at(i - 1) == QChar('\'')) {
-            const int next = text.indexOf(QChar('\''), i);
+        if (i != 0 && text.at(i - 1) == QLatin1Char('\'')) {
+            const int next = text.indexOf(QLatin1Char('\''), i);
             if (next == -1) break;
             i = next;
             continue;
         }
 
-        const int colon = text.indexOf(QChar(':'), i);
+        const int colon = text.indexOf(QLatin1Char(':'), i);
 
         // if colon isn't found, we set this true
         if (colon == -1) colonNotFound = true;
@@ -1412,16 +1411,16 @@ void MarkdownHighlighter::ymlHighlighter(const QString &text) {
                 return;
             }
             // colon is found, check if it isn't some path or something else
-            if (!(text.at(colon + 1) == QChar('\\') &&
-                  text.at(colon + 1) == QChar('/'))) {
+            if (!(text.at(colon + 1) == QLatin1Char('\\') &&
+                  text.at(colon + 1) == QLatin1Char('/'))) {
                 setFormat(i, colon - i, _formats[CodeKeyWord]);
             }
         }
 
         // underlined links
-        if (text.at(i) == QChar('h')) {
+        if (text.at(i) == QLatin1Char('h')) {
             if (MH_SUBSTR(i, 4) == QLatin1String("http")) {
-                int space = text.indexOf(QChar(' '), i);
+                int space = text.indexOf(QLatin1Char(' '), i);
                 if (space == -1) space = textLen;
                 QTextCharFormat f = _formats[CodeString];
                 f.setUnderlineStyle(QTextCharFormat::SingleUnderline);
@@ -1458,9 +1457,9 @@ void MarkdownHighlighter::iniHighlighter(const QString &text) {
 
     for (int i = 0; i < textLen; ++i) {
         // start of a [section]
-        if (text.at(i) == QChar('[')) {
+        if (text.at(i) == QLatin1Char('[')) {
             QTextCharFormat sectionFormat = _formats[CodeType];
-            int sectionEnd = text.indexOf(QChar(']'), i);
+            int sectionEnd = text.indexOf(QLatin1Char(']'), i);
             // if an end bracket isn't found, we apply red underline to show
             // error
             if (sectionEnd == -1) {
@@ -1475,7 +1474,7 @@ void MarkdownHighlighter::iniHighlighter(const QString &text) {
         }
 
         // comment ';'
-        else if (text.at(i) == QChar(';')) {
+        else if (text.at(i) == QLatin1Char(';')) {
             setFormat(i, textLen - i, _formats[CodeComment]);
             i = textLen;
             break;
@@ -1484,7 +1483,7 @@ void MarkdownHighlighter::iniHighlighter(const QString &text) {
         // key-val
         else if (text.at(i).isLetter()) {
             QTextCharFormat format = _formats[CodeKeyWord];
-            int equalsPos = text.indexOf(QChar('='), i);
+            int equalsPos = text.indexOf(QLatin1Char('='), i);
             if (equalsPos == -1) {
                 format.setUnderlineColor(Qt::red);
                 format.setUnderlineStyle(QTextCharFormat::DotLine);
@@ -1495,8 +1494,8 @@ void MarkdownHighlighter::iniHighlighter(const QString &text) {
             if (i >= textLen) break;
         }
         // skip everything after '=' (except comment)
-        else if (text.at(i) == QChar('=')) {
-            const int findComment = text.indexOf(QChar(';'), i);
+        else if (text.at(i) == QLatin1Char('=')) {
+            const int findComment = text.indexOf(QLatin1Char(';'), i);
             if (findComment == -1) break;
             i = findComment - 1;
         }
@@ -1725,7 +1724,7 @@ void MarkdownHighlighter::highlightThematicBreak(const QString &text) {
     int len = 0;
     bool hasSameChars = true;
     for (int i = 0; i < sText.length(); ++i) {
-        if (c != sText.at(i) && sText.at(i) != QLatin1Char(' ')) {
+        if (QLatin1Char(c) != sText.at(i) && sText.at(i) != QLatin1Char(' ')) {
             hasSameChars = false;
             break;
         }
@@ -2003,7 +2002,7 @@ int MarkdownHighlighter::highlightInlineSpans(const QString &text,
     int len = 0;
     int pos = i;
 
-    if (i != 0 && text.at(i - 1) == QChar('\\')) return currentPos;
+    if (i != 0 && text.at(i - 1) == QLatin1Char('\\')) return currentPos;
 
     // keep moving forward in backtick sequence;
     while (pos < text.length() && text.at(pos) == c) {
@@ -2114,12 +2113,12 @@ QPair<int, QPair<bool, bool>> scanDelims(const QString &text, const int start,
     bool leftFlanking = true;
     bool rightFlanking = true;
 
-    const QChar lastChar = start > 0 ? text.at(start - 1) : QChar('\0');
+    const QChar lastChar = start > 0 ? text.at(start - 1) : QLatin1Char('\0');
 
     while (pos < textLen && text.at(pos) == marker) ++pos;
     const int length = pos - start;
 
-    const QChar nextChar = pos + 1 < textLen ? text.at(pos) : QChar('\0');
+    const QChar nextChar = pos + 1 < textLen ? text.at(pos) : QLatin1Char('\0');
 
     const bool isLastPunct =
         isMDAsciiPunct(lastChar.toLatin1()) || lastChar.isPunct();
@@ -2302,7 +2301,7 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text,
             //            qDebug () << "St Txt: "<< text.mid(startDelim.pos,
             //            endDelim.pos - startDelim.pos);
             int k = startDelim.pos;
-            while (text.at(k) == startDelim.marker)
+            while (text.at(k) == QLatin1Char(startDelim.marker))
                 ++k;    // look for first letter after the delim chain
             // per character highlighting
             const int boldLen = endDelim.pos - startDelim.pos;
@@ -2347,7 +2346,7 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text,
             //            qDebug () << "Em Txt: " << text.mid(startDelim.pos,
             //            endDelim.pos - startDelim.pos);
             int k = startDelim.pos;
-            while (text.at(k) == startDelim.marker) ++k;
+            while (text.at(k) == QLatin1Char(startDelim.marker)) ++k;
             const bool underline = _highlightingOptions.testFlag(Underline) &&
                                    startDelim.marker == QLatin1Char('_');
             const int itLen = endDelim.pos - startDelim.pos;
