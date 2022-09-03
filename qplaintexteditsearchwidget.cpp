@@ -62,7 +62,7 @@ QPlainTextEditSearchWidget::QPlainTextEditSearchWidget(QPlainTextEdit *parent)
     ui->buttonFrame->layout()->setSpacing(9);
 
     // set the margin to 0 for the top buttons for OS X
-    QString buttonStyle = "QPushButton {margin: 0}";
+    QString buttonStyle = QStringLiteral("QPushButton {margin: 0}");
     ui->closeButton->setStyleSheet(buttonStyle);
     ui->searchDownButton->setStyleSheet(buttonStyle);
     ui->searchUpButton->setStyleSheet(buttonStyle);
