@@ -262,7 +262,7 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
         } else if ((keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter) &&
                    keyEvent->modifiers().testFlag(Qt::ShiftModifier)) {
             QTextCursor cursor = this->textCursor();
-            cursor.insertText(QStringLiteral("  \n"));
+            cursor.insertText("  \n");
             return true;
         } else if ((keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter) &&
                    keyEvent->modifiers().testFlag(Qt::ControlModifier)) {
@@ -277,7 +277,7 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             if (!cursor.hasSelection()) {
                 QString text;
                 if (cursor.block().length() <= 1)    // no content
-                    text = QLatin1Char('\n');
+                    text = "\n";
                 else {
                     // cursor.select(QTextCursor::BlockUnderCursor); //
                     // negative, it will include the previous paragraph
@@ -287,14 +287,14 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
                                         QTextCursor::KeepAnchor);
                     text = cursor.selectedText();
                     if (!cursor.atEnd()) {
-                        text += QLatin1Char('\n');
+                        text += "\n";
                         // this is the paragraph separator
                         cursor.movePosition(QTextCursor::NextCharacter,
                                             QTextCursor::KeepAnchor, 1);
                     }
                 }
                 if (keyEvent == QKeySequence::Cut) {
-                    if (!cursor.atEnd() && text == QLatin1Char('\n'))
+                    if (!cursor.atEnd() && text == "\n")
                         cursor.deletePreviousChar();
                     else
                         cursor.removeSelectedText();
@@ -660,11 +660,11 @@ bool QMarkdownTextEdit::handleBracketClosing(const QChar openingCharacter,
 
     // get the current text from the block (inserted character not included)
     // Remove whitespace at start of string (e.g. in multilevel-lists).
-    const QString text = cursor.block().text().remove(QRegularExpression(QStringLiteral("^\\s+")));
+    const QString text = cursor.block().text().remove(QRegularExpression("^\\s+"));
 
     const int pib = cursor.positionInBlock();
-    bool isPreviousAsterisk = pib > 0 && pib < text.length() && text.at(pib - 1) == QLatin1Char('*');
-    bool isNextAsterisk = pib < text.length() && text.at(pib) == QLatin1Char('*');
+    bool isPreviousAsterisk = pib > 0 && pib < text.length() && text.at(pib - 1) == '*';
+    bool isNextAsterisk = pib < text.length() && text.at(pib) == '*';
     bool isMaybeBold = isPreviousAsterisk && isNextAsterisk;
     if (pib < text.length() && !isMaybeBold && !text.at(pib).isSpace()) {
         return false;
@@ -812,7 +812,7 @@ bool QMarkdownTextEdit::quotationMarkCheck(const QChar quotationCharacter) {
     const int textLength = text.length();
 
     // if last char is not space, we are at word end, no autocompletion
-    const bool isBacktick = quotationCharacter == QLatin1Char('`');
+    const bool isBacktick = quotationCharacter == '`';
     if (!isBacktick && positionInBlock != 0 &&
         !text.at(positionInBlock - 1).isSpace()) {
         return false;
@@ -930,7 +930,7 @@ bool QMarkdownTextEdit::handleBackspaceEntered() {
     int charToRemoveIndex = -1;
     if (isOpener) {
         bool closer = true;
-        charToRemoveIndex = text.indexOf(QLatin1Char(charToRemove), positionInBlock);
+        charToRemoveIndex = text.indexOf(charToRemove, positionInBlock);
         if (charToRemoveIndex == -1) return false;
         if (pos == 5 || pos == 6)
             closer = isQuotCloser(charToRemoveIndex, text);
@@ -938,7 +938,7 @@ bool QMarkdownTextEdit::handleBackspaceEntered() {
         cursor.setPosition(position + (charToRemoveIndex - positionInBlock));
         cursor.deleteChar();
     } else if (isCloser) {
-        charToRemoveIndex = text.lastIndexOf(QLatin1Char(charToRemove), positionInBlock - 2);
+        charToRemoveIndex = text.lastIndexOf(charToRemove, positionInBlock - 2);
         if (charToRemoveIndex == -1) return false;
         bool opener = true;
         if (pos == 5 || pos == 6)
@@ -949,7 +949,7 @@ bool QMarkdownTextEdit::handleBackspaceEntered() {
         cursor.deleteChar();
         position -= 1;
     } else {
-        charToRemoveIndex = text.lastIndexOf(QLatin1Char(charToRemove), positionInBlock - 2);
+        charToRemoveIndex = text.lastIndexOf(charToRemove, positionInBlock - 2);
         if (charToRemoveIndex == -1) return false;
         const int pos = position - (positionInBlock - charToRemoveIndex);
         cursor.setPosition(pos);
@@ -1177,7 +1177,7 @@ bool QMarkdownTextEdit::openLinkAtCursorPosition() {
  */
 bool QMarkdownTextEdit::isValidUrl(const QString &urlString) {
     const QRegularExpressionMatch match =
-        QRegularExpression(QStringLiteral(R"(^\w+:\/\/.+)")).match(urlString);
+        QRegularExpression(R"(^\w+:\/\/.+)").match(urlString);
     return match.hasMatch();
 }
 
@@ -1245,7 +1245,7 @@ QMap<QString, QString> QMarkdownTextEdit::parseMarkdownUrlsFromText(
 
     // match urls like this: [this url](http://mylink)
     //    QRegularExpression re("(\\[.*?\\]\\((.+?:\\/\\/.+?)\\))");
-    regex = QRegularExpression(QStringLiteral(R"((\[.*?\]\((.+?)\)))"));
+    regex = QRegularExpression(R"((\[.*?\]\((.+?)\)))");
     iterator = regex.globalMatch(text);
     while (iterator.hasNext()) {
         QRegularExpressionMatch match = iterator.next();
@@ -1255,7 +1255,7 @@ QMap<QString, QString> QMarkdownTextEdit::parseMarkdownUrlsFromText(
     }
 
     // match urls like this: http://mylink
-    regex = QRegularExpression(QStringLiteral(R"(\b\w+?:\/\/[^\s]+[^\s>\)])"));
+    regex = QRegularExpression(R"(\b\w+?:\/\/[^\s]+[^\s>\)])");
     iterator = regex.globalMatch(text);
     while (iterator.hasNext()) {
         QRegularExpressionMatch match = iterator.next();
@@ -1264,7 +1264,7 @@ QMap<QString, QString> QMarkdownTextEdit::parseMarkdownUrlsFromText(
     }
 
     // match urls like this: www.github.com
-    regex = QRegularExpression(QStringLiteral(R"(\bwww\.[^\s]+\.[^\s]+\b)"));
+    regex = QRegularExpression(R"(\bwww\.[^\s]+\.[^\s]+\b)");
     iterator = regex.globalMatch(text);
     while (iterator.hasNext()) {
         QRegularExpressionMatch match = iterator.next();
@@ -1274,7 +1274,7 @@ QMap<QString, QString> QMarkdownTextEdit::parseMarkdownUrlsFromText(
 
     // match reference urls like this: [this url][1] with this later:
     // [1]: http://domain
-    regex = QRegularExpression(QStringLiteral(R"((\[.*?\]\[(.+?)\]))"));
+    regex = QRegularExpression(R"((\[.*?\]\[(.+?)\]))");
     iterator = regex.globalMatch(text);
     while (iterator.hasNext()) {
         QRegularExpressionMatch match = iterator.next();
@@ -1350,7 +1350,7 @@ void QMarkdownTextEdit::duplicateText() {
         cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
 
         const int positionDiff = cursor.position() - position;
-        selectedText = QLatin1Char('\n') + cursor.selectedText();
+        selectedText = "\n" + cursor.selectedText();
 
         // insert text with new line at end of the selected line
         cursor.setPosition(cursor.selectionEnd());
@@ -1435,7 +1435,7 @@ bool QMarkdownTextEdit::handleReturnEntered() {
     // if return is pressed and there is just an unordered list symbol then we
     // want to remove the list symbol Valid listCharacters: '+ ', '-' , '* ', '+
     // [ ] ', '+ [x] ', '- [ ] ', '- [x] ', '* [ ] ', '* [x] '.
-    QRegularExpression regex(QStringLiteral(R"(^(\s*)([+|\-|\*] \[(x| |)\]|[+\-\*])(\s+)$)"));
+    QRegularExpression regex(R"(^(\s*)([+|\-|\*] \[(x| |)\]|[+\-\*])(\s+)$)");
     QRegularExpressionMatchIterator iterator =
         regex.globalMatch(currentLineText);
     if (iterator.hasNext()) {
@@ -1445,7 +1445,7 @@ bool QMarkdownTextEdit::handleReturnEntered() {
 
     // if return is pressed and there is just an ordered list symbol then we
     // want to remove the list symbol
-    regex = QRegularExpression(QStringLiteral(R"(^(\s*)(\d+[\.|\)])(\s+)$)"));
+    regex = QRegularExpression(R"(^(\s*)(\d+[\.|\)])(\s+)$)");
     iterator = regex.globalMatch(currentLineText);
     if (iterator.hasNext()) {
         qDebug() << cursor.selectedText();
@@ -1475,7 +1475,7 @@ bool QMarkdownTextEdit::handleReturnEntered() {
         // Valid listCharacters: '+ ', '-' , '* ', '+ [ ] ', '+ [x] ', '- [ ] ',
         // '- [x] ', '* [ ] ', '* [x] '.
         regex =
-            QRegularExpression(QStringLiteral(R"(^(\s*)([+|\-|\*] \[(x| |)\]|[+\-\*])(\s+))"));
+            QRegularExpression(R"(^(\s*)([+|\-|\*] \[(x| |)\]|[+\-\*])(\s+))");
         iterator = regex.globalMatch(currentLineText);
         if (iterator.hasNext()) {
             const QRegularExpressionMatch match = iterator.next();
@@ -1484,7 +1484,7 @@ bool QMarkdownTextEdit::handleReturnEntered() {
             const QString whitespaceCharacter = match.captured(4);
 
             // start new checkbox list item with an unchecked checkbox
-            iterator = QRegularExpression(QStringLiteral(R"(^([+|\-|\*]) \[(x| |)\])"))
+            iterator = QRegularExpression(R"(^([+|\-|\*]) \[(x| |)\])")
                            .globalMatch(listCharacter);
             if (iterator.hasNext()) {
                 const QRegularExpressionMatch match = iterator.next();
@@ -1493,7 +1493,7 @@ bool QMarkdownTextEdit::handleReturnEntered() {
             }
 
             cursor.setPosition(position);
-            cursor.insertText(QLatin1Char('\n') + whitespaces + listCharacter +
+            cursor.insertText("\n" + whitespaces + listCharacter +
                               whitespaceCharacter);
 
             // scroll to the cursor if we are at the bottom of the document
@@ -1503,7 +1503,7 @@ bool QMarkdownTextEdit::handleReturnEntered() {
     }
 
     // check for ordered lists and increment the list number in the next line
-    regex = QRegularExpression(QStringLiteral(R"(^(\s*)(\d+)([\.|\)])(\s+))"));
+    regex = QRegularExpression(R"(^(\s*)(\d+)([\.|\)])(\s+))");
     iterator = regex.globalMatch(currentLineText);
     if (iterator.hasNext()) {
         const QRegularExpressionMatch match = iterator.next();
@@ -1513,7 +1513,7 @@ bool QMarkdownTextEdit::handleReturnEntered() {
         const QString whitespaceCharacter = match.captured(4);
 
         cursor.setPosition(position);
-        cursor.insertText(QLatin1Char('\n') + whitespaces + QString::number(listNumber + 1) +
+        cursor.insertText("\n" + whitespaces + QString::number(listNumber + 1) +
                           listMarker + whitespaceCharacter);
 
         // scroll to the cursor if we are at the bottom of the document
@@ -1522,14 +1522,14 @@ bool QMarkdownTextEdit::handleReturnEntered() {
     }
 
     // intent next line with same whitespaces as in current line
-    regex = QRegularExpression(QStringLiteral(R"(^(\s+))"));
+    regex = QRegularExpression(R"(^(\s+))");
     iterator = regex.globalMatch(currentLineText);
     if (iterator.hasNext()) {
         const QRegularExpressionMatch match = iterator.next();
         const QString whitespaces = match.captured(1);
 
         cursor.setPosition(position);
-        cursor.insertText(QLatin1Char('\n') + whitespaces);
+        cursor.insertText("\n" + whitespaces);
 
         // scroll to the cursor if we are at the bottom of the document
         ensureCursorVisible();
@@ -1558,7 +1558,7 @@ bool QMarkdownTextEdit::handleTabEntered(bool reverse,
         // check if we want to indent or un-indent an ordered list
         // Valid listCharacters: '+ ', '-' , '* ', '+ [ ] ', '+ [x] ', '- [ ] ',
         // '- [x] ', '* [ ] ', '* [x] '.
-        QRegularExpression re(QStringLiteral(R"(^(\s*)([+|\-|\*] \[(x| )\]|[+\-\*])(\s+)$)"));
+        QRegularExpression re(R"(^(\s*)([+|\-|\*] \[(x| )\]|[+\-\*])(\s+)$)");
         QRegularExpressionMatchIterator i = re.globalMatch(currentLineText);
 
         if (i.hasNext()) {
@@ -1585,7 +1585,7 @@ bool QMarkdownTextEdit::handleTabEntered(bool reverse,
         }
 
         // check if we want to indent or un-indent an ordered list
-        re = QRegularExpression(QStringLiteral(R"(^(\s*)(\d+)([\.|\)])(\s+)$)"));
+        re = QRegularExpression(R"(^(\s*)(\d+)([\.|\)])(\s+)$)");
         i = re.globalMatch(currentLineText);
 
         if (i.hasNext()) {
