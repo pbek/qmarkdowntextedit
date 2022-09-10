@@ -98,9 +98,9 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     bool eventFilter(QObject *obj, QEvent *event) override;
     QMargins viewportMargins();
     bool increaseSelectedTextIndention(
-        bool reverse, const QString &indentCharacters = QStringLiteral("\t"));
+        bool reverse, const QString &indentCharacters = QChar('\t'));
     bool handleTabEntered(bool reverse,
-                          const QString &indentCharacters = QStringLiteral("\t"));
+                          const QString &indentCharacters = QChar('\t'));
     QMap<QString, QString> parseMarkdownUrlsFromText(const QString &text);
     bool handleReturnEntered();
     bool handleBracketClosing(const QChar openingCharacter,
@@ -108,10 +108,8 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     bool bracketClosingCheck(const QChar openingCharacter,
                              QChar closingCharacter);
     bool quotationMarkCheck(const QChar quotationCharacter);
-
     void focusOutEvent(QFocusEvent *event) override;
     void paintEvent(QPaintEvent *e) override;
-
     bool handleCharRemoval(MarkdownHighlighter::RangeType type, int block, int position);
     void resizeEvent(QResizeEvent *event) override;
     void setLineNumberLeftMarginOffset(int offset);

@@ -465,9 +465,9 @@ void QPlainTextEditSearchWidget::reset() {
 void QPlainTextEditSearchWidget::updateSearchCountLabelText() {
     ui->searchCountLabel->setEnabled(true);
     ui->searchCountLabel->setText(QStringLiteral("%1/%2").arg(
-        _currentSearchResult == 0 ? QLatin1String("-")
+        _currentSearchResult == 0 ? QChar('-')
                                   : QString::number(_currentSearchResult),
-        _searchResultCount == 0 ? QLatin1String("-")
+        _searchResultCount == 0 ? QChar('-')
                                 : QString::number(_searchResultCount)));
 }
 
