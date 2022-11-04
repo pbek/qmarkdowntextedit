@@ -380,16 +380,18 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
                    (keyEvent->modifiers().testFlag(Qt::ShiftModifier))) {
             moveTextUpDown(true);
             return true;
-#ifndef Q_OS_MAC
+#ifdef Q_OS_MAC
         // https://github.com/pbek/QOwnNotes/issues/2643
-        } else if (keyEvent->key() == Qt::Key_Home) {
+        } else if (keyEvent->key() == Qt::Key_Home &&
+                   !keyEvent->modifiers().testFlag(Qt::ShiftModifier)) {
             QTextCursor cursor = textCursor();
             // Meta is Control on macOS
             cursor.movePosition(keyEvent->modifiers().testFlag(Qt::MetaModifier) ?
                  QTextCursor::Start : QTextCursor::StartOfLine, QTextCursor::MoveAnchor);
             this->setTextCursor(cursor);
             return true;
-        } else if (keyEvent->key() == Qt::Key_End) {
+        } else if (keyEvent->key() == Qt::Key_End &&
+                   !keyEvent->modifiers().testFlag(Qt::ShiftModifier)) {
             QTextCursor cursor = textCursor();
             // Meta is Control on macOS
             cursor.movePosition(keyEvent->modifiers().testFlag(Qt::MetaModifier) ?
