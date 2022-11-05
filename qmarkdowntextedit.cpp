@@ -381,21 +381,26 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             moveTextUpDown(true);
             return true;
 #ifdef Q_OS_MAC
+        // https://github.com/pbek/QOwnNotes/issues/1593
         // https://github.com/pbek/QOwnNotes/issues/2643
-        } else if (keyEvent->key() == Qt::Key_Home &&
-                   !keyEvent->modifiers().testFlag(Qt::ShiftModifier)) {
+        } else if (keyEvent->key() == Qt::Key_Home) {
             QTextCursor cursor = textCursor();
             // Meta is Control on macOS
-            cursor.movePosition(keyEvent->modifiers().testFlag(Qt::MetaModifier) ?
-                 QTextCursor::Start : QTextCursor::StartOfLine, QTextCursor::MoveAnchor);
+            cursor.movePosition(
+                keyEvent->modifiers().testFlag(Qt::MetaModifier) ?
+                    QTextCursor::Start : QTextCursor::StartOfLine,
+                keyEvent->modifiers().testFlag(Qt::ShiftModifier) ?
+                    QTextCursor::KeepAnchor : QTextCursor::MoveAnchor);
             this->setTextCursor(cursor);
             return true;
-        } else if (keyEvent->key() == Qt::Key_End &&
-                   !keyEvent->modifiers().testFlag(Qt::ShiftModifier)) {
+        } else if (keyEvent->key() == Qt::Key_End) {
             QTextCursor cursor = textCursor();
             // Meta is Control on macOS
-            cursor.movePosition(keyEvent->modifiers().testFlag(Qt::MetaModifier) ?
-                 QTextCursor::End : QTextCursor::EndOfLine, QTextCursor::MoveAnchor);
+            cursor.movePosition(
+                keyEvent->modifiers().testFlag(Qt::MetaModifier) ?
+                    QTextCursor::End : QTextCursor::EndOfLine,
+                keyEvent->modifiers().testFlag(Qt::ShiftModifier) ?
+                    QTextCursor::KeepAnchor : QTextCursor::MoveAnchor);
             this->setTextCursor(cursor);
             return true;
 #endif
