@@ -777,6 +777,9 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
     QMultiHash<char, QLatin1String> builtin{};
     QMultiHash<char, QLatin1String> literals{};
 
+    // apply the default code block format first
+    setFormat(0, textLen, _formats[CodeBlock]);
+
     switch (currentBlockState()) {
         case HighlighterState::CodeCpp:
         case HighlighterState::CodeCpp + tildeOffset:
@@ -908,9 +911,6 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
             setFormat(0, textLen, _formats[CodeBlock]);
             return;
     }
-
-    // apply the default code block format first
-    setFormat(0, textLen, _formats[CodeBlock]);
 
     auto applyCodeFormat =
         [this](int i, const QMultiHash<char, QLatin1String> &data,
