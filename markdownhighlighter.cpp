@@ -2310,7 +2310,11 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text,
                                    startDelim.marker == QLatin1Char('_');
             while (k != (startDelim.pos + boldLen)) {
                 QTextCharFormat fmt = QSyntaxHighlighter::format(k);
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
                 fmt.setFontFamily(_formats[Bold].fontFamily());
+#else
+                fmt.setFontFamilies(_formats[Bold].fontFamilies().toStringList());
+#endif
 
                 if (_formats[state].fontPointSize() > 0)
                     fmt.setFontPointSize(_formats[state].fontPointSize());
@@ -2353,7 +2357,12 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text,
             const int itLen = endDelim.pos - startDelim.pos;
             while (k != (startDelim.pos + itLen)) {
                 QTextCharFormat fmt = QSyntaxHighlighter::format(k);
+
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
                 fmt.setFontFamily(_formats[Italic].fontFamily());
+#else
+                fmt.setFontFamilies(_formats[Italic].fontFamilies().toStringList());
+#endif
 
                 if (_formats[state].fontPointSize() > 0)
                     fmt.setFontPointSize(_formats[state].fontPointSize());
