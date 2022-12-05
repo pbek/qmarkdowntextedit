@@ -118,18 +118,14 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     {
         return _lineNumArea;
     }
+    void updateLineNumAreaGeometry();
+    void updateLineNumberArea(const QRect rect, int dy);
+    Q_SLOT void updateLineNumberAreaWidth(int);
+    bool _handleBracketClosingUsed;
+    LineNumArea *_lineNumArea;
 
    Q_SIGNALS:
     void urlClicked(QString url);
     void zoomIn();
     void zoomOut();
-
-   private:
-    void updateLineNumAreaGeometry();
-    void updateLineNumberArea(const QRect rect, int dy);
-    Q_SLOT void updateLineNumberAreaWidth(int);
-
-   private:
-    bool _handleBracketClosingUsed;
-    LineNumArea *_lineNumArea;
 };
