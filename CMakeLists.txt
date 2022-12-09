@@ -1,9 +1,9 @@
-cmake_minimum_required(VERSION 3.3)
-project(qmarkdowntextedit LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.16) # Qt requires CMake 3.16
+project(qmarkdowntextedit LANGUAGES CXX VERSION 1.0.0)
 
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-#set(CMAKE_CXX_STANDARD 11) Use this instead
-#set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
@@ -34,23 +34,31 @@ set(TS_FILES
     trans/qmarkdowntextedit_zh_CN.ts
 )
 
-set(QMARKDOWNTEXTEDIT_FILES
-    markdownhighlighter.h
+set(QMARKDOWNTEXTEDIT_SOURCES
+    ${RC_FILES}
+    linenumberarea.h # We need to keep this here, otherwise the build fails
     markdownhighlighter.cpp
-    linenumberarea.h
-    qmarkdowntextedit.h
     qmarkdowntextedit.cpp
-    qownlanguagedata.h
     qownlanguagedata.cpp
-    qplaintexteditsearchwidget.h
-    qplaintexteditsearchwidget.ui
+    qownlanguagedata.h
     qplaintexteditsearchwidget.cpp
-    media.qrc
+    qplaintexteditsearchwidget.ui
+)
+set(QMARKDOWNTEXTEDIT_HEADERS
+    markdownhighlighter.h
+    qmarkdowntextedit.h
+    qplaintexteditsearchwidget.h
 )
 
-add_library(qmarkdowntextedit ${QMARKDOWNTEXTEDIT_FILES})
+add_library(qmarkdowntextedit ${QMARKDOWNTEXTEDIT_SOURCES})
+set_target_properties(qmarkdowntextedit PROPERTIES
+    PUBLIC_HEADER "${QMARKDOWNTEXTEDIT_HEADERS}"
+)
 
-target_link_libraries(qmarkdowntextedit Qt${QT_VERSION_MAJOR}::Widgets ${INTL_LDFLAGS})
+target_link_libraries(qmarkdowntextedit PUBLIC
+    Qt${QT_VERSION_MAJOR}::Widgets
+    ${INTL_LDFLAGS}
+)
 
 # QMarkdownTextEdit executable
 if(QMARKDOWNTEXTEDIT_EXE)
@@ -62,5 +70,29 @@ if(QMARKDOWNTEXTEDIT_EXE)
     )
 
     add_executable(qmarkdowntextedit-exe ${SOURCE_FILES})
-    target_link_libraries(qmarkdowntextedit-exe Qt${QT_VERSION_MAJOR}::Widgets ${INTL_LDFLAGS} qmarkdowntextedit)
+    set_target_properties(qmarkdowntextedit-exe PROPERTIES OUTPUT_NAME "qmarkdowntextedit")
+    target_link_libraries(qmarkdowntextedit-exe PRIVATE
+        Qt${QT_VERSION_MAJOR}::Widgets
+        ${INTL_LDFLAGS}
+        qmarkdowntextedit
+    )
+endif()
+
+include(GNUInstallDirs) # Doesn't fail on windows
+
+# Install the lib
+install(TARGETS qmarkdowntextedit
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION bin
+    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+# Add PkgConfig config file
+configure_file(qmarkdowntextedit.pc.in qmarkdowntextedit.pc @ONLY)
+install(FILES ${CMAKE_BINARY_DIR}/qmarkdowntextedit.pc DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig)
+
+# Install exe
+if(QMARKDOWNTEXTEDIT_EXE)
+    install(TARGETS qmarkdowntextedit-exe DESTINATION bin)
 endif()
