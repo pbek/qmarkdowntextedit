@@ -1480,7 +1480,7 @@ bool QMarkdownTextEdit::handleReturnEntered() {
     // Check if we are in an unordered list.
     // We are in a list when we have '* ', '- ' or '+ ', possibly with preceding
     // whitespace. If e.g. user has entered '**text**' and pressed enter - we
-    // don't want do anymore list-stuff.
+    // don't want to do more list-stuff.
     QString currentLine = currentLineText.trimmed();
     QChar char0;
     QChar char1;
