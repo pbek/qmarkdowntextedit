@@ -2310,10 +2310,12 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text,
                                    startDelim.marker == QLatin1Char('_');
             while (k != (startDelim.pos + boldLen)) {
                 QTextCharFormat fmt = QSyntaxHighlighter::format(k);
-#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+#if QT_VERSION < QT_VERSION_CHECK(5, 13, 0)
                 fmt.setFontFamily(_formats[Bold].fontFamily());
 #else
-                fmt.setFontFamilies(_formats[Bold].fontFamilies().toStringList());
+                const QStringList fontFamilies = _formats[Bold].fontFamilies().toStringList();
+                if (!fontFamilies.isEmpty())
+                    fmt.setFontFamilies(fontFamilies);
 #endif
 
                 if (_formats[state].fontPointSize() > 0)
@@ -2358,10 +2360,12 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text,
             while (k != (startDelim.pos + itLen)) {
                 QTextCharFormat fmt = QSyntaxHighlighter::format(k);
 
-#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+#if QT_VERSION < QT_VERSION_CHECK(5, 13, 0)
                 fmt.setFontFamily(_formats[Italic].fontFamily());
 #else
-                fmt.setFontFamilies(_formats[Italic].fontFamilies().toStringList());
+                const QStringList fontFamilies = _formats[Italic].fontFamilies().toStringList();
+                if (!fontFamilies.isEmpty())
+                    fmt.setFontFamilies(fontFamilies);
 #endif
 
                 if (_formats[state].fontPointSize() > 0)
