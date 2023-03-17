@@ -36,6 +36,15 @@ jobs:
           - os: macos-latest
             qt-version: '6.1.0'
             experimental: true
+          - os: windows-2019
+            qt-version: '6.2.0'
+            experimental: true
+          - os: windows-2019
+            qt-version: '6.4.2'
+            experimental: true
+          - os: windows-2019
+            qt-version: '6.5.0'
+            experimental: true
 
     steps:
     - uses: actions/checkout@v2
