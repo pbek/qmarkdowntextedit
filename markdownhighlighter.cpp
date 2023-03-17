@@ -187,7 +187,6 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize) {
     _formats[H5] = format;
     format.setFontPointSize(defaultFontSize * 1.1);
     _formats[H6] = format;
-    format.setFontPointSize(defaultFontSize);
 
     // set character format for horizontal rulers
     format = QTextCharFormat();
@@ -2430,13 +2429,7 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text,
                                    startDelim.marker == QLatin1Char('_');
             while (k != (startDelim.pos + boldLen)) {
                 QTextCharFormat fmt = QSyntaxHighlighter::format(k);
-#if QT_VERSION < QT_VERSION_CHECK(5, 13, 0)
-                fmt.setFontFamily(_formats[Bold].fontFamily());
-#else
-                const QStringList fontFamilies = _formats[Bold].fontFamilies().toStringList();
-                if (!fontFamilies.isEmpty())
-                    fmt.setFontFamilies(fontFamilies);
-#endif
+                fmt.setFont(_formats[Bold].font(), QTextCharFormat::FontPropertiesSpecifiedOnly);
 
                 if (_formats[state].fontPointSize() > 0)
                     fmt.setFontPointSize(_formats[state].fontPointSize());
@@ -2446,10 +2439,8 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text,
                     fmt.setForeground(_formats[Bold].foreground());
                 if (underline) {
                     fmt.setForeground(_formats[StUnderline].foreground());
-                    fmt.setFont(_formats[StUnderline].font());
-                    fmt.setFontUnderline(_formats[StUnderline].fontUnderline());
-                } else if (_formats[Bold].font().bold())
-                    fmt.setFontWeight(QFont::Bold);
+                    fmt.setFont(_formats[StUnderline].font(), QTextCharFormat::FontPropertiesSpecifiedOnly);
+                }
                 setFormat(k, 1, fmt);
                 ++k;
             }
@@ -2479,14 +2470,7 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text,
             const int itLen = endDelim.pos - startDelim.pos;
             while (k != (startDelim.pos + itLen)) {
                 QTextCharFormat fmt = QSyntaxHighlighter::format(k);
-
-#if QT_VERSION < QT_VERSION_CHECK(5, 13, 0)
-                fmt.setFontFamily(_formats[Italic].fontFamily());
-#else
-                const QStringList fontFamilies = _formats[Italic].fontFamilies().toStringList();
-                if (!fontFamilies.isEmpty())
-                    fmt.setFontFamilies(fontFamilies);
-#endif
+                fmt.setFont(_formats[Italic].font(), QTextCharFormat::FontPropertiesSpecifiedOnly);
 
                 if (_formats[state].fontPointSize() > 0)
                     fmt.setFontPointSize(_formats[state].fontPointSize());
@@ -2496,8 +2480,6 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text,
 
                 if (underline)
                     fmt.setFontUnderline(_formats[StUnderline].fontUnderline());
-                else
-                    fmt.setFontItalic(_formats[Italic].fontItalic());
                 setFormat(k, 1, fmt);
                 ++k;
             }
