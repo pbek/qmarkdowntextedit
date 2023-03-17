@@ -29,21 +29,18 @@ jobs:
           # 'D:\\a\\qmarkdowntextedit/Qt\\5.9.9\\mingw73_64\\bin\\qt.conf' not found
           - os: windows-latest
             qt-version: '5.9.9'
+          - os: windows-2019
+            qt-version: '6.2.0'
+          - os: windows-2019
+            qt-version: '6.4.2'
+          - os: windows-2019
+            qt-version: '6.5.0'
         include:
           - os: ubuntu-latest
             qt-version: '6.1.0'
             experimental: true
           - os: macos-latest
             qt-version: '6.1.0'
-            experimental: true
-          - os: windows-2019
-            qt-version: '6.2.0'
-            experimental: true
-          - os: windows-2019
-            qt-version: '6.4.2'
-            experimental: true
-          - os: windows-2019
-            qt-version: '6.5.0'
             experimental: true
 
     steps:
