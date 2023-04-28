@@ -170,7 +170,8 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
         CodeVex = 240,
         CodeVexComment = 241,
         CodeCMake = 242,
-        CodeMake = 244
+        CodeMake = 244,
+        CodeNix = 246
     };
     Q_ENUM(HighlighterState)
 

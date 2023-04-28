@@ -436,6 +436,7 @@ void MarkdownHighlighter::initCodeLangs() {
             {QLatin1String("js"), MarkdownHighlighter::CodeJs},
             {QLatin1String("json"), MarkdownHighlighter::CodeJSON},
             {QLatin1String("make"), MarkdownHighlighter::CodeMake},
+            {QLatin1String("nix"), MarkdownHighlighter::CodeNix},
             {QLatin1String("php"), MarkdownHighlighter::CodePHP},
             {QLatin1String("py"), MarkdownHighlighter::CodePython},
             {QLatin1String("python"), MarkdownHighlighter::CodePython},
@@ -905,6 +906,11 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
         case HighlighterState::CodeMake + tildeOffset:
             isMake = true;
             loadMakeData(types, keywords, builtin, literals, others);
+            comment = QLatin1Char('#');
+            break;
+        case HighlighterState::CodeNix:
+        case HighlighterState::CodeNix + tildeOffset:
+            loadJSData(types, keywords, builtin, literals, others);
             comment = QLatin1Char('#');
             break;
         default:
