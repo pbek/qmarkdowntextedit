@@ -54,7 +54,8 @@ static QMultiHash<char, QLatin1String> cpp_types;
 static QMultiHash<char, QLatin1String> cpp_builtin;
 static QMultiHash<char, QLatin1String> cpp_literals;
 static QMultiHash<char, QLatin1String> cpp_other;
-void initCppData() {
+void initCppData()
+{
     cpp_keywords = QMultiHash<char, QLatin1String>{
         {('a'), QLatin1String("alignas")},
         {('a'), QLatin1String("alignof")},
@@ -299,20 +300,16 @@ void initCppData() {
                    {('i'), QLatin1String("imaginary")}};
 
     cpp_other = {
-        {('d'), QLatin1String("define")},  {('e'), QLatin1String("else")},
-        {('e'), QLatin1String("elif")},    {('e'), QLatin1String("endif")},
-        {('e'), QLatin1String("error")},   {('i'), QLatin1String("if")},
-        {('i'), QLatin1String("ifdef")},   {('i'), QLatin1String("ifndef")},
-        {('i'), QLatin1String("include")}, {('l'), QLatin1String("line")},
-        {('p'), QLatin1String("pragma")},  {('P'), QLatin1String("_Pragma")},
-        {('u'), QLatin1String("undef")},   {('w'), QLatin1String("warning")}};
+        {('d'), QLatin1String("define")}, {('e'), QLatin1String("else")}, {('e'), QLatin1String("elif")}, {('e'), QLatin1String("endif")}, {('e'), QLatin1String("error")}, {('i'), QLatin1String("if")}, {('i'), QLatin1String("ifdef")}, {('i'), QLatin1String("ifndef")}, {('i'), QLatin1String("include")}, {('l'), QLatin1String("line")}, {('p'), QLatin1String("pragma")}, {('P'), QLatin1String("_Pragma")}, {('u'), QLatin1String("undef")}, {('w'), QLatin1String("warning")}};
 }
 void loadCppData(QMultiHash<char, QLatin1String> &typess,
                  QMultiHash<char, QLatin1String> &keywordss,
                  QMultiHash<char, QLatin1String> &builtins,
                  QMultiHash<char, QLatin1String> &literalss,
-                 QMultiHash<char, QLatin1String> &others) {
-    if (!cppDataInitialized) {
+                 QMultiHash<char, QLatin1String> &others)
+{
+    if (!cppDataInitialized)
+    {
         initCppData();
         cppDataInitialized = true;
     }
@@ -334,15 +331,10 @@ static QMultiHash<char, QLatin1String> shell_types;
 static QMultiHash<char, QLatin1String> shell_literals;
 static QMultiHash<char, QLatin1String> shell_builtin;
 static QMultiHash<char, QLatin1String> shell_other;
-void initShellData() {
+void initShellData()
+{
     shell_keywords = {
-        {('i'), QLatin1String("if")},      {('t'), QLatin1String("then")},
-        {('e'), QLatin1String("else")},    {('e'), QLatin1String("elif")},
-        {('f'), QLatin1String("fi")},      {('f'), QLatin1String("for")},
-        {('w'), QLatin1String("while")},   {('i'), QLatin1String("in")},
-        {('d'), QLatin1String("do")},      {('d'), QLatin1String("done")},
-        {('c'), QLatin1String("case")},    {('e'), QLatin1String("esac")},
-        {('f'), QLatin1String("function")}};
+        {('i'), QLatin1String("if")}, {('t'), QLatin1String("then")}, {('e'), QLatin1String("else")}, {('e'), QLatin1String("elif")}, {('f'), QLatin1String("fi")}, {('f'), QLatin1String("for")}, {('w'), QLatin1String("while")}, {('i'), QLatin1String("in")}, {('d'), QLatin1String("do")}, {('d'), QLatin1String("done")}, {('c'), QLatin1String("case")}, {('e'), QLatin1String("esac")}, {('f'), QLatin1String("function")}};
 
     shell_types = {};
 
@@ -493,8 +485,10 @@ void loadShellData(QMultiHash<char, QLatin1String> &types,
                    QMultiHash<char, QLatin1String> &keywords,
                    QMultiHash<char, QLatin1String> &builtin,
                    QMultiHash<char, QLatin1String> &literals,
-                   QMultiHash<char, QLatin1String> &other) {
-    if (!shellDataInitialized) {
+                   QMultiHash<char, QLatin1String> &other)
+{
+    if (!shellDataInitialized)
+    {
         initShellData();
         shellDataInitialized = true;
     }
@@ -514,7 +508,8 @@ static QMultiHash<char, QLatin1String> js_types;
 static QMultiHash<char, QLatin1String> js_literals;
 static QMultiHash<char, QLatin1String> js_builtin;
 static QMultiHash<char, QLatin1String> js_other;
-void initJSData() {
+void initJSData()
+{
     js_keywords = {{('i'), QLatin1String("in")},
                    {('o'), QLatin1String("of")},
                    {('i'), QLatin1String("if")},
@@ -555,17 +550,10 @@ void initJSData() {
                    {('a'), QLatin1String("as")}};
 
     js_types = {
-        {('v'), QLatin1String("var")},   {('c'), QLatin1String("class")},
-        {('b'), QLatin1String("byte")},  {('e'), QLatin1String("enum")},
-        {('f'), QLatin1String("float")}, {('s'), QLatin1String("short")},
-        {('l'), QLatin1String("long")},  {('i'), QLatin1String("int")},
-        {('v'), QLatin1String("void")},  {('b'), QLatin1String("boolean")},
-        {('d'), QLatin1String("double")}};
+        {('v'), QLatin1String("var")}, {('c'), QLatin1String("class")}, {('b'), QLatin1String("byte")}, {('e'), QLatin1String("enum")}, {('f'), QLatin1String("float")}, {('s'), QLatin1String("short")}, {('l'), QLatin1String("long")}, {('i'), QLatin1String("int")}, {('v'), QLatin1String("void")}, {('b'), QLatin1String("boolean")}, {('d'), QLatin1String("double")}};
 
     js_literals = {
-        {('f'), QLatin1String("false")}, {('n'), QLatin1String("null")},
-        {('t'), QLatin1String("true")},  {('u'), QLatin1String("undefined")},
-        {('N'), QLatin1String("NaN")},   {('I'), QLatin1String("Infinity")}};
+        {('f'), QLatin1String("false")}, {('n'), QLatin1String("null")}, {('t'), QLatin1String("true")}, {('u'), QLatin1String("undefined")}, {('N'), QLatin1String("NaN")}, {('I'), QLatin1String("Infinity")}};
 
     js_builtin = {{('e'), QLatin1String("eval")},
                   {('i'), QLatin1String("isFinite")},
@@ -631,8 +619,10 @@ void loadJSData(QMultiHash<char, QLatin1String> &types,
                 QMultiHash<char, QLatin1String> &keywords,
                 QMultiHash<char, QLatin1String> &builtin,
                 QMultiHash<char, QLatin1String> &literals,
-                QMultiHash<char, QLatin1String> &other) {
-    if (!JSDataInitialized) {
+                QMultiHash<char, QLatin1String> &other)
+{
+    if (!JSDataInitialized)
+    {
         initJSData();
         JSDataInitialized = true;
     }
@@ -652,7 +642,8 @@ static QMultiHash<char, QLatin1String> php_types;
 static QMultiHash<char, QLatin1String> php_literals;
 static QMultiHash<char, QLatin1String> php_builtin;
 static QMultiHash<char, QLatin1String> php_other;
-void initPHPData() {
+void initPHPData()
+{
     php_keywords = {{('a'), QLatin1String("and")},
                     {('l'), QLatin1String("list")},
                     {('a'), QLatin1String("abstract")},
@@ -755,8 +746,10 @@ void loadPHPData(QMultiHash<char, QLatin1String> &types,
                  QMultiHash<char, QLatin1String> &keywords,
                  QMultiHash<char, QLatin1String> &builtin,
                  QMultiHash<char, QLatin1String> &literals,
-                 QMultiHash<char, QLatin1String> &other) {
-    if (!PHPDataInitialized) {
+                 QMultiHash<char, QLatin1String> &other)
+{
+    if (!PHPDataInitialized)
+    {
         initPHPData();
         PHPDataInitialized = true;
     }
@@ -777,7 +770,8 @@ static QMultiHash<char, QLatin1String> qml_literals;
 static QMultiHash<char, QLatin1String> qml_builtin;
 static QMultiHash<char, QLatin1String> qml_other;
 
-void initQMLData() {
+void initQMLData()
+{
     qml_keywords = {{('d'), QLatin1String("default")},
                     {('p'), QLatin1String("property")},
                     {('i'), QLatin1String("int")},
@@ -891,8 +885,10 @@ void loadQMLData(QMultiHash<char, QLatin1String> &types,
                  QMultiHash<char, QLatin1String> &keywords,
                  QMultiHash<char, QLatin1String> &builtin,
                  QMultiHash<char, QLatin1String> &literals,
-                 QMultiHash<char, QLatin1String> &other) {
-    if (!QMLDataInitialized) {
+                 QMultiHash<char, QLatin1String> &other)
+{
+    if (!QMLDataInitialized)
+    {
         initQMLData();
         QMLDataInitialized = true;
     }
@@ -913,24 +909,41 @@ static QMultiHash<char, QLatin1String> py_literals;
 static QMultiHash<char, QLatin1String> py_builtin;
 static QMultiHash<char, QLatin1String> py_other;
 
-void initPyData() {
+void initPyData()
+{
     py_keywords = {
-        {('a'), QLatin1String("and")},      {('e'), QLatin1String("elif")},
-        {('i'), QLatin1String("is")},       {('g'), QLatin1String("global")},
-        {('a'), QLatin1String("as")},       {('i'), QLatin1String("in")},
-        {('i'), QLatin1String("if")},       {('f'), QLatin1String("from")},
-        {('r'), QLatin1String("raise")},    {('f'), QLatin1String("for")},
-        {('e'), QLatin1String("except")},   {('f'), QLatin1String("finally")},
-        {('p'), QLatin1String("print")},    {('p'), QLatin1String("pass")},
-        {('r'), QLatin1String("return")},   {('e'), QLatin1String("exec")},
-        {('e'), QLatin1String("else")},     {('b'), QLatin1String("break")},
-        {('n'), QLatin1String("not")},      {('w'), QLatin1String("with")},
-        {('c'), QLatin1String("class")},    {('a'), QLatin1String("assert")},
-        {('y'), QLatin1String("yield")},    {('t'), QLatin1String("try")},
-        {('w'), QLatin1String("while")},    {('c'), QLatin1String("continue")},
-        {('d'), QLatin1String("del")},      {('o'), QLatin1String("or")},
-        {('d'), QLatin1String("def")},      {('l'), QLatin1String("lambda")},
-        {('a'), QLatin1String("async")},    {('a'), QLatin1String("await")},
+        {('a'), QLatin1String("and")},
+        {('e'), QLatin1String("elif")},
+        {('i'), QLatin1String("is")},
+        {('g'), QLatin1String("global")},
+        {('a'), QLatin1String("as")},
+        {('i'), QLatin1String("in")},
+        {('i'), QLatin1String("if")},
+        {('f'), QLatin1String("from")},
+        {('r'), QLatin1String("raise")},
+        {('f'), QLatin1String("for")},
+        {('e'), QLatin1String("except")},
+        {('f'), QLatin1String("finally")},
+        {('p'), QLatin1String("print")},
+        {('p'), QLatin1String("pass")},
+        {('r'), QLatin1String("return")},
+        {('e'), QLatin1String("exec")},
+        {('e'), QLatin1String("else")},
+        {('b'), QLatin1String("break")},
+        {('n'), QLatin1String("not")},
+        {('w'), QLatin1String("with")},
+        {('c'), QLatin1String("class")},
+        {('a'), QLatin1String("assert")},
+        {('y'), QLatin1String("yield")},
+        {('t'), QLatin1String("try")},
+        {('w'), QLatin1String("while")},
+        {('c'), QLatin1String("continue")},
+        {('d'), QLatin1String("del")},
+        {('o'), QLatin1String("or")},
+        {('d'), QLatin1String("def")},
+        {('l'), QLatin1String("lambda")},
+        {('a'), QLatin1String("async")},
+        {('a'), QLatin1String("await")},
         {('n'), QLatin1String("nonlocal")},
     };
 
@@ -1030,8 +1043,10 @@ void loadPythonData(QMultiHash<char, QLatin1String> &types,
                     QMultiHash<char, QLatin1String> &keywords,
                     QMultiHash<char, QLatin1String> &builtin,
                     QMultiHash<char, QLatin1String> &literals,
-                    QMultiHash<char, QLatin1String> &other) {
-    if (!PyDataInitialized) {
+                    QMultiHash<char, QLatin1String> &other)
+{
+    if (!PyDataInitialized)
+    {
         initPyData();
         PyDataInitialized = true;
     }
@@ -1051,50 +1066,86 @@ static QMultiHash<char, QLatin1String> rust_types;
 static QMultiHash<char, QLatin1String> rust_literals;
 static QMultiHash<char, QLatin1String> rust_builtin;
 static QMultiHash<char, QLatin1String> rust_other;
-void initRustData() {
+void initRustData()
+{
     rust_keywords = {
-        {('a'), QLatin1String("abstract")}, {('a'), QLatin1String("alignof")},
-        {('a'), QLatin1String("as")},       {('a'), QLatin1String("async")},
-        {('a'), QLatin1String("await")},    {('b'), QLatin1String("be")},
-        {('b'), QLatin1String("box")},      {('b'), QLatin1String("break")},
-        {('c'), QLatin1String("const")},    {('c'), QLatin1String("continue")},
-        {('c'), QLatin1String("crate")},    {('d'), QLatin1String("do")},
-        {('d'), QLatin1String("dyn")},      {('e'), QLatin1String("else")},
-        {('e'), QLatin1String("extern")},   {('f'), QLatin1String("final")},
-        {('f'), QLatin1String("fn")},       {('f'), QLatin1String("for")},
-        {('i'), QLatin1String("if")},       {('i'), QLatin1String("impl")},
-        {('i'), QLatin1String("in")},       {('l'), QLatin1String("let")},
-        {('l'), QLatin1String("loop")},     {('m'), QLatin1String("match")},
-        {('m'), QLatin1String("mod")},      {('m'), QLatin1String("move")},
-        {('m'), QLatin1String("mut")},      {('o'), QLatin1String("offsetof")},
-        {('o'), QLatin1String("once")},     {('o'), QLatin1String("override")},
-        {('p'), QLatin1String("priv")},     {('p'), QLatin1String("pub")},
-        {('p'), QLatin1String("pure")},     {('r'), QLatin1String("ref")},
-        {('r'), QLatin1String("return")},   {('s'), QLatin1String("sizeof")},
-        {('s'), QLatin1String("static")},   {('s'), QLatin1String("self")},
-        {('S'), QLatin1String("Self")},     {('s'), QLatin1String("super")},
-        {('t'), QLatin1String("trait")},    {('t'), QLatin1String("type")},
-        {('t'), QLatin1String("typeof")},   {('u'), QLatin1String("unsafe")},
-        {('u'), QLatin1String("unsized")},  {('u'), QLatin1String("use")},
-        {('v'), QLatin1String("virtual")},  {('w'), QLatin1String("where")},
-        {('w'), QLatin1String("while")},    {('y'), QLatin1String("yield")},
+        {('a'), QLatin1String("abstract")},
+        {('a'), QLatin1String("alignof")},
+        {('a'), QLatin1String("as")},
+        {('a'), QLatin1String("async")},
+        {('a'), QLatin1String("await")},
+        {('b'), QLatin1String("be")},
+        {('b'), QLatin1String("box")},
+        {('b'), QLatin1String("break")},
+        {('c'), QLatin1String("const")},
+        {('c'), QLatin1String("continue")},
+        {('c'), QLatin1String("crate")},
+        {('d'), QLatin1String("do")},
+        {('d'), QLatin1String("dyn")},
+        {('e'), QLatin1String("else")},
+        {('e'), QLatin1String("extern")},
+        {('f'), QLatin1String("final")},
+        {('f'), QLatin1String("fn")},
+        {('f'), QLatin1String("for")},
+        {('i'), QLatin1String("if")},
+        {('i'), QLatin1String("impl")},
+        {('i'), QLatin1String("in")},
+        {('l'), QLatin1String("let")},
+        {('l'), QLatin1String("loop")},
+        {('m'), QLatin1String("match")},
+        {('m'), QLatin1String("mod")},
+        {('m'), QLatin1String("move")},
+        {('m'), QLatin1String("mut")},
+        {('o'), QLatin1String("offsetof")},
+        {('o'), QLatin1String("once")},
+        {('o'), QLatin1String("override")},
+        {('p'), QLatin1String("priv")},
+        {('p'), QLatin1String("pub")},
+        {('p'), QLatin1String("pure")},
+        {('r'), QLatin1String("ref")},
+        {('r'), QLatin1String("return")},
+        {('s'), QLatin1String("sizeof")},
+        {('s'), QLatin1String("static")},
+        {('s'), QLatin1String("self")},
+        {('S'), QLatin1String("Self")},
+        {('s'), QLatin1String("super")},
+        {('t'), QLatin1String("trait")},
+        {('t'), QLatin1String("type")},
+        {('t'), QLatin1String("typeof")},
+        {('u'), QLatin1String("unsafe")},
+        {('u'), QLatin1String("unsized")},
+        {('u'), QLatin1String("use")},
+        {('v'), QLatin1String("virtual")},
+        {('w'), QLatin1String("where")},
+        {('w'), QLatin1String("while")},
+        {('y'), QLatin1String("yield")},
     };
 
     rust_types = {
-        {('u'), QLatin1String("union")},  {('e'), QLatin1String("enum")},
-        {('s'), QLatin1String("struct")},
+        {('u'), QLatin1String("union")}, {('e'), QLatin1String("enum")}, {('s'), QLatin1String("struct")},
 
-        {('i'), QLatin1String("i8")},     {('i'), QLatin1String("i16")},
-        {('i'), QLatin1String("i32")},    {('i'), QLatin1String("i64")},
-        {('i'), QLatin1String("i128")},   {('i'), QLatin1String("isize")},
-        {('u'), QLatin1String("u8")},     {('u'), QLatin1String("u16")},
-        {('u'), QLatin1String("u32")},    {('u'), QLatin1String("u64")},
-        {('u'), QLatin1String("u128")},   {('u'), QLatin1String("usize")},
-        {('f'), QLatin1String("f32")},    {('f'), QLatin1String("f64")},
-        {('s'), QLatin1String("str")},    {('c'), QLatin1String("char")},
-        {('b'), QLatin1String("bool")},   {('B'), QLatin1String("Box")},
-        {('O'), QLatin1String("Option")}, {('R'), QLatin1String("Result")},
-        {('S'), QLatin1String("String")}, {('V'), QLatin1String("Vec")}};
+        {('i'), QLatin1String("i8")},
+        {('i'), QLatin1String("i16")},
+        {('i'), QLatin1String("i32")},
+        {('i'), QLatin1String("i64")},
+        {('i'), QLatin1String("i128")},
+        {('i'), QLatin1String("isize")},
+        {('u'), QLatin1String("u8")},
+        {('u'), QLatin1String("u16")},
+        {('u'), QLatin1String("u32")},
+        {('u'), QLatin1String("u64")},
+        {('u'), QLatin1String("u128")},
+        {('u'), QLatin1String("usize")},
+        {('f'), QLatin1String("f32")},
+        {('f'), QLatin1String("f64")},
+        {('s'), QLatin1String("str")},
+        {('c'), QLatin1String("char")},
+        {('b'), QLatin1String("bool")},
+        {('B'), QLatin1String("Box")},
+        {('O'), QLatin1String("Option")},
+        {('R'), QLatin1String("Result")},
+        {('S'), QLatin1String("String")},
+        {('V'), QLatin1String("Vec")}};
 
     rust_literals = {{('f'), QLatin1String("false")},
                      {('t'), QLatin1String("true")}};
@@ -1142,8 +1193,10 @@ void loadRustData(QMultiHash<char, QLatin1String> &types,
                   QMultiHash<char, QLatin1String> &keywords,
                   QMultiHash<char, QLatin1String> &builtin,
                   QMultiHash<char, QLatin1String> &literals,
-                  QMultiHash<char, QLatin1String> &other) {
-    if (!rustDataInitialized) {
+                  QMultiHash<char, QLatin1String> &other)
+{
+    if (!rustDataInitialized)
+    {
         initRustData();
         rustDataInitialized = true;
     }
@@ -1163,7 +1216,8 @@ static QMultiHash<char, QLatin1String> java_types;
 static QMultiHash<char, QLatin1String> java_literals;
 static QMultiHash<char, QLatin1String> java_builtin;
 static QMultiHash<char, QLatin1String> java_other;
-void initJavaData() {
+void initJavaData()
+{
     java_keywords = {{('a'), QLatin1String("abstract")},
                      {('a'), QLatin1String("assert")},
                      {('b'), QLatin1String("break")},
@@ -1219,11 +1273,16 @@ void initJavaData() {
                      {('y'), QLatin1String("yield")}};
 
     java_types = {
-        {('v'), QLatin1String("void")},    {('f'), QLatin1String("float")},
-        {('b'), QLatin1String("boolean")}, {('b'), QLatin1String("byte")},
-        {('i'), QLatin1String("int")},     {('c'), QLatin1String("char")},
-        {('c'), QLatin1String("class")},   {('d'), QLatin1String("double")},
-        {('e'), QLatin1String("enum")},    {('s'), QLatin1String("short")},
+        {('v'), QLatin1String("void")},
+        {('f'), QLatin1String("float")},
+        {('b'), QLatin1String("boolean")},
+        {('b'), QLatin1String("byte")},
+        {('i'), QLatin1String("int")},
+        {('c'), QLatin1String("char")},
+        {('c'), QLatin1String("class")},
+        {('d'), QLatin1String("double")},
+        {('e'), QLatin1String("enum")},
+        {('s'), QLatin1String("short")},
 
     };
 
@@ -1242,8 +1301,10 @@ void loadJavaData(QMultiHash<char, QLatin1String> &types,
                   QMultiHash<char, QLatin1String> &keywords,
                   QMultiHash<char, QLatin1String> &builtin,
                   QMultiHash<char, QLatin1String> &literals,
-                  QMultiHash<char, QLatin1String> &other) {
-    if (!javaDataInitialized) {
+                  QMultiHash<char, QLatin1String> &other)
+{
+    if (!javaDataInitialized)
+    {
         initJavaData();
         javaDataInitialized = true;
     }
@@ -1263,7 +1324,8 @@ static QMultiHash<char, QLatin1String> csharp_types;
 static QMultiHash<char, QLatin1String> csharp_literals;
 static QMultiHash<char, QLatin1String> csharp_builtin;
 static QMultiHash<char, QLatin1String> csharp_other;
-void initCSharpData() {
+void initCSharpData()
+{
     csharp_keywords = {{('a'), QLatin1String("abstract")},
                        {('a'), QLatin1String("add")},
                        {('a'), QLatin1String("alias")},
@@ -1346,14 +1408,22 @@ void initCSharpData() {
                        {('y'), QLatin1String("yield")}};
 
     csharp_types = {
-        {('b'), QLatin1String("bool")},   {('b'), QLatin1String("byte")},
-        {('c'), QLatin1String("char")},   {('c'), QLatin1String("class")},
-        {('d'), QLatin1String("double")}, {('e'), QLatin1String("enum")},
-        {('f'), QLatin1String("float")},  {('i'), QLatin1String("int")},
-        {('s'), QLatin1String("sbyte")},  {('s'), QLatin1String("short")},
-        {('s'), QLatin1String("string")}, {('s'), QLatin1String("struct")},
-        {('u'), QLatin1String("uint")},   {('u'), QLatin1String("ulong")},
-        {('u'), QLatin1String("ushort")}, {('v'), QLatin1String("var")},
+        {('b'), QLatin1String("bool")},
+        {('b'), QLatin1String("byte")},
+        {('c'), QLatin1String("char")},
+        {('c'), QLatin1String("class")},
+        {('d'), QLatin1String("double")},
+        {('e'), QLatin1String("enum")},
+        {('f'), QLatin1String("float")},
+        {('i'), QLatin1String("int")},
+        {('s'), QLatin1String("sbyte")},
+        {('s'), QLatin1String("short")},
+        {('s'), QLatin1String("string")},
+        {('s'), QLatin1String("struct")},
+        {('u'), QLatin1String("uint")},
+        {('u'), QLatin1String("ulong")},
+        {('u'), QLatin1String("ushort")},
+        {('v'), QLatin1String("var")},
         {('v'), QLatin1String("void")},
     };
 
@@ -1366,19 +1436,16 @@ void initCSharpData() {
     };
 
     csharp_other = {
-        {('d'), QLatin1String("define")},    {('e'), QLatin1String("elif")},
-        {('e'), QLatin1String("else")},      {('e'), QLatin1String("endif")},
-        {('e'), QLatin1String("endregion")}, {('e'), QLatin1String("error")},
-        {('i'), QLatin1String("if")},        {('l'), QLatin1String("line")},
-        {('p'), QLatin1String("pragma")},    {('r'), QLatin1String("region")},
-        {('u'), QLatin1String("undef")},     {('w'), QLatin1String("warning")}};
+        {('d'), QLatin1String("define")}, {('e'), QLatin1String("elif")}, {('e'), QLatin1String("else")}, {('e'), QLatin1String("endif")}, {('e'), QLatin1String("endregion")}, {('e'), QLatin1String("error")}, {('i'), QLatin1String("if")}, {('l'), QLatin1String("line")}, {('p'), QLatin1String("pragma")}, {('r'), QLatin1String("region")}, {('u'), QLatin1String("undef")}, {('w'), QLatin1String("warning")}};
 }
 void loadCSharpData(QMultiHash<char, QLatin1String> &types,
                     QMultiHash<char, QLatin1String> &keywords,
                     QMultiHash<char, QLatin1String> &builtin,
                     QMultiHash<char, QLatin1String> &literals,
-                    QMultiHash<char, QLatin1String> &other) {
-    if (!csharpDataInitialized) {
+                    QMultiHash<char, QLatin1String> &other)
+{
+    if (!csharpDataInitialized)
+    {
         initCSharpData();
         csharpDataInitialized = true;
     }
@@ -1398,7 +1465,8 @@ static QMultiHash<char, QLatin1String> go_types;
 static QMultiHash<char, QLatin1String> go_literals;
 static QMultiHash<char, QLatin1String> go_builtin;
 static QMultiHash<char, QLatin1String> go_other;
-void initGoData() {
+void initGoData()
+{
     go_keywords = {
         {('b'), QLatin1String("break")},
         {('c'), QLatin1String("case")},
@@ -1454,14 +1522,7 @@ void initGoData() {
                    {('i'), QLatin1String("iota")}};
 
     go_builtin = {
-        {('a'), QLatin1String("append")}, {('c'), QLatin1String("cap")},
-        {('c'), QLatin1String("close")},  {('c'), QLatin1String("complex")},
-        {('c'), QLatin1String("copy")},   {('i'), QLatin1String("imag")},
-        {('l'), QLatin1String("len")},    {('m'), QLatin1String("make")},
-        {('n'), QLatin1String("new")},    {('p'), QLatin1String("panic")},
-        {('p'), QLatin1String("print")},  {('p'), QLatin1String("println")},
-        {('r'), QLatin1String("real")},   {('r'), QLatin1String("recover")},
-        {('d'), QLatin1String("delete")}};
+        {('a'), QLatin1String("append")}, {('c'), QLatin1String("cap")}, {('c'), QLatin1String("close")}, {('c'), QLatin1String("complex")}, {('c'), QLatin1String("copy")}, {('i'), QLatin1String("imag")}, {('l'), QLatin1String("len")}, {('m'), QLatin1String("make")}, {('n'), QLatin1String("new")}, {('p'), QLatin1String("panic")}, {('p'), QLatin1String("print")}, {('p'), QLatin1String("println")}, {('r'), QLatin1String("real")}, {('r'), QLatin1String("recover")}, {('d'), QLatin1String("delete")}};
 
     go_other = {
 
@@ -1471,8 +1532,10 @@ void loadGoData(QMultiHash<char, QLatin1String> &types,
                 QMultiHash<char, QLatin1String> &keywords,
                 QMultiHash<char, QLatin1String> &builtin,
                 QMultiHash<char, QLatin1String> &literals,
-                QMultiHash<char, QLatin1String> &other) {
-    if (!goDataInitialized) {
+                QMultiHash<char, QLatin1String> &other)
+{
+    if (!goDataInitialized)
+    {
         initGoData();
         goDataInitialized = true;
     }
@@ -1492,30 +1555,13 @@ static QMultiHash<char, QLatin1String> v_types;
 static QMultiHash<char, QLatin1String> v_literals;
 static QMultiHash<char, QLatin1String> v_builtin;
 static QMultiHash<char, QLatin1String> v_other;
-void initVData() {
+void initVData()
+{
     v_keywords = {
-        {('b'), QLatin1String("break")},    {('c'), QLatin1String("const")},
-        {('c'), QLatin1String("continue")}, {('d'), QLatin1String("defer")},
-        {('e'), QLatin1String("else")},     {('f'), QLatin1String("for")},
-        {('f'), QLatin1String("fn")},       {('g'), QLatin1String("go")},
-        {('g'), QLatin1String("goto")},     {('i'), QLatin1String("if")},
-        {('i'), QLatin1String("import")},   {('i'), QLatin1String("interface")},
-        {('r'), QLatin1String("return")},   {('s'), QLatin1String("struct")},
-        {('s'), QLatin1String("switch")},   {('t'), QLatin1String("type")},
-        {('p'), QLatin1String("pub")},      {('o'), QLatin1String("or")},
-        {('n'), QLatin1String("none")}};
+        {('b'), QLatin1String("break")}, {('c'), QLatin1String("const")}, {('c'), QLatin1String("continue")}, {('d'), QLatin1String("defer")}, {('e'), QLatin1String("else")}, {('f'), QLatin1String("for")}, {('f'), QLatin1String("fn")}, {('g'), QLatin1String("go")}, {('g'), QLatin1String("goto")}, {('i'), QLatin1String("if")}, {('i'), QLatin1String("import")}, {('i'), QLatin1String("interface")}, {('r'), QLatin1String("return")}, {('s'), QLatin1String("struct")}, {('s'), QLatin1String("switch")}, {('t'), QLatin1String("type")}, {('p'), QLatin1String("pub")}, {('o'), QLatin1String("or")}, {('n'), QLatin1String("none")}};
 
     v_types = {
-        {('m'), QLatin1String("map")},     {('s'), QLatin1String("struct")},
-        {('b'), QLatin1String("bool")},    {('b'), QLatin1String("byte")},
-        {('f'), QLatin1String("f32")},     {('f'), QLatin1String("f64")},
-        {('i'), QLatin1String("i8")},      {('i'), QLatin1String("i16")},
-        {('i'), QLatin1String("int")},     {('i'), QLatin1String("i64")},
-        {('i'), QLatin1String("i128")},    {('s'), QLatin1String("string")},
-        {('u'), QLatin1String("u16")},     {('u'), QLatin1String("u32")},
-        {('u'), QLatin1String("u64")},     {('u'), QLatin1String("u128")},
-        {('u'), QLatin1String("byteptr")}, {('u'), QLatin1String("voidptr")},
-        {('r'), QLatin1String("rune")}};
+        {('m'), QLatin1String("map")}, {('s'), QLatin1String("struct")}, {('b'), QLatin1String("bool")}, {('b'), QLatin1String("byte")}, {('f'), QLatin1String("f32")}, {('f'), QLatin1String("f64")}, {('i'), QLatin1String("i8")}, {('i'), QLatin1String("i16")}, {('i'), QLatin1String("int")}, {('i'), QLatin1String("i64")}, {('i'), QLatin1String("i128")}, {('s'), QLatin1String("string")}, {('u'), QLatin1String("u16")}, {('u'), QLatin1String("u32")}, {('u'), QLatin1String("u64")}, {('u'), QLatin1String("u128")}, {('u'), QLatin1String("byteptr")}, {('u'), QLatin1String("voidptr")}, {('r'), QLatin1String("rune")}};
 
     v_literals = {
         {('f'), QLatin1String("false")},
@@ -1532,8 +1578,10 @@ void loadVData(QMultiHash<char, QLatin1String> &types,
                QMultiHash<char, QLatin1String> &keywords,
                QMultiHash<char, QLatin1String> &builtin,
                QMultiHash<char, QLatin1String> &literals,
-               QMultiHash<char, QLatin1String> &other) {
-    if (!vDataInitialized) {
+               QMultiHash<char, QLatin1String> &other)
+{
+    if (!vDataInitialized)
+    {
         initVData();
         vDataInitialized = true;
     }
@@ -1553,7 +1601,8 @@ static QMultiHash<char, QLatin1String> sql_types;
 static QMultiHash<char, QLatin1String> sql_literals;
 static QMultiHash<char, QLatin1String> sql_builtin;
 static QMultiHash<char, QLatin1String> sql_other;
-void initSQLData() {
+void initSQLData()
+{
     sql_keywords = {{('A'), QLatin1String("ACTION")},
                     {('A'), QLatin1String("ADD")},
                     {('A'), QLatin1String("AFTER")},
@@ -1874,14 +1923,7 @@ void initSQLData() {
     };
 
     sql_builtin = {
-        {('A'), QLatin1String("AVG")},   {('C'), QLatin1String("COUNT")},
-        {('F'), QLatin1String("FIRST")}, {('F'), QLatin1String("FORMAT")},
-        {('L'), QLatin1String("LAST")},  {('L'), QLatin1String("LCASE")},
-        {('L'), QLatin1String("LEN")},   {('M'), QLatin1String("MAX")},
-        {('M'), QLatin1String("MID")},   {('M'), QLatin1String("MIN")},
-        {('M'), QLatin1String("MOD")},   {('N'), QLatin1String("NOW")},
-        {('R'), QLatin1String("ROUND")}, {('S'), QLatin1String("SUM")},
-        {('U'), QLatin1String("UCASE")}};
+        {('A'), QLatin1String("AVG")}, {('C'), QLatin1String("COUNT")}, {('F'), QLatin1String("FIRST")}, {('F'), QLatin1String("FORMAT")}, {('L'), QLatin1String("LAST")}, {('L'), QLatin1String("LCASE")}, {('L'), QLatin1String("LEN")}, {('M'), QLatin1String("MAX")}, {('M'), QLatin1String("MID")}, {('M'), QLatin1String("MIN")}, {('M'), QLatin1String("MOD")}, {('N'), QLatin1String("NOW")}, {('R'), QLatin1String("ROUND")}, {('S'), QLatin1String("SUM")}, {('U'), QLatin1String("UCASE")}};
 
     sql_other = {
 
@@ -1891,8 +1933,10 @@ void loadSQLData(QMultiHash<char, QLatin1String> &types,
                  QMultiHash<char, QLatin1String> &keywords,
                  QMultiHash<char, QLatin1String> &builtin,
                  QMultiHash<char, QLatin1String> &literals,
-                 QMultiHash<char, QLatin1String> &other) {
-    if (!sqlDataInitialized) {
+                 QMultiHash<char, QLatin1String> &other)
+{
+    if (!sqlDataInitialized)
+    {
         initSQLData();
         sqlDataInitialized = true;
     }
@@ -1912,7 +1956,8 @@ static QMultiHash<char, QLatin1String> json_types;
 static QMultiHash<char, QLatin1String> json_literals;
 static QMultiHash<char, QLatin1String> json_builtin;
 static QMultiHash<char, QLatin1String> json_other;
-void initJSONData() {
+void initJSONData()
+{
     json_keywords = {};
 
     json_types = {};
@@ -1929,8 +1974,10 @@ void loadJSONData(QMultiHash<char, QLatin1String> &types,
                   QMultiHash<char, QLatin1String> &keywords,
                   QMultiHash<char, QLatin1String> &builtin,
                   QMultiHash<char, QLatin1String> &literals,
-                  QMultiHash<char, QLatin1String> &other) {
-    if (!jsonDataInitialized) {
+                  QMultiHash<char, QLatin1String> &other)
+{
+    if (!jsonDataInitialized)
+    {
         initJSONData();
         jsonDataInitialized = true;
     }
@@ -1950,7 +1997,8 @@ static QMultiHash<char, QLatin1String> css_types;
 static QMultiHash<char, QLatin1String> css_literals;
 static QMultiHash<char, QLatin1String> css_builtin;
 static QMultiHash<char, QLatin1String> css_other;
-void initCSSData() {
+void initCSSData()
+{
     css_keywords = {{'i', QLatin1String("important")},
                     {'p', QLatin1String("px")},
                     {'e', QLatin1String("em")}};
@@ -2277,8 +2325,10 @@ void loadCSSData(QMultiHash<char, QLatin1String> &types,
                  QMultiHash<char, QLatin1String> &keywords,
                  QMultiHash<char, QLatin1String> &builtin,
                  QMultiHash<char, QLatin1String> &literals,
-                 QMultiHash<char, QLatin1String> &other) {
-    if (!cssDataInitialized) {
+                 QMultiHash<char, QLatin1String> &other)
+{
+    if (!cssDataInitialized)
+    {
         initCSSData();
         cssDataInitialized = true;
     }
@@ -2298,40 +2348,17 @@ static QMultiHash<char, QLatin1String> typescript_types;
 static QMultiHash<char, QLatin1String> typescript_literals;
 static QMultiHash<char, QLatin1String> typescript_builtin;
 static QMultiHash<char, QLatin1String> typescript_other;
-void initTypescriptData() {
+void initTypescriptData()
+{
     typescript_keywords = {
-        {'i', QLatin1String("in")},         {'i', QLatin1String("if")},
-        {'f', QLatin1String("for")},        {'w', QLatin1String("while")},
-        {'f', QLatin1String("finally")},    {'n', QLatin1String("new")},
-        {'f', QLatin1String("function")},   {'d', QLatin1String("do")},
-        {'r', QLatin1String("return")},     {'v', QLatin1String("void")},
-        {'e', QLatin1String("else")},       {'b', QLatin1String("break")},
-        {'c', QLatin1String("catch")},      {'i', QLatin1String("instanceof")},
-        {'w', QLatin1String("with")},       {'t', QLatin1String("throw")},
-        {'c', QLatin1String("case")},       {'d', QLatin1String("default")},
-        {'t', QLatin1String("try")},        {'t', QLatin1String("this")},
-        {'s', QLatin1String("switch")},     {'c', QLatin1String("continue")},
-        {'t', QLatin1String("typeof")},     {'d', QLatin1String("delete")},
-        {'l', QLatin1String("let")},        {'y', QLatin1String("yield")},
-        {'c', QLatin1String("const")},      {'p', QLatin1String("public")},
-        {'p', QLatin1String("private")},    {'p', QLatin1String("protected")},
-        {'g', QLatin1String("get")},        {'s', QLatin1String("set")},
-        {'s', QLatin1String("super")},      {'s', QLatin1String("static")},
-        {'i', QLatin1String("implements")}, {'e', QLatin1String("export")},
-        {'i', QLatin1String("import")},     {'d', QLatin1String("declare")},
-        {'t', QLatin1String("type")},       {'n', QLatin1String("namespace")},
-        {'a', QLatin1String("abstract")},   {'a', QLatin1String("as")},
-        {'f', QLatin1String("from")},       {'e', QLatin1String("extends")},
-        {'a', QLatin1String("async")},      {'a', QLatin1String("await")}};
+        {'i', QLatin1String("in")}, {'i', QLatin1String("if")}, {'f', QLatin1String("for")}, {'w', QLatin1String("while")}, {'f', QLatin1String("finally")}, {'n', QLatin1String("new")}, {'f', QLatin1String("function")}, {'d', QLatin1String("do")}, {'r', QLatin1String("return")}, {'v', QLatin1String("void")}, {'e', QLatin1String("else")}, {'b', QLatin1String("break")}, {'c', QLatin1String("catch")}, {'i', QLatin1String("instanceof")}, {'w', QLatin1String("with")}, {'t', QLatin1String("throw")}, {'c', QLatin1String("case")}, {'d', QLatin1String("default")}, {'t', QLatin1String("try")}, {'t', QLatin1String("this")}, {'s', QLatin1String("switch")}, {'c', QLatin1String("continue")}, {'t', QLatin1String("typeof")}, {'d', QLatin1String("delete")}, {'l', QLatin1String("let")}, {'y', QLatin1String("yield")}, {'c', QLatin1String("const")}, {'p', QLatin1String("public")}, {'p', QLatin1String("private")}, {'p', QLatin1String("protected")}, {'g', QLatin1String("get")}, {'s', QLatin1String("set")}, {'s', QLatin1String("super")}, {'s', QLatin1String("static")}, {'i', QLatin1String("implements")}, {'e', QLatin1String("export")}, {'i', QLatin1String("import")}, {'d', QLatin1String("declare")}, {'t', QLatin1String("type")}, {'n', QLatin1String("namespace")}, {'a', QLatin1String("abstract")}, {'a', QLatin1String("as")}, {'f', QLatin1String("from")}, {'e', QLatin1String("extends")}, {'a', QLatin1String("async")}, {'a', QLatin1String("await")}};
 
     typescript_types = {{'v', QLatin1String("var")},
                         {'c', QLatin1String("class")},
                         {'e', QLatin1String("enum")}};
 
     typescript_literals = {
-        {('f'), QLatin1String("false")}, {('n'), QLatin1String("null")},
-        {('t'), QLatin1String("true")},  {('u'), QLatin1String("undefined")},
-        {('N'), QLatin1String("NaN")},   {('I'), QLatin1String("Infinity")}};
+        {('f'), QLatin1String("false")}, {('n'), QLatin1String("null")}, {('t'), QLatin1String("true")}, {('u'), QLatin1String("undefined")}, {('N'), QLatin1String("NaN")}, {('I'), QLatin1String("Infinity")}};
 
     typescript_builtin = {{'e', QLatin1String("eval")},
                           {'i', QLatin1String("isFinite")},
@@ -2394,8 +2421,10 @@ void loadTypescriptData(QMultiHash<char, QLatin1String> &types,
                         QMultiHash<char, QLatin1String> &keywords,
                         QMultiHash<char, QLatin1String> &builtin,
                         QMultiHash<char, QLatin1String> &literals,
-                        QMultiHash<char, QLatin1String> &other) {
-    if (!typescriptDataInitialized) {
+                        QMultiHash<char, QLatin1String> &other)
+{
+    if (!typescriptDataInitialized)
+    {
         initTypescriptData();
         typescriptDataInitialized = true;
     }
@@ -2415,7 +2444,8 @@ static QMultiHash<char, QLatin1String> YAML_types;
 static QMultiHash<char, QLatin1String> YAML_literals;
 static QMultiHash<char, QLatin1String> YAML_builtin;
 static QMultiHash<char, QLatin1String> YAML_other;
-void initYAMLData() {
+void initYAMLData()
+{
     YAML_keywords = {};
     YAML_types = {};
     YAML_literals = {
@@ -2431,8 +2461,10 @@ void loadYAMLData(QMultiHash<char, QLatin1String> &types,
                   QMultiHash<char, QLatin1String> &keywords,
                   QMultiHash<char, QLatin1String> &builtin,
                   QMultiHash<char, QLatin1String> &literals,
-                  QMultiHash<char, QLatin1String> &other) {
-    if (!YAMLDataInitialized) {
+                  QMultiHash<char, QLatin1String> &other)
+{
+    if (!YAMLDataInitialized)
+    {
         initYAMLData();
         YAMLDataInitialized = true;
     }
@@ -2452,26 +2484,31 @@ static QMultiHash<char, QLatin1String> vex_types;
 static QMultiHash<char, QLatin1String> vex_literals;
 static QMultiHash<char, QLatin1String> vex_builtin;
 static QMultiHash<char, QLatin1String> vex_other;
-void initVEXData() {
+void initVEXData()
+{
     vex_keywords = {
-        {'b', QLatin1String("break")},       {'c', QLatin1String("continue")},
-        {'d', QLatin1String("do")},          {'e', QLatin1String("else")},
-        {'f', QLatin1String("for")},         {'f', QLatin1String("foreach")},
-        {'f', QLatin1String("forpoints")},   {'f', QLatin1String("function")},
-        {'g', QLatin1String("gather")},      {'i', QLatin1String("if")},
-        {'i', QLatin1String("illuminance")}, {'r', QLatin1String("return")},
-        {'w', QLatin1String("while")}};
+        {'b', QLatin1String("break")}, {'c', QLatin1String("continue")}, {'d', QLatin1String("do")}, {'e', QLatin1String("else")}, {'f', QLatin1String("for")}, {'f', QLatin1String("foreach")}, {'f', QLatin1String("forpoints")}, {'f', QLatin1String("function")}, {'g', QLatin1String("gather")}, {'i', QLatin1String("if")}, {'i', QLatin1String("illuminance")}, {'r', QLatin1String("return")}, {'w', QLatin1String("while")}};
     vex_types = {
-        {'b', QLatin1String("bsdf")},    {'c', QLatin1String("char")},
-        {'c', QLatin1String("color")},   {'f', QLatin1String("float")},
-        {'i', QLatin1String("int")},     {'i', QLatin1String("integer")},
-        {'m', QLatin1String("matrix")},  {'m', QLatin1String("matrix2")},
-        {'m', QLatin1String("matrix3")}, {'m', QLatin1String("matrix4")},
-        {'n', QLatin1String("normal")},  {'p', QLatin1String("point")},
-        {'s', QLatin1String("string")},  {'s', QLatin1String("struct")},
-        {'t', QLatin1String("typedef")}, {'u', QLatin1String("union")},
-        {'v', QLatin1String("vector")},  {'v', QLatin1String("vector2")},
-        {'v', QLatin1String("vector4")}, {'v', QLatin1String("void")},
+        {'b', QLatin1String("bsdf")},
+        {'c', QLatin1String("char")},
+        {'c', QLatin1String("color")},
+        {'f', QLatin1String("float")},
+        {'i', QLatin1String("int")},
+        {'i', QLatin1String("integer")},
+        {'m', QLatin1String("matrix")},
+        {'m', QLatin1String("matrix2")},
+        {'m', QLatin1String("matrix3")},
+        {'m', QLatin1String("matrix4")},
+        {'n', QLatin1String("normal")},
+        {'p', QLatin1String("point")},
+        {'s', QLatin1String("string")},
+        {'s', QLatin1String("struct")},
+        {'t', QLatin1String("typedef")},
+        {'u', QLatin1String("union")},
+        {'v', QLatin1String("vector")},
+        {'v', QLatin1String("vector2")},
+        {'v', QLatin1String("vector4")},
+        {'v', QLatin1String("void")},
     };
     vex_literals = {
         {('f'), QLatin1String("false")},
@@ -3137,10 +3174,14 @@ void initVEXData() {
                    {'x', QLatin1String("xyzdist")},
                    {'x', QLatin1String("xyztorgb")}};
     vex_other = {
-        {('d'), QLatin1String("define")},  {('e'), QLatin1String("else")},
-        {('e'), QLatin1String("endif")},   {('i'), QLatin1String("if")},
-        {('i'), QLatin1String("ifdef")},   {('i'), QLatin1String("ifndef")},
-        {('i'), QLatin1String("include")}, {('p'), QLatin1String("pragma")},
+        {('d'), QLatin1String("define")},
+        {('e'), QLatin1String("else")},
+        {('e'), QLatin1String("endif")},
+        {('i'), QLatin1String("if")},
+        {('i'), QLatin1String("ifdef")},
+        {('i'), QLatin1String("ifndef")},
+        {('i'), QLatin1String("include")},
+        {('p'), QLatin1String("pragma")},
         {('u'), QLatin1String("undef")},
     };
 }
@@ -3148,8 +3189,10 @@ void loadVEXData(QMultiHash<char, QLatin1String> &types,
                  QMultiHash<char, QLatin1String> &keywords,
                  QMultiHash<char, QLatin1String> &builtin,
                  QMultiHash<char, QLatin1String> &literals,
-                 QMultiHash<char, QLatin1String> &other) {
-    if (!vexDataInitialized) {
+                 QMultiHash<char, QLatin1String> &other)
+{
+    if (!vexDataInitialized)
+    {
         initVEXData();
         vexDataInitialized = true;
     }
@@ -3169,7 +3212,8 @@ static QMultiHash<char, QLatin1String> cmake_types;
 static QMultiHash<char, QLatin1String> cmake_literals;
 static QMultiHash<char, QLatin1String> cmake_builtin;
 static QMultiHash<char, QLatin1String> cmake_other;
-void initCMakeData() {
+void initCMakeData()
+{
     cmake_keywords = {{'b', QLatin1String("break")},
                       {'c', QLatin1String("cmake_host_system_information")},
                       {'c', QLatin1String("cmake_minimum_required")},
@@ -3328,10 +3372,7 @@ void initCMakeData() {
                       {'d', QLatin1String("defined")}};
     cmake_types = {};
     cmake_literals = {
-        {'o', QLatin1String("on")},   {'o', QLatin1String("off")},
-        {'O', QLatin1String("ON")},   {'O', QLatin1String("OFF")},
-        {'t', QLatin1String("true")}, {'f', QLatin1String("false")},
-        {'T', QLatin1String("TRUE")}, {'F', QLatin1String("FALSE")}};
+        {'o', QLatin1String("on")}, {'o', QLatin1String("off")}, {'O', QLatin1String("ON")}, {'O', QLatin1String("OFF")}, {'t', QLatin1String("true")}, {'f', QLatin1String("false")}, {'T', QLatin1String("TRUE")}, {'F', QLatin1String("FALSE")}};
     cmake_builtin = {
         {'A', QLatin1String("ALLOW_DUPLICATE_CUSTOM_TARGETS")},
         {'A', QLatin1String("AUTOGEN_TARGETS_FOLDER")},
@@ -3754,8 +3795,10 @@ void loadCMakeData(QMultiHash<char, QLatin1String> &types,
                    QMultiHash<char, QLatin1String> &keywords,
                    QMultiHash<char, QLatin1String> &builtin,
                    QMultiHash<char, QLatin1String> &literals,
-                   QMultiHash<char, QLatin1String> &other) {
-    if (!cmakeDataInitialized) {
+                   QMultiHash<char, QLatin1String> &other)
+{
+    if (!cmakeDataInitialized)
+    {
         initCMakeData();
         cmakeDataInitialized = true;
     }
@@ -3775,37 +3818,12 @@ static QMultiHash<char, QLatin1String> make_types;
 static QMultiHash<char, QLatin1String> make_literals;
 static QMultiHash<char, QLatin1String> make_builtin;
 static QMultiHash<char, QLatin1String> make_other;
-void initMakeData() {
+void initMakeData()
+{
     make_keywords = {
-        {'i', QLatin1String("include")},  {'d', QLatin1String("define")},
-        {'e', QLatin1String("else")},     {'e', QLatin1String("endef")},
-        {'e', QLatin1String("endif")},    {'e', QLatin1String("export")},
-        {'i', QLatin1String("ifn?def")},  {'i', QLatin1String("ifn?eq")},
-        {'i', QLatin1String("include")},  {'o', QLatin1String("override")},
-        {'p', QLatin1String("private")},  {'s', QLatin1String("sinclude")},
-        {'u', QLatin1String("undefine")}, {'u', QLatin1String("unexport")},
-        {'v', QLatin1String("vpath")}};
+        {'i', QLatin1String("include")}, {'d', QLatin1String("define")}, {'e', QLatin1String("else")}, {'e', QLatin1String("endef")}, {'e', QLatin1String("endif")}, {'e', QLatin1String("export")}, {'i', QLatin1String("ifn?def")}, {'i', QLatin1String("ifn?eq")}, {'i', QLatin1String("include")}, {'o', QLatin1String("override")}, {'p', QLatin1String("private")}, {'s', QLatin1String("sinclude")}, {'u', QLatin1String("undefine")}, {'u', QLatin1String("unexport")}, {'v', QLatin1String("vpath")}};
     make_types = {
-        {'a', QLatin1String("addsuffix")},  {'a', QLatin1String("abspath")},
-        {'a', QLatin1String("and")},        {'a', QLatin1String("ar")},
-        {'b', QLatin1String("basename")},   {'c', QLatin1String("call")},
-        {'d', QLatin1String("dir")},        {'e', QLatin1String("error")},
-        {'e', QLatin1String("eval")},       {'f', QLatin1String("file")},
-        {'f', QLatin1String("filter")},     {'f', QLatin1String("find")},
-        {'f', QLatin1String("findstring")}, {'f', QLatin1String("firstword")},
-        {'f', QLatin1String("flavor")},     {'f', QLatin1String("foreach")},
-        {'g', QLatin1String("guile")},      {'i', QLatin1String("if")},
-        {'i', QLatin1String("info")},       {'i', QLatin1String("install")},
-        {'j', QLatin1String("join")},       {'l', QLatin1String("lastword")},
-        {'l', QLatin1String("load")},       {'n', QLatin1String("notdir")},
-        {'o', QLatin1String("or")},         {'o', QLatin1String("origin")},
-        {'p', QLatin1String("patsubst")},   {'r', QLatin1String("ranlib")},
-        {'r', QLatin1String("realpath")},   {'r', QLatin1String("rm")},
-        {'s', QLatin1String("shell")},      {'s', QLatin1String("sort")},
-        {'s', QLatin1String("strip")},      {'s', QLatin1String("subst")},
-        {'s', QLatin1String("suffix")},     {'v', QLatin1String("value")},
-        {'w', QLatin1String("warning")},    {'w', QLatin1String("wildcard")},
-        {'w', QLatin1String("word")}};
+        {'a', QLatin1String("addsuffix")}, {'a', QLatin1String("abspath")}, {'a', QLatin1String("and")}, {'a', QLatin1String("ar")}, {'b', QLatin1String("basename")}, {'c', QLatin1String("call")}, {'d', QLatin1String("dir")}, {'e', QLatin1String("error")}, {'e', QLatin1String("eval")}, {'f', QLatin1String("file")}, {'f', QLatin1String("filter")}, {'f', QLatin1String("find")}, {'f', QLatin1String("findstring")}, {'f', QLatin1String("firstword")}, {'f', QLatin1String("flavor")}, {'f', QLatin1String("foreach")}, {'g', QLatin1String("guile")}, {'i', QLatin1String("if")}, {'i', QLatin1String("info")}, {'i', QLatin1String("install")}, {'j', QLatin1String("join")}, {'l', QLatin1String("lastword")}, {'l', QLatin1String("load")}, {'n', QLatin1String("notdir")}, {'o', QLatin1String("or")}, {'o', QLatin1String("origin")}, {'p', QLatin1String("patsubst")}, {'r', QLatin1String("ranlib")}, {'r', QLatin1String("realpath")}, {'r', QLatin1String("rm")}, {'s', QLatin1String("shell")}, {'s', QLatin1String("sort")}, {'s', QLatin1String("strip")}, {'s', QLatin1String("subst")}, {'s', QLatin1String("suffix")}, {'v', QLatin1String("value")}, {'w', QLatin1String("warning")}, {'w', QLatin1String("wildcard")}, {'w', QLatin1String("word")}};
     make_literals = {
         {'t', QLatin1String("true")},
         {'f', QLatin1String("false")},
@@ -3822,8 +3840,10 @@ void loadMakeData(QMultiHash<char, QLatin1String> &types,
                   QMultiHash<char, QLatin1String> &keywords,
                   QMultiHash<char, QLatin1String> &builtin,
                   QMultiHash<char, QLatin1String> &literals,
-                  QMultiHash<char, QLatin1String> &other) {
-    if (!makeDataInitialized) {
+                  QMultiHash<char, QLatin1String> &other)
+{
+    if (!makeDataInitialized)
+    {
         initMakeData();
         makeDataInitialized = true;
     }
@@ -3843,7 +3863,8 @@ static QMultiHash<char, QLatin1String> forth_types;
 static QMultiHash<char, QLatin1String> forth_builtin;
 static QMultiHash<char, QLatin1String> forth_literals;
 static QMultiHash<char, QLatin1String> forth_other;
-void initForthData() {
+void initForthData()
+{
     forth_keywords = {
         {('d'), QLatin1String("disasm")},
         {('d'), QLatin1String("disassembler")},
@@ -4066,7 +4087,7 @@ void initForthData() {
         {('C'), QLatin1String("C-Table")},
         {('c'), QLatin1String("c-(compile)")},
         {('c'), QLatin1String("c-does>")},
-        {('c'), QLatin1String("c-abort"")},
+        {('c'), QLatin1String("c-abort\"")},
         {('c'), QLatin1String("c-exit")},
         {('c'), QLatin1String("c-?do")},
         {('c'), QLatin1String("c-do")},
@@ -4119,7 +4140,7 @@ void initForthData() {
         {('A'), QLatin1String("AgainCode")},
         {('R'), QLatin1String("RepeatCode")},
         {('.'), QLatin1String(".struc")},
-        {('c'), QLatin1String("c-\type")},
+        {('c'), QLatin1String("c-\\type")},
         {('('), QLatin1String("(.string)")},
         {('.'), QLatin1String(".string")},
         {('c'), QLatin1String("cemit")},
@@ -4361,7 +4382,7 @@ void initForthData() {
         {('u'), QLatin1String("u8addrlen")},
         {('u'), QLatin1String("u8!+?")},
         {('u'), QLatin1String("u8@")},
-        {('u'), QLatin1String("u8\string-")},
+        {('u'), QLatin1String("u8\\string-")},
         {('+'), QLatin1String("+u8/string")},
         {('u'), QLatin1String("u8emit")},
         {('u'), QLatin1String("u8key")},
@@ -4877,7 +4898,7 @@ void initForthData() {
         {('x'), QLatin1String("xc@+")},
         {('x'), QLatin1String("xc!+?")},
         {('x'), QLatin1String("xc@")},
-        {('x'), QLatin1String("x\string-")},
+        {('x'), QLatin1String("x\\string-")},
         {('+'), QLatin1String("+x/string")},
         {('x'), QLatin1String("xchar-")},
         {('x'), QLatin1String("xchar+")},
@@ -5619,7 +5640,7 @@ void initForthData() {
         {('e'), QLatin1String("execute")},
         {('c'), QLatin1String("call")},
         {('n'), QLatin1String("noop")},
-        };
+    };
 
     forth_types = {};
 
@@ -5633,8 +5654,10 @@ void loadForthData(QMultiHash<char, QLatin1String> &types,
                    QMultiHash<char, QLatin1String> &keywords,
                    QMultiHash<char, QLatin1String> &builtin,
                    QMultiHash<char, QLatin1String> &literals,
-                   QMultiHash<char, QLatin1String> &other) {
-    if (!forthDataInitialized) {
+                   QMultiHash<char, QLatin1String> &other)
+{
+    if (!forthDataInitialized)
+    {
         initForthData();
         forthDataInitialized = true;
     }
