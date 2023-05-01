@@ -644,7 +644,7 @@ void loadJSData(QMultiHash<char, QLatin1String> &types,
 }
 
 /**********************************************************/
-/* Nix Data *********************************************/
+/* Nix Data ***********************************************/
 /**********************************************************/
 static bool NixDataInitialized = false;
 static QMultiHash<char, QLatin1String> nix_keywords;
@@ -652,6 +652,8 @@ static QMultiHash<char, QLatin1String> nix_types;
 static QMultiHash<char, QLatin1String> nix_literals;
 static QMultiHash<char, QLatin1String> nix_builtin;
 static QMultiHash<char, QLatin1String> nix_other;
+
+// also see https://github.com/KDE/syntax-highlighting/blob/master/data/syntax/nix.xml
 void initNixData() {
     nix_keywords = {{('i'), QLatin1String("in")},
                     {('a'), QLatin1String("assert")},
