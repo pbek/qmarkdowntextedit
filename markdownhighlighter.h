@@ -24,11 +24,13 @@ class QTextDocument;
 
 QT_END_NAMESPACE
 
-class MarkdownHighlighter : public QSyntaxHighlighter {
+class MarkdownHighlighter : public QSyntaxHighlighter
+{
     Q_OBJECT
 
-   public:
-    enum HighlightingOption {
+public:
+    enum HighlightingOption
+    {
         None = 0,
         FullyHighlightedBlockQuote = 0x01,
         Underline = 0x02
@@ -39,36 +41,43 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
         QTextDocument *parent = nullptr,
         HighlightingOptions highlightingOptions = HighlightingOption::None);
 
-    static inline QColor codeBlockBackgroundColor() {
+    static inline QColor codeBlockBackgroundColor()
+    {
         const QBrush brush = _formats[CodeBlock].background();
 
-        if (!brush.isOpaque()) {
+        if (!brush.isOpaque())
+        {
             return QColor(Qt::transparent);
         }
 
         return brush.color();
     }
 
-    static constexpr inline bool isOctal(const char c) {
+    static constexpr inline bool isOctal(const char c)
+    {
         return (c >= '0' && c <= '7');
     }
-    static constexpr inline bool isHex(const char c) {
+    static constexpr inline bool isHex(const char c)
+    {
         return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') ||
                (c >= 'A' && c <= 'F');
     }
-    static constexpr inline bool isCodeBlock(const int state) {
+    static constexpr inline bool isCodeBlock(const int state)
+    {
         return state == MarkdownHighlighter::CodeBlock ||
                state == MarkdownHighlighter::CodeBlockTilde ||
                state == MarkdownHighlighter::CodeBlockComment ||
                state == MarkdownHighlighter::CodeBlockTildeComment ||
                state >= MarkdownHighlighter::CodeCpp;
     }
-    static constexpr inline bool isCodeBlockEnd(const int state) {
+    static constexpr inline bool isCodeBlockEnd(const int state)
+    {
         return state == MarkdownHighlighter::CodeBlockEnd ||
                state == MarkdownHighlighter::CodeBlockTildeEnd;
     }
 
-    enum class RangeType {
+    enum class RangeType
+    {
         CodeSpan,
         Emphasis
     };
@@ -79,7 +88,8 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
 
     // we used some predefined numbers here to be compatible with
     // the peg-markdown parser
-    enum HighlighterState {
+    enum HighlighterState
+    {
         NoState = -1,
         Link = 0,
         Image = 3,
@@ -171,7 +181,9 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
         CodeVexComment = 241,
         CodeCMake = 242,
         CodeMake = 244,
-        CodeNix = 246
+        CodeNix = 246,
+        CodeForth = 248,
+        CodeForthComment = 249
     };
     Q_ENUM(HighlighterState)
 
@@ -182,14 +194,15 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
     void setHighlightingOptions(const HighlightingOptions options);
     void initHighlightingRules();
 
-   Q_SIGNALS:
+Q_SIGNALS:
     void highlightingFinished();
 
-   protected Q_SLOTS:
+protected Q_SLOTS:
     void timerTick();
 
-   protected:
-    struct HighlightingRule {
+protected:
+    struct HighlightingRule
+    {
         explicit HighlightingRule(const HighlighterState state_)
             : state(state_) {}
         HighlightingRule() = default;
@@ -200,16 +213,16 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
         uint8_t capturingGroup = 0;
         uint8_t maskedGroup = 0;
     };
-    struct InlineRange {
+    struct InlineRange
+    {
         int begin;
         int end;
         RangeType type;
         InlineRange() = default;
-        InlineRange(int begin_, int end_, RangeType type_) :
-            begin{begin_}, end{end_}, type{type_}
-        {}
+        InlineRange(int begin_, int end_, RangeType type_) : begin{begin_}, end{end_}, type{type_}
+        {
+        }
     };
-
 
     void highlightBlock(const QString &text) override;
 
@@ -247,7 +260,7 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
     void highlightInlineRules(const QString &text);
 
     int highlightInlineSpans(const QString &text,
-                                               int currentPos, const QChar c);
+                             int currentPos, const QChar c);
 
     void highlightEmAndStrong(const QString &text, const int pos);
 
@@ -285,6 +298,8 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
 
     void makeHighlighter(const QString &text);
 
+    void forthHighlighter(const QString &text);
+
     void taggerScriptHighlighter(const QString &text);
 
     void addDirtyBlock(const QTextBlock &block);
@@ -297,7 +312,7 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
     HighlightingOptions _highlightingOptions;
     QTimer *_timer;
     QVector<QTextBlock> _dirtyTextBlocks;
-    QVector<QPair<int,int>> _linkRanges;
+    QVector<QPair<int, int>> _linkRanges;
 
     QHash<int, QVector<InlineRange>> _ranges;
 
