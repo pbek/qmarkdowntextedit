@@ -392,7 +392,7 @@ bool QPlainTextEditSearchWidget::doSearch(bool searchDown,
  */
 void QPlainTextEditSearchWidget::doSearchCount() {
     // Note that we are moving the anchor, so the search will start from the top
-    // again! Alternative: Restore cursor position afterwards, but then we will
+    // again! Alternative: Restore cursor position afterward, but then we will
     // not know
     //              at what _currentSearchResult we currently are
     _textEdit->moveCursor(QTextCursor::Start, QTextCursor::MoveAnchor);
