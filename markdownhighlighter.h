@@ -68,13 +68,14 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
                state == MarkdownHighlighter::CodeBlockTildeEnd;
     }
 
-    enum class RangeType { CodeSpan, Emphasis };
+    enum class RangeType {
+        CodeSpan,
+        Emphasis
+    };
 
-    QPair<int, int> findPositionInRanges(MarkdownHighlighter::RangeType type,
-                                         int blockNum, int pos) const;
+    QPair<int, int> findPositionInRanges(MarkdownHighlighter::RangeType type, int blockNum, int pos) const;
     bool isPosInACodeSpan(int blockNumber, int position) const;
-    QPair<int, int> getSpanRange(RangeType rangeType, int blockNumber,
-                                 int position) const;
+    QPair<int, int> getSpanRange(RangeType rangeType, int blockNumber, int position) const;
 
     // we used some predefined numbers here to be compatible with
     // the peg-markdown parser
@@ -206,9 +207,11 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
         int end;
         RangeType type;
         InlineRange() = default;
-        InlineRange(int begin_, int end_, RangeType type_)
-            : begin{begin_}, end{end_}, type{type_} {}
+        InlineRange(int begin_, int end_, RangeType type_) :
+            begin{begin_}, end{end_}, type{type_}
+        {}
     };
+
 
     void highlightBlock(const QString &text) override;
 
@@ -245,8 +248,8 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
 
     void highlightInlineRules(const QString &text);
 
-    int highlightInlineSpans(const QString &text, int currentPos,
-                             const QChar c);
+    int highlightInlineSpans(const QString &text,
+                                               int currentPos, const QChar c);
 
     void highlightEmAndStrong(const QString &text, const int pos);
 
@@ -298,7 +301,7 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
     HighlightingOptions _highlightingOptions;
     QTimer *_timer;
     QVector<QTextBlock> _dirtyTextBlocks;
-    QVector<QPair<int, int>> _linkRanges;
+    QVector<QPair<int,int>> _linkRanges;
 
     QHash<int, QVector<InlineRange>> _ranges;
 

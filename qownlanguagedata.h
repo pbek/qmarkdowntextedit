@@ -27,22 +27,16 @@
  * builtin are the library functions
  * other can contain any other thing, for e.g, in cpp it contains the
  preprocessor
-
     static const QMultiHash<char, QLatin1String> xxx_keywords = {
     };
-
     static const QMultiHash<char, QLatin1String> xxx_types = {
     };
-
     static const QMultiHash<char, QLatin1String> xxx_literals = {
     };
-
     static const QMultiHash<char, QLatin1String> xxx_builtin = {
     };
-
     static const QMultiHash<char, QLatin1String> xxx_other = {
     };
-
 */
 
 /**********************************************************/
@@ -215,7 +209,6 @@ void loadMakeData(QMultiHash<char, QLatin1String> &types,
                   QMultiHash<char, QLatin1String> &builtin,
                   QMultiHash<char, QLatin1String> &literals,
                   QMultiHash<char, QLatin1String> &other);
-
 /********************************************************/
 /***   Forth DATA  **************************************/
 /********************************************************/
@@ -224,5 +217,4 @@ void loadForthData(QMultiHash<char, QLatin1String> &types,
                    QMultiHash<char, QLatin1String> &builtin,
                    QMultiHash<char, QLatin1String> &literals,
                    QMultiHash<char, QLatin1String> &other);
-
 #endif
