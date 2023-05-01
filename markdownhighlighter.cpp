@@ -910,7 +910,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
             break;
         case HighlighterState::CodeNix:
         case HighlighterState::CodeNix + tildeOffset:
-            loadJSData(types, keywords, builtin, literals, others);
+            loadNixData(types, keywords, builtin, literals, others);
             comment = QLatin1Char('#');
             break;
         default:

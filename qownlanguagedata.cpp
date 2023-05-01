@@ -644,6 +644,87 @@ void loadJSData(QMultiHash<char, QLatin1String> &types,
 }
 
 /**********************************************************/
+/* Nix Data *********************************************/
+/**********************************************************/
+static bool NixDataInitialized = false;
+static QMultiHash<char, QLatin1String> nix_keywords;
+static QMultiHash<char, QLatin1String> nix_types;
+static QMultiHash<char, QLatin1String> nix_literals;
+static QMultiHash<char, QLatin1String> nix_builtin;
+static QMultiHash<char, QLatin1String> nix_other;
+void initNixData() {
+    nix_keywords = {{('i'), QLatin1String("in")},
+                    {('a'), QLatin1String("assert")},
+                    {('k'), QLatin1String("keywords")},
+                    {('r'), QLatin1String("rec")},
+                    {('a'), QLatin1String("and")},
+                    {('o'), QLatin1String("or")},
+                    {('o'), QLatin1String("of")},
+                    {('i'), QLatin1String("if")},
+                    {('f'), QLatin1String("for")},
+                    {('w'), QLatin1String("while")},
+                    {('d'), QLatin1String("do")},
+                    {('r'), QLatin1String("return")},
+                    {('e'), QLatin1String("else")},
+                    {('b'), QLatin1String("break")},
+                    {('w'), QLatin1String("with")},
+                    {('c'), QLatin1String("case")},
+                    {('c'), QLatin1String("continue")},
+                    {('d'), QLatin1String("delete")},
+                    {('l'), QLatin1String("let")},
+                    {('e'), QLatin1String("export")},
+                    {('a'), QLatin1String("as")},
+                    {('i'), QLatin1String("import")},
+                    {('f'), QLatin1String("from")},
+                    {('a'), QLatin1String("as")}};
+
+    nix_types = {};
+
+    nix_literals = {
+        {('f'), QLatin1String("false")}, {('n'), QLatin1String("null")},
+        {('t'), QLatin1String("true")},  {('u'), QLatin1String("undefined")},
+        {('N'), QLatin1String("NaN")},   {('I'), QLatin1String("Infinity")}};
+
+    nix_builtin = {{('a'), QLatin1String("abort")},
+           {('b'), QLatin1String("baseNameOf")},
+           {('d'), QLatin1String("derivation")},
+           {('d'), QLatin1String("dirOf")},
+           {('f'), QLatin1String("fetchTarball")},
+           {('f'), QLatin1String("fetchFromGitHub")},
+           {('i'), QLatin1String("import")},
+           {('i'), QLatin1String("isNull")},
+           {('m'), QLatin1String("map")},
+           {('r'), QLatin1String("removeAttrs")},
+           {('t'), QLatin1String("throw")},
+           {('t'), QLatin1String("toString")}};
+
+    nix_other = {
+        {('b'), QLatin1String("builtins")},
+        {('c'), QLatin1String("config")},
+        {('p'), QLatin1String("pkgs")},
+        {('i'), QLatin1String("inputs")},
+        {('x'), QLatin1String("xdg")},
+        {('e'), QLatin1String("environment")},
+    };
+}
+
+void loadNixData(QMultiHash<char, QLatin1String> &types,
+                 QMultiHash<char, QLatin1String> &keywords,
+                 QMultiHash<char, QLatin1String> &builtin,
+                 QMultiHash<char, QLatin1String> &literals,
+                 QMultiHash<char, QLatin1String> &other) {
+    if (!NixDataInitialized) {
+        initNixData();
+        NixDataInitialized = true;
+    }
+    types = nix_types;
+    keywords = nix_keywords;
+    builtin = nix_builtin;
+    literals = nix_literals;
+    other = nix_other;
+}
+
+/**********************************************************/
 /* PHP Data *********************************************/
 /**********************************************************/
 static bool PHPDataInitialized = false;
