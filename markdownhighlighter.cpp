@@ -463,7 +463,9 @@ void MarkdownHighlighter::initCodeLangs()
             {QLatin1String("vex"), MarkdownHighlighter::CodeVex},
             {QLatin1String("xml"), MarkdownHighlighter::CodeXML},
             {QLatin1String("yml"), MarkdownHighlighter::CodeYAML},
-            {QLatin1String("yaml"), MarkdownHighlighter::CodeYAML}};
+            {QLatin1String("yaml"), MarkdownHighlighter::CodeYAML},
+            {QLatin1String("forth"), MarkdownHighlighter::CodeForth}
+    };
 }
 
 /**
