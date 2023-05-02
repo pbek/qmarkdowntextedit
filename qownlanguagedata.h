@@ -67,6 +67,15 @@ void loadJSData(QMultiHash<char, QLatin1String> &types,
                 QMultiHash<char, QLatin1String> &other);
 
 /**********************************************************/
+/* JS Data *********************************************/
+/**********************************************************/
+void loadNixData(QMultiHash<char, QLatin1String> &types,
+                QMultiHash<char, QLatin1String> &keywords,
+                QMultiHash<char, QLatin1String> &builtin,
+                QMultiHash<char, QLatin1String> &literals,
+                QMultiHash<char, QLatin1String> &other);
+
+/**********************************************************/
 /* PHP Data *********************************************/
 /**********************************************************/
 void loadPHPData(QMultiHash<char, QLatin1String> &types,
