@@ -452,7 +452,8 @@ void MarkdownHighlighter::initCodeLangs() {
             {QLatin1String("vex"), MarkdownHighlighter::CodeVex},
             {QLatin1String("xml"), MarkdownHighlighter::CodeXML},
             {QLatin1String("yml"), MarkdownHighlighter::CodeYAML},
-            {QLatin1String("yaml"), MarkdownHighlighter::CodeYAML}};
+            {QLatin1String("yaml"), MarkdownHighlighter::CodeYAML},
+            {QLatin1String("forth"), MarkdownHighlighter::CodeForth}};
 }
 
 /**
@@ -771,6 +772,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
     bool isCSS = false;
     bool isYAML = false;
     bool isMake = false;
+    bool isForth = false;
 
     QMultiHash<char, QLatin1String> keywords{};
     QMultiHash<char, QLatin1String> others{};
@@ -912,6 +914,13 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
         case HighlighterState::CodeNix + tildeOffset:
             loadNixData(types, keywords, builtin, literals, others);
             comment = QLatin1Char('#');
+            break;
+        case HighlighterState::CodeForth:
+        case HighlighterState::CodeForth + tildeOffset:
+        case HighlighterState::CodeForthComment:
+        case HighlighterState::CodeForthComment + tildeOffset:
+            isForth = true;
+            loadForthData(types, keywords, builtin, literals, others);
             break;
         default:
             setFormat(0, textLen, _formats[CodeBlock]);
@@ -1073,6 +1082,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
     if (isCSS) cssHighlighter(text);
     if (isYAML) ymlHighlighter(text);
     if (isMake) makeHighlighter(text);
+    if (isForth) forthHighlighter(text);
 }
 
 /**
@@ -1645,6 +1655,46 @@ void MarkdownHighlighter::makeHighlighter(const QString &text) {
     const int colonPos = text.indexOf(QLatin1Char(':'));
     if (colonPos == -1) return;
     setFormat(0, colonPos, _formats[CodeBuiltIn]);
+}
+
+/**
+ * @brief The Forth highlighter
+ * @param text
+ * @details This function performs filtering of Forth code and high lights
+ * the specific details.
+ * 1. It highlights the "\ " comments
+ * 2. It highlights the "( " comments
+ */
+void MarkdownHighlighter::forthHighlighter(const QString &text) {
+    if (text.isEmpty()) return;
+
+    const auto textLen = text.length();
+
+    // Default Format
+    setFormat(0, textLen, _formats[CodeBlock]);
+
+    for (int i = 0; i < textLen; ++i) {
+        // 1, It highlights the "\ " comments
+        if (i + 1 <= textLen && text[i] == QLatin1Char('\\') &&
+            text[i + 1] == QLatin1Char(' ')) {
+            // The full line is commented
+            setFormat(i + 1, textLen - 1, _formats[CodeComment]);
+            break;
+        }
+        // 2. It highlights the "( " comments
+        else if (i + 1 <= textLen && text[i] == QLatin1Char('(') &&
+                 text[i + 1] == QLatin1Char(' ')) {
+            // Find the End bracket
+            int lastBracket = text.lastIndexOf(QLatin1Char(')'), i);
+            // Can't Handle wrong Format
+            if (lastBracket <= 0) return;
+            // ' )' at the end of the comment
+            if (lastBracket <= textLen &&
+                text[lastBracket] == QLatin1Char(' ')) {
+                setFormat(i, lastBracket, _formats[CodeComment]);
+            }
+        }
+    }
 }
 
 /**

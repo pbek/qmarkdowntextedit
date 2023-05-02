@@ -171,7 +171,9 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
         CodeVexComment = 241,
         CodeCMake = 242,
         CodeMake = 244,
-        CodeNix = 246
+        CodeNix = 246,
+        CodeForth = 248,
+        CodeForthComment = 249
     };
     Q_ENUM(HighlighterState)
 
@@ -284,6 +286,8 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
     void xmlHighlighter(const QString &text);
 
     void makeHighlighter(const QString &text);
+
+    void forthHighlighter(const QString &text);
 
     void taggerScriptHighlighter(const QString &text);
 
