@@ -1458,8 +1458,8 @@ bool QMarkdownTextEdit::handleReturnEntered() {
 
     // if return is pressed and there is just an unordered list symbol then we
     // want to remove the list symbol Valid listCharacters: '+ ', '-' , '* ', '+
-    // [ ] ', '+ [x] ', '- [ ] ', '- [x] ', '* [ ] ', '* [x] '.
-    QRegularExpression regex(R"(^(\s*)([+|\-|\*] \[(x| |)\]|[+\-\*])(\s+)$)");
+    // [ ] ', '+ [x] ', '- [ ] ', '- [-] ', '- [x] ', '* [ ] ', '* [x] '.
+    QRegularExpression regex(R"(^(\s*)([+|\-|\*] \[(x|-| |)\]|[+\-\*])(\s+)$)");
     QRegularExpressionMatchIterator iterator =
         regex.globalMatch(currentLineText);
     if (iterator.hasNext()) {
@@ -1497,9 +1497,9 @@ bool QMarkdownTextEdit::handleReturnEntered() {
         // if the current line starts with a list character (possibly after
         // whitespaces) add the whitespaces at the next line too
         // Valid listCharacters: '+ ', '-' , '* ', '+ [ ] ', '+ [x] ', '- [ ] ',
-        // '- [x] ', '* [ ] ', '* [x] '.
+        // '- [x] ', '- [-] ', '* [ ] ', '* [x] '.
         regex =
-            QRegularExpression(R"(^(\s*)([+|\-|\*] \[(x| |)\]|[+\-\*])(\s+))");
+            QRegularExpression(R"(^(\s*)([+|\-|\*] \[(x|-| |)\]|[+\-\*])(\s+))");
         iterator = regex.globalMatch(currentLineText);
         if (iterator.hasNext()) {
             const QRegularExpressionMatch match = iterator.next();
@@ -1581,8 +1581,8 @@ bool QMarkdownTextEdit::handleTabEntered(bool reverse,
 
         // check if we want to indent or un-indent an ordered list
         // Valid listCharacters: '+ ', '-' , '* ', '+ [ ] ', '+ [x] ', '- [ ] ',
-        // '- [x] ', '* [ ] ', '* [x] '.
-        QRegularExpression re(R"(^(\s*)([+|\-|\*] \[(x| )\]|[+\-\*])(\s+)$)");
+        // '- [x] ', '- [-] ', '* [ ] ', '* [x] '.
+        QRegularExpression re(R"(^(\s*)([+|\-|\*] \[(x|-| )\]|[+\-\*])(\s+)$)");
         QRegularExpressionMatchIterator i = re.globalMatch(currentLineText);
 
         if (i.hasNext()) {
