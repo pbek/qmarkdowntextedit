@@ -19,6 +19,10 @@
 #include <QSyntaxHighlighter>
 #include <QTextCharFormat>
 
+#ifdef QT_QUICK_LIB
+#include <QQuickTextDocument>
+#endif
+
 QT_BEGIN_NAMESPACE
 class QTextDocument;
 
@@ -26,6 +30,25 @@ QT_END_NAMESPACE
 
 class MarkdownHighlighter : public QSyntaxHighlighter {
     Q_OBJECT
+
+#ifdef QT_QUICK_LIB
+    Q_PROPERTY(QQuickTextDocument *textDocument READ textDocument WRITE
+                   setTextDocument NOTIFY textDocumentChanged)
+
+    QQuickTextDocument *m_quickDocument = nullptr;
+
+   signals:
+    void textDocumentChanged();
+
+   public:
+    inline QQuickTextDocument *textDocument() const { return m_quickDocument; };
+    void setTextDocument(QQuickTextDocument *textDocument) {
+        if (!textDocument) return;
+        m_quickDocument = textDocument;
+        setDocument(m_quickDocument->textDocument());
+        Q_EMIT textDocumentChanged();
+    };
+#endif
 
    public:
     enum HighlightingOption {
