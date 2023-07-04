@@ -24,6 +24,8 @@ class LineNumArea;
 
 class QMarkdownTextEdit : public QPlainTextEdit {
     Q_OBJECT
+    Q_PROPERTY(
+        bool highlighting READ highlightingEnabled WRITE setHighlightingEnabled)
 
     friend class LineNumArea;
 
@@ -49,7 +51,6 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     QString getMarkdownUrlAtPosition(const QString &text, int position);
     void initSearchFrame(QWidget *searchFrame, bool darkMode = false);
     void setAutoTextOptions(AutoTextOptions options);
-    void setHighlightingEnabled(bool enabled);
     static bool isValidUrl(const QString &urlString);
     void resetMouseCursor() const;
     void setReadOnly(bool ro);
@@ -61,6 +62,9 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     void setLineNumbersCurrentLineColor(QColor color);
     void setLineNumbersOtherLineColor(QColor color);
     void setSearchWidgetDebounceDelay(uint debounceDelay);
+
+    void setHighlightingEnabled(bool enabled);
+    [[nodiscard]] bool highlightingEnabled() const;
 
     void setHighlightCurrentLine(bool set);
     bool highlightCurrentLine();

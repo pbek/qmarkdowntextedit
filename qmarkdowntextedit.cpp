@@ -161,6 +161,14 @@ void QMarkdownTextEdit::setHighlightingEnabled(bool enabled) {
 }
 
 /**
+ * @brief Returns if highlighting is enabled
+ * @return Returns true if highlighting is enabled, otherwise false
+ */
+bool QMarkdownTextEdit::highlightingEnabled() const {
+    return _highlightingEnabled && _highlighter != nullptr;
+}
+
+/**
  * Leave a little space on the right side if the document is too long, so
  * that the search buttons don't get visually blocked by the scroll bar
  */
