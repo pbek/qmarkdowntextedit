@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16) # Qt requires CMake 3.16
+﻿cmake_minimum_required(VERSION 3.16) # Qt requires CMake 3.16
 project(qmarkdowntextedit LANGUAGES CXX VERSION 1.0.0)
 
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
@@ -16,6 +16,7 @@ option(QMARKDOWNTEXTEDIT_EXE "Build test executable" ON)
 # find qt
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
+find_package(Qt${QT_VERSION_MAJOR} OPTIONAL_COMPONENTS Quick)
 
 # needed for windows
 if(WIN32)
@@ -59,6 +60,13 @@ target_link_libraries(qmarkdowntextedit PUBLIC
     Qt${QT_VERSION_MAJOR}::Widgets
     ${INTL_LDFLAGS}
 )
+
+if (Qt${QT_VERSION_MAJOR}Quick_FOUND)
+    target_link_libraries(qmarkdowntextedit PUBLIC Qt${QT_VERSION_MAJOR}::Quick)
+
+    add_executable(QtQuickExample examples/qml/example.cpp examples/qml/ressources.qrc)
+    target_link_libraries(QtQuickExample PRIVATE Qt${QT_VERSION_MAJOR}::Quick qmarkdowntextedit)
+endif()
 
 # QMarkdownTextEdit executable
 if(QMARKDOWNTEXTEDIT_EXE)
