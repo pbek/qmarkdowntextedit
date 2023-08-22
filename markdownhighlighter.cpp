@@ -117,15 +117,6 @@ void MarkdownHighlighter::addDirtyBlock(const QTextBlock &block) {
  * /usr/share/kde4/apps/katepart/syntax/markdown.xml
  */
 void MarkdownHighlighter::initHighlightingRules() {
-    // highlight the reference of reference links
-    {
-        HighlightingRule rule(HighlighterState::MaskedSyntax);
-        rule.pattern =
-            QRegularExpression(QStringLiteral(R"(^\[.+?\]: \w+://.+$)"));
-        rule.shouldContain = QStringLiteral("://");
-        _highlightingRules.append(rule);
-    }
-
     // highlight block quotes
     {
         HighlightingRule rule(HighlighterState::BlockQuote);
@@ -144,98 +135,6 @@ void MarkdownHighlighter::initHighlightingRules() {
     //    rule.pattern = QRegularExpression("^.+? \\| .+? \\| .+$");
     //    rule.state = HighlighterState::Table;
     //    _highlightingRulesPre.append(rule);
-
-    // highlight urls
-    {
-        HighlightingRule rule(HighlighterState::Link);
-
-        // highlight urls without any other markup like http://www.github.com
-        rule.pattern =
-            QRegularExpression(QStringLiteral(R"(\b\w+?:\/\/[^\s>]+)"));
-        rule.capturingGroup = 0;
-        rule.shouldContain = QStringLiteral("://");
-        _highlightingRules.append(rule);
-
-        // highlight urls without any other markup like www.github.com
-        rule.pattern =
-            QRegularExpression(QStringLiteral(R"(\bwww\.[^\s]+\.[^\s]+\b)"));
-        rule.capturingGroup = 0;
-        rule.shouldContain = QStringLiteral("www.");
-        _highlightingRules.append(rule);
-
-        // highlight urls with <> but without any . in it
-        rule.pattern =
-            QRegularExpression(QStringLiteral(R"(<(\w+?:\/\/[^\s]+)>)"));
-        rule.capturingGroup = 1;
-        rule.shouldContain = QStringLiteral("://");
-        _highlightingRules.append(rule);
-
-        // highlight links with <> that have a .in it
-        //    rule.pattern = QRegularExpression("<(.+?:\\/\\/.+?)>");
-        rule.pattern = QRegularExpression(
-            QStringLiteral("<([^\\s`][^`]*?\\.[^`]*?[^\\s`])>"));
-        rule.capturingGroup = 1;
-        rule.shouldContain = QStringLiteral("<");
-        _highlightingRules.append(rule);
-
-        // highlight urls with title
-        //    rule.pattern = QRegularExpression("\\[(.+?)\\]\\(.+?://.+?\\)");
-        //    rule.pattern = QRegularExpression("\\[(.+?)\\]\\(.+\\)\\B");
-        rule.pattern = QRegularExpression(
-            QStringLiteral(R"(\[([^\[\]]+)\]\((\S+|.+?)\)\B)"));
-        rule.shouldContain = QStringLiteral("](");
-        _highlightingRules.append(rule);
-
-        // highlight urls with empty title
-        //    rule.pattern = QRegularExpression("\\[\\]\\((.+?://.+?)\\)");
-        rule.pattern = QRegularExpression(QStringLiteral(R"(\[\]\((.+?)\))"));
-        rule.shouldContain = QStringLiteral("[](");
-        _highlightingRules.append(rule);
-
-        // highlight email links
-        rule.pattern = QRegularExpression(QStringLiteral("<(.+?@.+?)>"));
-        rule.shouldContain = QStringLiteral("@");
-        _highlightingRules.append(rule);
-
-        // highlight reference links
-        rule.pattern =
-            QRegularExpression(QStringLiteral(R"(\[(.+?)\]\[.+?\])"));
-        rule.shouldContain = QStringLiteral("[");
-        _highlightingRules.append(rule);
-    }
-
-    // Images
-    {
-        // highlight images with text
-        HighlightingRule rule(HighlighterState::Image);
-        rule.pattern =
-            QRegularExpression(QStringLiteral(R"(!\[(.+?)\]\(.+?\))"));
-        rule.shouldContain = QStringLiteral("![");
-        rule.capturingGroup = 1;
-        _highlightingRules.append(rule);
-
-        // highlight images without text
-        rule.pattern = QRegularExpression(QStringLiteral(R"(!\[\]\((.+?)\))"));
-        rule.shouldContain = QStringLiteral("![]");
-        _highlightingRules.append(rule);
-    }
-
-    // highlight images links
-    {
-        HighlightingRule rule(HighlighterState::Link);
-        rule.pattern = QRegularExpression(
-            QStringLiteral(R"(\[!\[(.+?)\]\(.+?\)\]\(.+?\))"));
-        rule.shouldContain = QStringLiteral("[![");
-        rule.capturingGroup = 1;
-        _highlightingRules.append(rule);
-
-        // highlight images links without text
-        rule.pattern =
-            QRegularExpression(QStringLiteral(R"(\[!\[\]\(.+?\)\]\((.+?)\))"));
-        rule.shouldContain = QStringLiteral("[![](");
-        _highlightingRules.append(rule);
-    }
-
     // highlight trailing spaces
     {
         HighlightingRule rule(HighlighterState::TrailingSpace);
@@ -669,10 +568,8 @@ void MarkdownHighlighter::highlightIndentedCodeBlock(const QString &text) {
     const QString prevTrimmed =  currentBlock().previous().text().trimmed();
     // previous line must be empty according to CommonMark except if it is a
     // heading https://spec.commonmark.org/0.29/#indented-code-block
-    if (!prevTrimmed.isEmpty() &&
-        previousBlockState() != CodeBlockIndented &&
-        (previousBlockState() < H1 || previousBlockState() > H6) &&
-        previousBlockState() != HeadlineEnd)
+    if (!prevTrimmed.isEmpty() && previousBlockState() != CodeBlockIndented &&
+        !isHeading(previousBlockState()) && previousBlockState() != HeadlineEnd)
         return;
 
     const QString trimmed = text.trimmed();
@@ -1913,7 +1810,6 @@ void MarkdownHighlighter::setHeadingStyles(HighlighterState rule,
 void MarkdownHighlighter::highlightAdditionalRules(
     const QVector<HighlightingRule> &rules, const QString &text) {
     const auto &maskedFormat = _formats[HighlighterState::MaskedSyntax];
-    _linkRanges.clear();
 
     for (const HighlightingRule &rule : rules) {
         // continue if another current block state was already set if
@@ -1943,26 +1839,16 @@ void MarkdownHighlighter::highlightAdditionalRules(
                         format.fontPointSize());
                 }
 
-                if (currentBlockState() >= H1 && currentBlockState() <= H6) {
+                if (isHeading(currentBlockState())) {
                     // setHeadingStyles(format, match, maskedGroup);
 
                 } else {
-                    // store masked part of the link as a range
-                    if (rule.state == Link) {
-                        const int start = match.capturedStart(maskedGroup);
-                        const int end = match.capturedStart(maskedGroup) +
-                                        match.capturedLength(maskedGroup);
-                        if (!_linkRanges.contains({start, end})) {
-                            _linkRanges.append({start, end});
-                        }
-                    }
-
                     setFormat(match.capturedStart(maskedGroup),
                               match.capturedLength(maskedGroup),
                               currentMaskedFormat);
                 }
             }
-            if (currentBlockState() >= H1 && currentBlockState() <= H6) {
+            if (isHeading(currentBlockState())) {
                 setHeadingStyles(rule.state, match, capturingGroup);
 
             } else {
@@ -1995,42 +1881,222 @@ int isInLinkRange(int pos, QVector<QPair<int, int>> &range) {
 
 /**
  * @brief highlight inline rules aka Emphasis, bolds, inline code spans,
- * underlines, strikethrough.
+ * underlines, strikethrough, links, and images.
  */
 void MarkdownHighlighter::highlightInlineRules(const QString &text) {
     bool isEmStrongDone = false;
 
-    // TODO: Add Links and Images parsing
     for (int i = 0; i < text.length(); ++i) {
-        // make sure we are not in a link range
-        if (!_linkRanges.isEmpty()) {
-            const int res = isInLinkRange(i, _linkRanges);
-            if (res > -1) {
-                i += res - 1;
-                continue;
-            }
-        }
+        QChar currentChar = text.at(i);
 
-        if ((text.at(i) == QLatin1Char('`') ||
-                             text.at(i) == QLatin1Char('~'))) {
-
-            i = highlightInlineSpans(text, i, text.at(i));
-
-        } else if (text.at(i) == QLatin1Char('<') && i + 3 < text.length() &&
-                   text.at(i + 1) == QLatin1Char('!') &&
-                   text.at(i + 2) == QLatin1Char('-') &&
-                   text.at(i + 3) == QLatin1Char('-')) {
-
+        if (currentChar == QLatin1Char('`') ||
+            currentChar == QLatin1Char('~')) {
+            i = highlightInlineSpans(text, i, currentChar);
+        } else if (currentChar == QLatin1Char('<') &&
+                   MH_SUBSTR(i, 4) == QLatin1String("<!--")) {
             i = highlightInlineComment(text, i);
-
-        } else if (!isEmStrongDone && (text.at(i) == QLatin1Char('*') ||
-                                       text.at(i) == QLatin1Char('_'))) {
-
+        } else if (!isEmStrongDone && (currentChar == QLatin1Char('*') ||
+                                       currentChar == QLatin1Char('_'))) {
             highlightEmAndStrong(text, i);
             isEmStrongDone = true;
-
+        } else if (currentChar == QLatin1Char('[') ||
+                   currentChar == QLatin1Char('<') ||    // <>
+                   currentChar == QLatin1Char('h') ||    // http
+                   currentChar == QLatin1Char('w')       // www
+        ) {
+            i = highlightLinkOrImage(text, i);
         }
     }
+}
+
+// Helper function for MarkdownHighlighter::highlightLinkOrImage
+bool isLink(const QString &text) {
+    static const QLatin1String supportedSchemes[] = {
+        QLatin1String("http://"),  QLatin1String("https://"),
+        QLatin1String("file://"),  QLatin1String("www."),
+        QLatin1String("ftp://"),   QLatin1String("mailto:"),
+        QLatin1String("tel:"),     QLatin1String("sms:"),
+        QLatin1String("smsto:"),   QLatin1String("data:"),
+        QLatin1String("irc://"),   QLatin1String("gopher://"),
+        QLatin1String("spotify:"), QLatin1String("steam:"),
+        QLatin1String("bitcoin:"), QLatin1String("magnet:"),
+        QLatin1String("ed2k://"),  QLatin1String("news:"),
+        QLatin1String("ssh://")};
+
+    for (const QLatin1String &scheme : supportedSchemes) {
+        if (text.startsWith(scheme)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool isValidEmail(const QString &email) {
+    // Check for a single '@' character
+    int atIndex = email.indexOf('@');
+    if (atIndex == -1) return false;
+
+    // Check for at least one character before and after '@'
+    if (atIndex == 0 || atIndex == email.length() - 1) return false;
+
+    // Split email into local part and domain
+    QString localPart = email.left(atIndex);
+    QString domain = email.mid(atIndex + 1);
+
+    // Check local part for validity (e.g., no consecutive dots)
+    if (localPart.isEmpty() || localPart.contains("..")) return false;
+
+    // Check domain for validity (e.g., at least one dot)
+    if (domain.isEmpty() || domain.indexOf('.') == -1) return false;
+
+    return true;
+}
+
+void MarkdownHighlighter::formatAndMaskRemaining(
+    int formatBegin, int formatLength, int beginningText, int endText,
+    const QTextCharFormat &format) {
+    int afterFormat = formatBegin + formatLength;
+
+    setFormat(beginningText, formatBegin - beginningText,
+              _formats[MaskedSyntax]);
+    setFormat(formatBegin, formatLength, format);
+    setFormat(afterFormat, endText - afterFormat, _formats[MaskedSyntax]);
+}
+
+/**
+ * @brief This function highlights images and links in Markdown text.
+ *
+ * @param text The input Markdown text.
+ * @param startIndex The starting index from where to begin processing.
+ * @return The index where processing should continue.
+ */
+int MarkdownHighlighter::highlightLinkOrImage(const QString &text,
+                                              qsizetype startIndex) {
+    // If the current blockis a heading, don't process further
+    if (isHeading(currentBlockState())) return startIndex;
+
+    // Get the character at the starting index
+    QChar startChar = text.at(startIndex);
+
+    // If it starts with '<', it indicates a link, or an email
+    // enclosed in angle brackets
+    if (startChar == QLatin1Char('<')) {
+        // Find the closing '>' character to identify the end of the link
+        int closingChar = text.indexOf(QLatin1Char('>'), startIndex);
+        if (closingChar == -1) return startIndex;
+
+        // Extract the content between '<' and '>'
+        QString linkContent =
+            text.mid(startIndex + 1, closingChar - startIndex - 1);
+
+        // Check if it's a valid link or email
+        if (!isLink(linkContent) && !isValidEmail(linkContent))
+            return startIndex;
+
+        // Apply formatting to highlight the link
+        formatAndMaskRemaining(startIndex + 1, closingChar - startIndex - 1,
+                               startIndex, closingChar, _formats[Link]);
+
+        return closingChar;
+    }
+    // Highlight http and www links
+    else if (startChar == QLatin1Char('h') || startChar == QLatin1Char('w')) {
+        int space = text.indexOf(QLatin1Char(' '), startIndex);
+        if (space == -1) space = text.length();
+
+        // Allow to highlight the href in HTML tags
+        if (MH_SUBSTR(startIndex, 6) == QLatin1String("href=\"")) {
+            int hrefEnd = text.indexOf(QLatin1Char('"'), startIndex + 6);
+            if (hrefEnd == -1) return space;
+
+            setFormat(startIndex + 6, hrefEnd - startIndex - 6, _formats[Link]);
+            return hrefEnd;
+        }
+
+        QString link = text.mid(startIndex, space - startIndex - 1);
+        if (!isLink(link)) return startIndex;
+
+        setFormat(startIndex, link.length() + 1, _formats[Link]);
+        return space;
+    }
+
+    // Find the index of the closing ']' character to identify the end of link
+    // or image text.
+    int endIndex = text.indexOf(QLatin1Char(']'), startIndex);
+
+    // If endIndex is not found or at the end of the text, the link is invalid
+    if (endIndex == -1 || endIndex == text.size() - 1) return startIndex;
+
+    // If there is an '!' preceding the starting character, it's an image
+    if (startIndex != 0 && text.at(startIndex - 1) == QLatin1Char('!')) {
+        // Find the index of the closing ')' character after the image link
+        int closingIndex = text.indexOf(QLatin1Char(')'), endIndex);
+        if (closingIndex == -1) return startIndex;
+        ++closingIndex;
+
+        // Apply formatting to highlight the image.
+        formatAndMaskRemaining(startIndex + 1, endIndex - startIndex - 1,
+                               startIndex, closingIndex, _formats[Image]);
+        return closingIndex;
+    }
+    // If the character after the closing ']' is '(', it's a regular link
+    else if (text.at(endIndex + 1) == QLatin1Char('(')) {
+        // Find the index of the closing ')' character after the link
+        int closingParenIndex = text.indexOf(QLatin1Char(')'), endIndex);
+        if (closingParenIndex == -1) return startIndex;
+        ++closingParenIndex;
+
+        // If the substring starting from the current index matches "[![",
+        // It's a image with link
+        if (MH_SUBSTR(startIndex, 3) == QLatin1String("[![")) {
+            // Apply formatting to highlight the image alt text (inside the
+            // first ']')
+            int altEndIndex = text.indexOf(QLatin1Char(']'), endIndex + 1);
+            if (altEndIndex == -1) return startIndex;
+
+            // Find the last `)` (href) [![Image alt](Image src)](Link href)
+            int hrefIndex = text.indexOf(QLatin1Char(')'), altEndIndex);
+            if (hrefIndex == -1) return startIndex;
+            ++hrefIndex;
+
+            formatAndMaskRemaining(startIndex + 3, endIndex - startIndex - 3,
+                                   startIndex, hrefIndex, _formats[Link]);
+
+            return hrefIndex;
+        }
+
+        // Apply formatting to highlight the link
+        formatAndMaskRemaining(startIndex + 1, endIndex - startIndex - 1,
+                               startIndex, closingParenIndex, _formats[Link]);
+        return closingParenIndex;
+    }
+    // Reference links
+    else if (text.at(endIndex + 1) == QLatin1Char('[')) {
+        // Image with reference
+        int origIndex = startIndex;
+        if (text.at(startIndex + 1) == QLatin1Char('!')) {
+            startIndex = text.indexOf(QLatin1Char('['), startIndex + 1);
+            if (startIndex == -1) return origIndex;
+        }
+
+        int closingChar = text.indexOf(QLatin1Char(']'), endIndex + 1);
+        if (closingChar == -1) return startIndex;
+        ++closingChar;
+
+        formatAndMaskRemaining(startIndex + 1, endIndex - startIndex - 1,
+                               origIndex, closingChar, _formats[Link]);
+        return closingChar;
+    }
+    // If the character after the closing ']' is ':', it's a reference link
+    // reference
+    else if (text.at(endIndex + 1) == QLatin1Char(':')) {
+        formatAndMaskRemaining(0, 0, startIndex, endIndex + 1, {});
+        return endIndex + 1;
+    }
+
+    return startIndex;    // If none of the conditions are met, continue
+                          // processing from the same index
 }
 
 /** @brief highlight inline code spans -> `code` and highlight strikethroughs

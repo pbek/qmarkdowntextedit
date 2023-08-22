@@ -90,6 +90,9 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
         return state == MarkdownHighlighter::CodeBlockEnd ||
                state == MarkdownHighlighter::CodeBlockTildeEnd;
     }
+    static constexpr inline bool isHeading(const int state) {
+        return state >= H1 && state <= H6;
+    }
 
     enum class RangeType {
         CodeSpan,
@@ -244,6 +247,10 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
 
     void highlightMarkdown(const QString &text);
 
+    void formatAndMaskRemaining(int formatBegin, int formatLength,
+                                int beginningText, int endText,
+                                const QTextCharFormat &format);
+
     /******************************
      *  BLOCK LEVEL FUNCTIONS
      ******************************/
@@ -277,6 +284,8 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
     void highlightEmAndStrong(const QString &text, const int pos);
 
     Q_REQUIRED_RESULT int highlightInlineComment(const QString &text, int pos);
+
+    int highlightLinkOrImage(const QString &text, qsizetype startIndex);
 
     void setHeadingStyles(MarkdownHighlighter::HighlighterState rule,
                           const QRegularExpressionMatch &match,
