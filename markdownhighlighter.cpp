@@ -240,8 +240,7 @@ void MarkdownHighlighter::initHighlightingRules() {
     {
         HighlightingRule rule(HighlighterState::TrailingSpace);
         rule.pattern = QRegularExpression(QStringLiteral("( +)$"));
-        // waqar144: don't use QStringLiteral here.
-        rule.shouldContain = QString(" \0");
+        rule.shouldContain = QStringLiteral("  ");
         rule.capturingGroup = 1;
         _highlightingRules.append(rule);
     }
@@ -369,9 +368,11 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize) {
 
     format = QTextCharFormat();
     _formats[HeadlineEnd] = std::move(format);
-
-    format = QTextCharFormat();
     _formats[NoState] = std::move(format);
+
+    // set character format for trailing spaces
+    format.setBackground(QColor(252, 175, 62));
+    _formats[TrailingSpace] = std::move(format);
 
     /****************************************
      * Formats for syntax highlighting
