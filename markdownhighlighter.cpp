@@ -1899,11 +1899,7 @@ void MarkdownHighlighter::highlightInlineRules(const QString &text) {
                                        currentChar == QLatin1Char('_'))) {
             highlightEmAndStrong(text, i);
             isEmStrongDone = true;
-        } else if (currentChar == QLatin1Char('[') ||
-                   currentChar == QLatin1Char('<') ||    // <>
-                   currentChar == QLatin1Char('h') ||    // http
-                   currentChar == QLatin1Char('w')       // www
-        ) {
+        } else {
             i = highlightLinkOrImage(text, i);
         }
     }
@@ -1921,7 +1917,7 @@ bool isLink(const QString &text) {
         QLatin1String("spotify:"), QLatin1String("steam:"),
         QLatin1String("bitcoin:"), QLatin1String("magnet:"),
         QLatin1String("ed2k://"),  QLatin1String("news:"),
-        QLatin1String("ssh://")};
+        QLatin1String("ssh://"),   QLatin1String("note://")};
 
     for (const QLatin1String &scheme : supportedSchemes) {
         if (text.startsWith(scheme)) {
@@ -2001,7 +1997,7 @@ int MarkdownHighlighter::highlightLinkOrImage(const QString &text,
         return closingChar;
     }
     // Highlight http and www links
-    else if (startChar == QLatin1Char('h') || startChar == QLatin1Char('w')) {
+    else if (startChar != QLatin1Char('[')) {
         int space = text.indexOf(QLatin1Char(' '), startIndex);
         if (space == -1) space = text.length();
 
