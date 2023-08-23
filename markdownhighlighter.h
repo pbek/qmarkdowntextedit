@@ -285,7 +285,7 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
 
     Q_REQUIRED_RESULT int highlightInlineComment(const QString &text, int pos);
 
-    int highlightLinkOrImage(const QString &text, qsizetype startIndex);
+    int highlightLinkOrImage(const QString &text, int startIndex);
 
     void setHeadingStyles(MarkdownHighlighter::HighlighterState rule,
                           const QRegularExpressionMatch &match,

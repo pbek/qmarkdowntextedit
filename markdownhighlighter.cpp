@@ -1968,7 +1968,7 @@ void MarkdownHighlighter::formatAndMaskRemaining(
  * @return The index where processing should continue.
  */
 int MarkdownHighlighter::highlightLinkOrImage(const QString &text,
-                                              qsizetype startIndex) {
+                                              int startIndex) {
     // If the current blockis a heading, don't process further
     if (isHeading(currentBlockState())) return startIndex;
 
