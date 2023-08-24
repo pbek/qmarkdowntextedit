@@ -1988,7 +1988,8 @@ int MarkdownHighlighter::highlightLinkOrImage(const QString &text,
             text.mid(startIndex + 1, closingChar - startIndex - 1);
 
         // Check if it's a valid link or email
-        if (!isLink(linkContent) && !isValidEmail(linkContent))
+        if (!isLink(linkContent) && !isValidEmail(linkContent) &&
+            !linkContent.contains(QLatin1Char('.')))
             return startIndex;
 
         // Apply formatting to highlight the link
