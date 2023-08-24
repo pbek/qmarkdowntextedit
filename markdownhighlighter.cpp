@@ -1994,7 +1994,7 @@ int MarkdownHighlighter::highlightLinkOrImage(const QString &text,
 
         // Apply formatting to highlight the link
         formatAndMaskRemaining(startIndex + 1, closingChar - startIndex - 1,
-                               startIndex, closingChar, _formats[Link]);
+                               startIndex, closingChar + 1, _formats[Link]);
 
         return closingChar;
     }
