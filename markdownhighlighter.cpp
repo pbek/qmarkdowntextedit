@@ -2035,7 +2035,7 @@ int MarkdownHighlighter::highlightLinkOrImage(const QString &text,
 
         // Apply formatting to highlight the image.
         formatAndMaskRemaining(startIndex + 1, endIndex - startIndex - 1,
-                               startIndex, closingIndex, _formats[Image]);
+                               startIndex - 1, closingIndex, _formats[Image]);
         return closingIndex;
     }
     // If the character after the closing ']' is '(', it's a regular link
