@@ -1959,6 +1959,11 @@ void MarkdownHighlighter::formatAndMaskRemaining(
               _formats[MaskedSyntax]);
     setFormat(formatBegin, formatLength, format);
     setFormat(afterFormat, endText - afterFormat, _formats[MaskedSyntax]);
+
+    _ranges[currentBlock().blockNumber()].append(
+        InlineRange(beginningText, formatBegin, RangeType::Link));
+    _ranges[currentBlock().blockNumber()].append(
+        InlineRange(afterFormat, endText, RangeType::Link));
 }
 
 /**
@@ -1970,6 +1975,8 @@ void MarkdownHighlighter::formatAndMaskRemaining(
  */
 int MarkdownHighlighter::highlightLinkOrImage(const QString &text,
                                               int startIndex) {
+    clearRangesForBlock(currentBlock().blockNumber(), RangeType::Link);
+
     // If the current blockis a heading, don't process further
     if (isHeading(currentBlockState())) return startIndex;
 
@@ -2008,6 +2015,8 @@ int MarkdownHighlighter::highlightLinkOrImage(const QString &text,
             int hrefEnd = text.indexOf(QLatin1Char('"'), startIndex + 6);
             if (hrefEnd == -1) return space;
 
+            _ranges[currentBlock().blockNumber()].append(
+                InlineRange(startIndex + 6, hrefEnd, RangeType::Link));
             setFormat(startIndex + 6, hrefEnd - startIndex - 6, _formats[Link]);
             return hrefEnd;
         }
@@ -2015,7 +2024,11 @@ int MarkdownHighlighter::highlightLinkOrImage(const QString &text,
         QString link = text.mid(startIndex, space - startIndex - 1);
         if (!isLink(link)) return startIndex;
 
-        setFormat(startIndex, link.length() + 1, _formats[Link]);
+        auto linkLength = link.length();
+
+        _ranges[currentBlock().blockNumber()].append(
+            InlineRange(startIndex, startIndex + linkLength, RangeType::Link));
+        setFormat(startIndex, linkLength + 1, _formats[Link]);
         return space;
     }
 
@@ -2354,6 +2367,16 @@ bool MarkdownHighlighter::isPosInACodeSpan(int blockNumber, int position) const
             return true;
         return false;
     }) != rangeList.cend();
+}
+
+bool MarkdownHighlighter::isPosInALink(int blockNumber, int position) const {
+    const QVector<InlineRange> rangeList = _ranges.value(blockNumber);
+    return std::find_if(rangeList.cbegin(), rangeList.cend(),
+                        [position](const InlineRange &range) {
+                            return position > range.begin &&
+                                   position < range.end &&
+                                   range.type == RangeType::Link;
+                        }) != rangeList.cend();
 }
 
 QPair<int, int> MarkdownHighlighter::getSpanRange(MarkdownHighlighter::RangeType rangeType, int blockNumber, int position) const
