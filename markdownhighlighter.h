@@ -94,13 +94,11 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
         return state >= H1 && state <= H6;
     }
 
-    enum class RangeType {
-        CodeSpan,
-        Emphasis
-    };
+    enum class RangeType { CodeSpan, Emphasis, Link };
 
     QPair<int, int> findPositionInRanges(MarkdownHighlighter::RangeType type, int blockNum, int pos) const;
     bool isPosInACodeSpan(int blockNumber, int position) const;
+    bool isPosInALink(int blockNumber, int position) const;
     QPair<int, int> getSpanRange(RangeType rangeType, int blockNumber, int position) const;
 
     // we used some predefined numbers here to be compatible with
