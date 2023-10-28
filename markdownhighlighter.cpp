@@ -1955,10 +1955,22 @@ void MarkdownHighlighter::formatAndMaskRemaining(
     const QTextCharFormat &format) {
     int afterFormat = formatBegin + formatLength;
 
-    setFormat(beginningText, formatBegin - beginningText,
-              _formats[MaskedSyntax]);
-    setFormat(formatBegin, formatLength, format);
-    setFormat(afterFormat, endText - afterFormat, _formats[MaskedSyntax]);
+    auto maskedSyntax = _formats[MaskedSyntax];
+    maskedSyntax.setFontPointSize(
+        QSyntaxHighlighter::format(beginningText).fontPointSize());
+
+    // highlight before the link
+    setFormat(beginningText, formatBegin - beginningText, maskedSyntax);
+
+    // highlight the link if we are not in a heading
+    if (!isHeading(currentBlockState())) {
+        setFormat(formatBegin, formatLength, format);
+    }
+
+    // highlight after the link
+    maskedSyntax.setFontPointSize(
+        QSyntaxHighlighter::format(afterFormat).fontPointSize());
+    setFormat(afterFormat, endText - afterFormat, maskedSyntax);
 
     _ranges[currentBlock().blockNumber()].append(
         InlineRange(beginningText, formatBegin, RangeType::Link));
@@ -1976,9 +1988,6 @@ void MarkdownHighlighter::formatAndMaskRemaining(
 int MarkdownHighlighter::highlightLinkOrImage(const QString &text,
                                               int startIndex) {
     clearRangesForBlock(currentBlock().blockNumber(), RangeType::Link);
-
-    // If the current blockis a heading, don't process further
-    if (isHeading(currentBlockState())) return startIndex;
 
     // Get the character at the starting index
     QChar startChar = text.at(startIndex);
