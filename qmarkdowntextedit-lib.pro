@@ -6,7 +6,8 @@ CONFIG += c++11 create_prl no_install_prl create_pc
 include(qmarkdowntextedit.pri)
 
 TRANSLATIONS += trans/qmarkdowntextedit_de.ts \
-                trans/qmarkdowntextedit_zh_CN.ts
+                trans/qmarkdowntextedit_zh_CN.ts \
+                trans/qmarkdowntextedit_es.ts
 
 isEmpty(PREFIX):PREFIX=$$[QT_INSTALL_PREFIX]
 isEmpty(LIBDIR):LIBDIR=$$[QT_INSTALL_LIBS]
