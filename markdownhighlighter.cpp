@@ -1989,6 +1989,11 @@ int MarkdownHighlighter::highlightLinkOrImage(const QString &text,
                                               int startIndex) {
     clearRangesForBlock(currentBlock().blockNumber(), RangeType::Link);
 
+    // If the first 4 are spaces, exit
+    if (text.left(4).trimmed().isEmpty()) {
+        return startIndex;
+    }
+
     // Get the character at the starting index
     QChar startChar = text.at(startIndex);
 
