@@ -2000,9 +2000,22 @@ int MarkdownHighlighter::highlightLinkOrImage(const QString &text,
                                               int startIndex) {
     clearRangesForBlock(currentBlock().blockNumber(), RangeType::Link);
 
-    // If the first 4 are spaces, exit
+    // If the first 4 characters are spaces (for 4-spaces fence code),
+    // but not list markers, return
     if (text.left(4).trimmed().isEmpty()) {
-        return startIndex;
+        // Check if text starts with a "- ", "+ ", "* ", "\d+. ", "\d+) "
+        QStringList patterns = {"- ", "+ ", "* ", "\\d+. ", "\\d+) "};
+
+        // Construct the regular expression pattern
+        QString patternString = "^(" + patterns.join("|") + ")";
+        QRegularExpression pattern(patternString);
+
+        // Check if the text starts with any of the specified patterns
+        QRegularExpressionMatch match = pattern.match(text.trimmed());
+
+        if (match.hasMatch()) {
+            return startIndex;
+        }
     }
 
     // Get the character at the starting index
