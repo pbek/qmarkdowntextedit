@@ -2003,18 +2003,47 @@ int MarkdownHighlighter::highlightLinkOrImage(const QString &text,
     // If the first 4 characters are spaces (for 4-spaces fence code),
     // but not list markers, return
     if (text.left(4).trimmed().isEmpty()) {
-        // Check if text starts with a "- ", "+ ", "* ", "\d+. ", "\d+) "
-        QStringList patterns = {"- ", "+ ", "* ", "\\d+. ", "\\d+) "};
+        // Check for unordered list markers
+        auto leftChars = text.trimmed().left(2);
 
-        // Construct the regular expression pattern
-        QString patternString = "^(" + patterns.join("|") + ")";
-        QRegularExpression pattern(patternString);
+        if (leftChars != QLatin1String("- ") &&
+            leftChars != QLatin1String("+ ") &&
+            leftChars != QLatin1String("* ")) {
+            // Check for a few ordered list markers
+            leftChars = text.trimmed().left(3);
 
-        // Check if the text starts with any of the specified patterns
-        QRegularExpressionMatch match = pattern.match(text.trimmed());
+            if (leftChars != QLatin1String("1) ") &&
+                leftChars != QLatin1String("2) ") &&
+                leftChars != QLatin1String("3) ") &&
+                leftChars != QLatin1String("4) ") &&
+                leftChars != QLatin1String("5) ") &&
+                leftChars != QLatin1String("6) ") &&
+                leftChars != QLatin1String("7) ") &&
+                leftChars != QLatin1String("8) ") &&
+                leftChars != QLatin1String("9) ") &&
+                leftChars != QLatin1String("1. ") &&
+                leftChars != QLatin1String("2. ") &&
+                leftChars != QLatin1String("3. ") &&
+                leftChars != QLatin1String("4. ") &&
+                leftChars != QLatin1String("5. ") &&
+                leftChars != QLatin1String("6. ") &&
+                leftChars != QLatin1String("7. ") &&
+                leftChars != QLatin1String("8. ") &&
+                leftChars != QLatin1String("9. ")) {
+                // Check if text starts with a "\d+. ", "\d+) "
+                const static QStringList patterns = {"\\d+\\. ", "\\d+\\) "};
 
-        if (match.hasMatch()) {
-            return startIndex;
+                // Construct the regular expression pattern
+                const static QString patternString = "^(" + patterns.join("|") + ")";
+                const static QRegularExpression pattern(patternString);
+
+                // Check if the text starts with any of the specified patterns
+                QRegularExpressionMatch match = pattern.match(text.trimmed());
+
+                if (!match.hasMatch()) {
+                    return startIndex;
+                }
+            }
         }
     }
 
