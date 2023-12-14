@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * QPlainTextEdit markdown highlighter
+ * QPlainTextEdit Markdown highlighter
  */
 
 #pragma once
@@ -113,7 +113,7 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
     QPair<int, int> getSpanRange(RangeType rangeType, int blockNumber, int position) const;
 
     // we used some predefined numbers here to be compatible with
-    // the peg-markdown parser
+    // the peg-Markdown parser
     enum HighlighterState {
         NoState = -1,
         Link = 0,

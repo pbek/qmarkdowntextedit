@@ -58,7 +58,7 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
     _lineNumArea = new LineNumArea(this);
     updateLineNumberAreaWidth(0);
 
-    // markdown highlighting is enabled by default
+    // Markdown highlighting is enabled by default
     _highlightingEnabled = initHighlighter;
     if (initHighlighter) {
         _highlighter = new MarkdownHighlighter(document());
@@ -153,7 +153,7 @@ QColor QMarkdownTextEdit::currentLineHighlightColor()
 }
 
 /**
- * Enables or disables the markdown highlighting
+ * Enables or disables the Markdown highlighting
  *
  * @param enabled
  */
@@ -897,7 +897,7 @@ bool isQuotCloser(int position, const QString &text) {
 }
 
 /**
- * Handles removing of matching brackets and other markdown characters
+ * Handles removing of matching brackets and other Markdown characters
  * Only works with backspace to remove text
  *
  * @return
@@ -1263,7 +1263,7 @@ void QMarkdownTextEdit::setIgnoredClickUrlSchemata(
 }
 
 /**
- * @brief Returns a map of parsed markdown urls with their link texts as key
+ * @brief Returns a map of parsed Markdown urls with their link texts as key
  *
  * @param text
  * @return parsed urls
@@ -1342,7 +1342,7 @@ QMap<QString, QString> QMarkdownTextEdit::parseMarkdownUrlsFromText(
 }
 
 /**
- * @brief Returns the markdown url at position
+ * @brief Returns the Markdown url at position
  * @param text
  * @param position
  * @return url string
@@ -1351,7 +1351,7 @@ QString QMarkdownTextEdit::getMarkdownUrlAtPosition(const QString &text,
                                                     int position) {
     QString url;
 
-    // get a map of parsed markdown urls with their link texts as key
+    // get a map of parsed Markdown urls with their link texts as key
     const QMap<QString, QString> urlMap = parseMarkdownUrlsFromText(text);
     QMap<QString, QString>::const_iterator i = urlMap.constBegin();
     for (; i != urlMap.constEnd(); ++i) {

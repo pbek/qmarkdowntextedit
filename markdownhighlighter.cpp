@@ -23,7 +23,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * QPlainTextEdit markdown highlighter
+ * QPlainTextEdit Markdown highlighter
  */
 
 #include "markdownhighlighter.h"
@@ -388,7 +388,7 @@ void MarkdownHighlighter::setTextFormat(HighlighterState state,
 }
 
 /**
- * Does the markdown highlighting
+ * Does the Markdown highlighting
  *
  * @param text
  */
