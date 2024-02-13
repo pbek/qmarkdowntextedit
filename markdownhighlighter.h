@@ -336,8 +336,6 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
 
     void reHighlightDirtyBlocks();
 
-    void clearRangesForBlock(int blockNumber, RangeType type);
-
     bool _highlightingFinished;
     HighlightingOptions _highlightingOptions;
     QTimer *_timer;
