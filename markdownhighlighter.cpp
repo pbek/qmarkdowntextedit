@@ -12,8 +12,8 @@
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -27,7 +27,6 @@
  */
 
 #include "markdownhighlighter.h"
-#include "qownlanguagedata.h"
 
 #include <QDebug>
 #include <QRegularExpression>
@@ -37,18 +36,21 @@
 #include <QTimer>
 #include <utility>
 
+#include "qownlanguagedata.h"
+
 // We enable QStringView with Qt 5.15.1
 #if QT_VERSION < QT_VERSION_CHECK(5, 15, 1)
-    #define MH_SUBSTR(pos, len) text.midRef(pos, len)
+#define MH_SUBSTR(pos, len) text.midRef(pos, len)
 #else
-    #define MH_SUBSTR(pos, len) QStringView(text).mid(pos, len)
+#define MH_SUBSTR(pos, len) QStringView(text).mid(pos, len)
 #endif
 
 QHash<QString, MarkdownHighlighter::HighlighterState>
     MarkdownHighlighter::_langStringToEnum;
 QHash<MarkdownHighlighter::HighlighterState, QTextCharFormat>
     MarkdownHighlighter::_formats;
-QVector<MarkdownHighlighter::HighlightingRule> MarkdownHighlighter::_highlightingRules;
+QVector<MarkdownHighlighter::HighlightingRule>
+    MarkdownHighlighter::_highlightingRules;
 
 /**
  * Markdown syntax highlighting
@@ -471,13 +473,15 @@ void MarkdownHighlighter::highlightHeadline(const QString &text) {
             const auto state =
                 HighlighterState(HighlighterState::H1 + headingLevel - 1);
 
-            // Set styling of the "#"s to "masked syntax", but with the size of the heading
+            // Set styling of the "#"s to "masked syntax", but with the size of
+            // the heading
             auto maskedFormat = _formats[MaskedSyntax];
             maskedFormat.setFontPointSize(_formats[state].fontPointSize());
             setFormat(0, headingLevel, maskedFormat);
 
             // Set the styling of the rest of the heading
-            setFormat(headingLevel + 1, text.length() - 1 - headingLevel, _formats[state]);
+            setFormat(headingLevel + 1, text.length() - 1 - headingLevel,
+                      _formats[state]);
 
             setCurrentBlockState(state);
             return;
@@ -499,14 +503,16 @@ void MarkdownHighlighter::highlightHeadline(const QString &text) {
 
     if (text.at(spacesOffset) == QLatin1Char('=') && prevSpaces < 4) {
         const bool pattern1 =
-            !prev.isEmpty() && hasOnlyHeadChars(text, QLatin1Char('='), spacesOffset);
+            !prev.isEmpty() &&
+            hasOnlyHeadChars(text, QLatin1Char('='), spacesOffset);
         if (pattern1) {
             highlightSubHeadline(text, H1);
             return;
         }
     } else if (text.at(spacesOffset) == QLatin1Char('-') && prevSpaces < 4) {
         const bool pattern2 =
-            !prev.isEmpty() && hasOnlyHeadChars(text, QLatin1Char('-'), spacesOffset);
+            !prev.isEmpty() &&
+            hasOnlyHeadChars(text, QLatin1Char('-'), spacesOffset);
         if (pattern2) {
             highlightSubHeadline(text, H2);
             return;
@@ -577,7 +583,7 @@ void MarkdownHighlighter::highlightIndentedCodeBlock(const QString &text) {
                            !text.startsWith(QLatin1Char('\t'))))
         return;
 
-    const QString prevTrimmed =  currentBlock().previous().text().trimmed();
+    const QString prevTrimmed = currentBlock().previous().text().trimmed();
     // previous line must be empty according to CommonMark except if it is a
     // heading https://spec.commonmark.org/0.29/#indented-code-block
     if (!prevTrimmed.isEmpty() && previousBlockState() != CodeBlockIndented &&
@@ -841,7 +847,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
                const QString &text, const QTextCharFormat &fmt) -> int {
         // check if we are at the beginning OR if this is the start of a word
         if (i == 0 || (!text.at(i - 1).isLetterOrNumber() &&
-                       text.at(i-1) != QLatin1Char('_'))) {
+                       text.at(i - 1) != QLatin1Char('_'))) {
             const char c = text.at(i).toLatin1();
             auto it = data.find(c);
             for (; it != data.end() && it.key() == c; ++it) {
@@ -1003,7 +1009,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
  */
 int MarkdownHighlighter::highlightStringLiterals(QChar strType,
                                                  const QString &text, int i) {
-    const auto& strFormat = _formats[CodeString];
+    const auto &strFormat = _formats[CodeString];
     setFormat(i, 1, strFormat);
     ++i;
 
@@ -1675,17 +1681,14 @@ void MarkdownHighlighter::highlightCommentBlock(const QString &text) {
 void MarkdownHighlighter::highlightThematicBreak(const QString &text) {
     int i = 0;
     for (; i < 4 && i < text.length(); ++i) {
-        if (text.at(i) != QLatin1Char(' '))
-            break;
+        if (text.at(i) != QLatin1Char(' ')) break;
     }
 
     const QString sText = text.mid(i);
-    if (sText.isEmpty() || i == 4 || text.startsWith(QLatin1Char('\t')))
-        return;
+    if (sText.isEmpty() || i == 4 || text.startsWith(QLatin1Char('\t'))) return;
 
     const char c = sText.at(0).toLatin1();
-    if (c != '-' && c != '_' && c != '*')
-        return;
+    if (c != '-' && c != '_' && c != '*') return;
 
     int len = 0;
     bool hasSameChars = true;
@@ -1698,35 +1701,34 @@ void MarkdownHighlighter::highlightThematicBreak(const QString &text) {
     }
     if (len < 3) return;
 
-    if (hasSameChars)
-        setFormat(0, text.length(), _formats[HorizontalRuler]);
+    if (hasSameChars) setFormat(0, text.length(), _formats[HorizontalRuler]);
 }
 
-void MarkdownHighlighter::highlightCheckbox(const QString &text, int curPos)
-{
-    if (curPos + 4 >= text.length())
-        return;
+void MarkdownHighlighter::highlightCheckbox(const QString &text, int curPos) {
+    if (curPos + 4 >= text.length()) return;
 
     const bool hasOpeningBracket = text.at(curPos + 2) == QLatin1Char('[');
     const bool hasClosingBracket = text.at(curPos + 4) == QLatin1Char(']');
     const QChar midChar = text.at(curPos + 3);
-    const bool hasXorSpace = midChar == QLatin1Char(' ') || midChar == QLatin1Char('x') || midChar == QLatin1Char('X');
+    const bool hasXorSpace = midChar == QLatin1Char(' ') ||
+                             midChar == QLatin1Char('x') ||
+                             midChar == QLatin1Char('X');
     const bool hasDash = midChar == QLatin1Char('-');
 
     if (hasOpeningBracket && hasClosingBracket && (hasXorSpace || hasDash)) {
         const int start = curPos + 2;
         constexpr int length = 3;
 
-        const auto fmt = hasXorSpace ?
-         (midChar == QLatin1Char(' ') ? CheckBoxUnChecked : CheckBoxChecked) :
-         MaskedSyntax;
+        const auto fmt = hasXorSpace
+                             ? (midChar == QLatin1Char(' ') ? CheckBoxUnChecked
+                                                            : CheckBoxChecked)
+                             : MaskedSyntax;
 
         setFormat(start, length, _formats[fmt]);
     }
 }
 
-static bool isBeginningOfList(QChar front)
-{
+static bool isBeginningOfList(QChar front) {
     return front == QLatin1Char('-') || front == QLatin1Char('+') ||
            front == QLatin1Char('*') || front.isNumber();
 }
@@ -1741,8 +1743,7 @@ void MarkdownHighlighter::highlightLists(const QString &text) {
     while (spaces < text.length() && text.at(spaces).isSpace()) ++spaces;
 
     // return if we reached the end
-    if (spaces >= text.length())
-        return;
+    if (spaces >= text.length()) return;
 
     const QChar front = text.at(spaces);
     // check for start of list
@@ -1766,7 +1767,7 @@ void MarkdownHighlighter::highlightLists(const QString &text) {
              text.at(number) == QLatin1Char(')')) &&
             (text.at(number + 1) == QLatin1Char(' '))) {
             setCurrentBlockState(List);
-        setFormat(curPos, number - curPos + 1, _formats[List]);
+            setFormat(curPos, number - curPos + 1, _formats[List]);
 
             // highlight checkbox if any
             highlightCheckbox(text, number);
@@ -1779,8 +1780,7 @@ void MarkdownHighlighter::highlightLists(const QString &text) {
     if (curPos + 1 >= text.length()) return;
 
     // check for a space after it
-    if (text.at(curPos + 1) != QLatin1Char(' '))
-        return;
+    if (text.at(curPos + 1) != QLatin1Char(' ')) return;
 
     // check if we are in checkbox list
     highlightCheckbox(text, curPos);
@@ -2034,7 +2034,8 @@ int MarkdownHighlighter::highlightLinkOrImage(const QString &text,
                 const static QStringList patterns = {"\\d+\\. ", "\\d+\\) "};
 
                 // Construct the regular expression pattern
-                const static QString patternString = "^(" + patterns.join("|") + ")";
+                const static QString patternString =
+                    "^(" + patterns.join("|") + ")";
                 const static QRegularExpression pattern(patternString);
 
                 // Check if the text starts with any of the specified patterns
@@ -2195,7 +2196,7 @@ int MarkdownHighlighter::highlightLinkOrImage(const QString &text,
 */
 int MarkdownHighlighter::highlightInlineSpans(const QString &text,
                                               int currentPos, const QChar c) {
-    //clear code span ranges for this block
+    // clear code span ranges for this block
     clearRangesForBlock(currentBlock().blockNumber(), RangeType::CodeSpan);
 
     int i = currentPos;
@@ -2218,26 +2219,24 @@ int MarkdownHighlighter::highlightInlineSpans(const QString &text,
     if (next == -1) {
         return currentPos;
     }
-    if (next + len < text.length() && text.at(next + len) == c) return currentPos;
+    if (next + len < text.length() && text.at(next + len) == c)
+        return currentPos;
 
-    //get existing format if any
-    //we want to append to the existing format, not overwrite it
+    // get existing format if any
+    // we want to append to the existing format, not overwrite it
     QTextCharFormat fmt = QSyntaxHighlighter::format(start + 1);
     QTextCharFormat inlineFmt;
 
-    //select appropriate format for current text
-    if (c != QLatin1Char('~'))
-        inlineFmt = _formats[InlineCodeBlock];
+    // select appropriate format for current text
+    if (c != QLatin1Char('~')) inlineFmt = _formats[InlineCodeBlock];
 
-
-    //make sure we don't change font size / existing formatting
+    // make sure we don't change font size / existing formatting
     if (fmt.fontPointSize() > 0)
         inlineFmt.setFontPointSize(fmt.fontPointSize());
 
-    if (c == QLatin1Char('~'))
-    {
+    if (c == QLatin1Char('~')) {
         inlineFmt.setFontStrikeOut(true);
-        //we don't want these properties for "inline code span"
+        // we don't want these properties for "inline code span"
         inlineFmt.setFontItalic(fmt.fontItalic());
         inlineFmt.setFontWeight(fmt.fontWeight());
         inlineFmt.setFontUnderline(fmt.fontUnderline());
@@ -2245,10 +2244,11 @@ int MarkdownHighlighter::highlightInlineSpans(const QString &text,
     }
 
     if (c == QLatin1Char('`')) {
-        _ranges[currentBlock().blockNumber()].append(InlineRange(start, next, RangeType::CodeSpan));
+        _ranges[currentBlock().blockNumber()].append(
+            InlineRange(start, next, RangeType::CodeSpan));
     }
 
-    //format the text
+    // format the text
     setFormat(start + len, next - (start + len), inlineFmt);
 
     // format backticks as masked
@@ -2399,41 +2399,42 @@ void balancePairs(QVector<Delimiter> &delims) {
     }
 }
 
-void MarkdownHighlighter::clearRangesForBlock(int blockNumber, RangeType type)
-{
+void MarkdownHighlighter::clearRangesForBlock(int blockNumber, RangeType type) {
     if (!_ranges.value(blockNumber).isEmpty()) {
-        auto& rangeList = _ranges[currentBlock().blockNumber()];
+        auto &rangeList = _ranges[currentBlock().blockNumber()];
         rangeList.erase(std::remove_if(rangeList.begin(), rangeList.end(),
-                                       [type](const InlineRange& range) {
-           return range.type == type;
-        }), rangeList.end());
+                                       [type](const InlineRange &range) {
+                                           return range.type == type;
+                                       }),
+                        rangeList.end());
     }
 }
 
-QPair<int,int>
-MarkdownHighlighter::findPositionInRanges(MarkdownHighlighter::RangeType type,
-                                     int blockNum, int pos) const {
+QPair<int, int> MarkdownHighlighter::findPositionInRanges(
+    MarkdownHighlighter::RangeType type, int blockNum, int pos) const {
     const QVector<InlineRange> rangeList = _ranges.value(blockNum);
-    auto it = std::find_if(rangeList.cbegin(), rangeList.cend(),
-                                     [pos, type](const InlineRange& range){
-        if ((pos == range.begin || pos == range.end) && range.type == type)
-            return true;
-        return false;
-    });
-    if (it == rangeList.cend())
-        return {-1, -1};
-    return { it->begin, it->end };
+    auto it = std::find_if(
+        rangeList.cbegin(), rangeList.cend(),
+        [pos, type](const InlineRange &range) {
+            if ((pos == range.begin || pos == range.end) && range.type == type)
+                return true;
+            return false;
+        });
+    if (it == rangeList.cend()) return {-1, -1};
+    return {it->begin, it->end};
 }
 
-bool MarkdownHighlighter::isPosInACodeSpan(int blockNumber, int position) const
-{
+bool MarkdownHighlighter::isPosInACodeSpan(int blockNumber,
+                                           int position) const {
     const QVector<InlineRange> rangeList = _ranges.value(blockNumber);
     return std::find_if(rangeList.cbegin(), rangeList.cend(),
-                                     [position](const InlineRange& range){
-        if (position > range.begin && position < range.end && range.type == RangeType::CodeSpan)
-            return true;
-        return false;
-    }) != rangeList.cend();
+                        [position](const InlineRange &range) {
+                            if (position > range.begin &&
+                                position < range.end &&
+                                range.type == RangeType::CodeSpan)
+                                return true;
+                            return false;
+                        }) != rangeList.cend();
 }
 
 bool MarkdownHighlighter::isPosInALink(int blockNumber, int position) const {
@@ -2446,15 +2447,18 @@ bool MarkdownHighlighter::isPosInALink(int blockNumber, int position) const {
                         }) != rangeList.cend();
 }
 
-QPair<int, int> MarkdownHighlighter::getSpanRange(MarkdownHighlighter::RangeType rangeType, int blockNumber, int position) const
-{
+QPair<int, int> MarkdownHighlighter::getSpanRange(
+    MarkdownHighlighter::RangeType rangeType, int blockNumber,
+    int position) const {
     const QVector<InlineRange> rangeList = _ranges.value(blockNumber);
-    const auto it = std::find_if(rangeList.cbegin(), rangeList.cend(),
-                                     [position, rangeType](const InlineRange& range){
-        if (position > range.begin && position < range.end && range.type == rangeType)
-            return true;
-        return false;
-    });
+    const auto it =
+        std::find_if(rangeList.cbegin(), rangeList.cend(),
+                     [position, rangeType](const InlineRange &range) {
+                         if (position > range.begin && position < range.end &&
+                             range.type == rangeType)
+                             return true;
+                         return false;
+                     });
 
     if (it == rangeList.cend()) {
         return QPair<int, int>(-1, -1);
@@ -2477,8 +2481,7 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text,
             continue;
 
         bool isInCodeSpan = isPosInACodeSpan(currentBlock().blockNumber(), i);
-        if (isInCodeSpan)
-            continue;
+        if (isInCodeSpan) continue;
 
         i = collectEmDelims(text, i, delims);
         --i;
@@ -2523,9 +2526,9 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text,
 #if QT_VERSION < QT_VERSION_CHECK(5, 13, 0)
                 fmt.setFontFamily(_formats[Bold].fontFamily());
 #else
-                const QStringList fontFamilies = _formats[Bold].fontFamilies().toStringList();
-                if (!fontFamilies.isEmpty())
-                    fmt.setFontFamilies(fontFamilies);
+                const QStringList fontFamilies =
+                    _formats[Bold].fontFamilies().toStringList();
+                if (!fontFamilies.isEmpty()) fmt.setFontFamilies(fontFamilies);
 #endif
 
                 if (_formats[state].fontPointSize() > 0)
@@ -2547,16 +2550,10 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text,
             masked.append({endDelim.pos, 2});
 
             int block = currentBlock().blockNumber();
-            _ranges[block].append(InlineRange(
-                                      startDelim.pos,
-                                      endDelim.pos + 1,
-                                      RangeType::Emphasis
-                                      ));
-            _ranges[block].append(InlineRange(
-                                      startDelim.pos - 1,
-                                      endDelim.pos,
-                                      RangeType::Emphasis
-                                      ));
+            _ranges[block].append(InlineRange(startDelim.pos, endDelim.pos + 1,
+                                              RangeType::Emphasis));
+            _ranges[block].append(InlineRange(startDelim.pos - 1, endDelim.pos,
+                                              RangeType::Emphasis));
             --i;
         } else {
             //            qDebug () << "Em: " << startDelim.pos << endDelim.pos;
@@ -2573,9 +2570,9 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text,
 #if QT_VERSION < QT_VERSION_CHECK(5, 13, 0)
                 fmt.setFontFamily(_formats[Italic].fontFamily());
 #else
-                const QStringList fontFamilies = _formats[Italic].fontFamilies().toStringList();
-                if (!fontFamilies.isEmpty())
-                    fmt.setFontFamilies(fontFamilies);
+                const QStringList fontFamilies =
+                    _formats[Italic].fontFamilies().toStringList();
+                if (!fontFamilies.isEmpty()) fmt.setFontFamilies(fontFamilies);
 #endif
 
                 if (_formats[state].fontPointSize() > 0)
@@ -2595,11 +2592,8 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text,
             masked.append({endDelim.pos, 1});
 
             int block = currentBlock().blockNumber();
-            _ranges[block].append(InlineRange(
-                                      startDelim.pos,
-                                      endDelim.pos,
-                                      RangeType::Emphasis
-                                      ));
+            _ranges[block].append(
+                InlineRange(startDelim.pos, endDelim.pos, RangeType::Emphasis));
         }
     }
 
