@@ -1898,6 +1898,12 @@ int isInLinkRange(int pos, QVector<QPair<int, int>> &range) {
 void MarkdownHighlighter::highlightInlineRules(const QString &text) {
     bool isEmStrongDone = false;
 
+    // clear existing span ranges for this block
+    auto it = _ranges.find(currentBlock().blockNumber());
+    if (it != _ranges.end()) {
+        it->clear();
+    }
+
     for (int i = 0; i < text.length(); ++i) {
         QChar currentChar = text.at(i);
 
@@ -1998,8 +2004,6 @@ void MarkdownHighlighter::formatAndMaskRemaining(
  */
 int MarkdownHighlighter::highlightLinkOrImage(const QString &text,
                                               int startIndex) {
-    clearRangesForBlock(currentBlock().blockNumber(), RangeType::Link);
-
     // If the first 4 characters are spaces (for 4-spaces fence code),
     // but not list markers, return
     if (text.left(4).trimmed().isEmpty()) {
@@ -2197,7 +2201,6 @@ int MarkdownHighlighter::highlightLinkOrImage(const QString &text,
 int MarkdownHighlighter::highlightInlineSpans(const QString &text,
                                               int currentPos, const QChar c) {
     // clear code span ranges for this block
-    clearRangesForBlock(currentBlock().blockNumber(), RangeType::CodeSpan);
 
     int i = currentPos;
     // found a backtick
@@ -2399,17 +2402,6 @@ void balancePairs(QVector<Delimiter> &delims) {
     }
 }
 
-void MarkdownHighlighter::clearRangesForBlock(int blockNumber, RangeType type) {
-    if (!_ranges.value(blockNumber).isEmpty()) {
-        auto &rangeList = _ranges[currentBlock().blockNumber()];
-        rangeList.erase(std::remove_if(rangeList.begin(), rangeList.end(),
-                                       [type](const InlineRange &range) {
-                                           return range.type == type;
-                                       }),
-                        rangeList.end());
-    }
-}
-
 QPair<int, int> MarkdownHighlighter::findPositionInRanges(
     MarkdownHighlighter::RangeType type, int blockNum, int pos) const {
     const QVector<InlineRange> rangeList = _ranges.value(blockNum);
@@ -2472,8 +2464,6 @@ QPair<int, int> MarkdownHighlighter::getSpanRange(
  */
 void MarkdownHighlighter::highlightEmAndStrong(const QString &text,
                                                const int pos) {
-    clearRangesForBlock(currentBlock().blockNumber(), RangeType::Emphasis);
-
     // 1. collect all em/strong delimiters
     QVector<Delimiter> delims;
     for (int i = pos; i < text.length(); ++i) {
