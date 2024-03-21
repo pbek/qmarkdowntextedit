@@ -1896,8 +1896,6 @@ int isInLinkRange(int pos, QVector<QPair<int, int>> &range) {
  * underlines, strikethrough, links, and images.
  */
 void MarkdownHighlighter::highlightInlineRules(const QString &text) {
-    bool isEmStrongDone = false;
-
     // clear existing span ranges for this block
     auto it = _ranges.find(currentBlock().blockNumber());
     if (it != _ranges.end()) {
@@ -1913,14 +1911,12 @@ void MarkdownHighlighter::highlightInlineRules(const QString &text) {
         } else if (currentChar == QLatin1Char('<') &&
                    MH_SUBSTR(i, 4) == QLatin1String("<!--")) {
             i = highlightInlineComment(text, i);
-        } else if (!isEmStrongDone && (currentChar == QLatin1Char('*') ||
-                                       currentChar == QLatin1Char('_'))) {
-            highlightEmAndStrong(text, i);
-            isEmStrongDone = true;
         } else {
             i = highlightLinkOrImage(text, i);
         }
     }
+
+    highlightEmAndStrong(text, 0);
 }
 
 // Helper function for MarkdownHighlighter::highlightLinkOrImage
