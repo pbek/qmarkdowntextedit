@@ -210,7 +210,9 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
         CodeMake = 244,
         CodeNix = 246,
         CodeForth = 248,
-        CodeForthComment = 249
+        CodeForthComment = 249,
+        CodeSystemVerilog = 250,
+        CodeSystemVerilogComment = 251,
     };
     Q_ENUM(HighlighterState)
 
