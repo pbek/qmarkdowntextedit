@@ -366,7 +366,8 @@ void MarkdownHighlighter::initCodeLangs() {
             {QLatin1String("xml"), MarkdownHighlighter::CodeXML},
             {QLatin1String("yml"), MarkdownHighlighter::CodeYAML},
             {QLatin1String("yaml"), MarkdownHighlighter::CodeYAML},
-            {QLatin1String("forth"), MarkdownHighlighter::CodeForth}};
+            {QLatin1String("forth"), MarkdownHighlighter::CodeForth},
+            {QLatin1String("systemverilog"), MarkdownHighlighter::CodeSystemVerilog}};
 }
 
 /**
@@ -836,6 +837,10 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
         case HighlighterState::CodeForthComment + tildeOffset:
             isForth = true;
             loadForthData(types, keywords, builtin, literals, others);
+            break;
+        case HighlighterState::CodeSystemVerilog:
+        case HighlighterState::CodeSystemVerilogComment:
+            loadSystemVerilogData(types, keywords, builtin, literals, others);
             break;
         default:
             setFormat(0, textLen, _formats[CodeBlock]);

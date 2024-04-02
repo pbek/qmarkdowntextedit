@@ -173,6 +173,15 @@ void loadSQLData(QMultiHash<char, QLatin1String> &types,
                  QMultiHash<char, QLatin1String> &other);
 
 /********************************************************/
+/***   System Verilog DATA      *************************/
+/********************************************************/
+void loadSystemVerilogData(QMultiHash<char, QLatin1String> &types,
+                           QMultiHash<char, QLatin1String> &keywords,
+                           QMultiHash<char, QLatin1String> &builtin,
+                           QMultiHash<char, QLatin1String> &literals,
+                           QMultiHash<char, QLatin1String> &other);
+
+/********************************************************/
 /***   JSON DATA      ***********************************/
 /********************************************************/
 void loadJSONData(QMultiHash<char, QLatin1String> &types,
