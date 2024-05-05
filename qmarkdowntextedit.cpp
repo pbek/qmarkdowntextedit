@@ -1687,6 +1687,11 @@ void QMarkdownTextEdit::updateLineNumberAreaWidth(int)
     if (newMargins != oldMargins) {
         setViewportMargins(newMargins);
     }
+
+    // Grow lineNumArea font-size with the font size of the editor
+    QFont font = _lineNumArea->font();
+    font.setPointSize(this->font().pointSize());
+    _lineNumArea->setFont(font);
 }
 
 /**
