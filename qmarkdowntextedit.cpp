@@ -218,6 +218,18 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
         if ((keyEvent->key() == Qt::Key_Escape) && _searchWidget->isVisible()) {
             _searchWidget->deactivate();
             return true;
+        } else if (keyEvent->key() == Qt::Key_Insert) {
+            setOverwriteMode(!overwriteMode());
+
+            // This solves a UI glitch if the visual cursor was not properly
+            // updated when characters have different widths
+            QTextCursor cursor = this->textCursor();
+            cursor.movePosition(QTextCursor::Right);
+            setTextCursor(cursor);
+            cursor.movePosition(QTextCursor::Left);
+            setTextCursor(cursor);
+
+            return false;
         } else if ((keyEvent->key() == Qt::Key_Tab) ||
                    (keyEvent->key() == Qt::Key_Backtab)) {
             // handle entered tab and reverse tab keys
