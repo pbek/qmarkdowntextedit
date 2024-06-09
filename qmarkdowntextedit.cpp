@@ -218,7 +218,8 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
         if ((keyEvent->key() == Qt::Key_Escape) && _searchWidget->isVisible()) {
             _searchWidget->deactivate();
             return true;
-        } else if (keyEvent->key() == Qt::Key_Insert) {
+        } else if (keyEvent->key() == Qt::Key_Insert &&
+                   keyEvent->modifiers().testFlag(Qt::NoModifier)) {
             setOverwriteMode(!overwriteMode());
 
             // This solves a UI glitch if the visual cursor was not properly
