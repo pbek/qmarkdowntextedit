@@ -367,7 +367,8 @@ void MarkdownHighlighter::initCodeLangs() {
             {QLatin1String("yml"), MarkdownHighlighter::CodeYAML},
             {QLatin1String("yaml"), MarkdownHighlighter::CodeYAML},
             {QLatin1String("forth"), MarkdownHighlighter::CodeForth},
-            {QLatin1String("systemverilog"), MarkdownHighlighter::CodeSystemVerilog}};
+            {QLatin1String("systemverilog"),
+             MarkdownHighlighter::CodeSystemVerilog}};
 }
 
 /**
@@ -437,13 +438,73 @@ void MarkdownHighlighter::highlightMarkdown(const QString &text) {
  * @param text
  * @return 1, if 1 space, 2 if 2 spaces, 3 if 3 spaces. Otherwise 0
  */
-int getIndentation(const QString &text) {
+static int getIndentation(const QString &text) {
     int spaces = 0;
     // no more than 3 spaces
     while (spaces < 4 && spaces < text.length() &&
            text.at(spaces) == QLatin1Char(' '))
         ++spaces;
     return spaces;
+}
+
+static bool isParagraph(const QString &text) {
+    // blank line
+    if (text.isEmpty()) return false;
+    int indent = getIndentation(text);
+    // code block
+    if (indent >= 4) return false;
+
+    const auto textView = MH_SUBSTR(indent, -1);
+    if (textView.isEmpty()) return false;
+
+    // unordered listtextView
+    if (textView.startsWith(QStringLiteral("- ")) ||
+        textView.startsWith(QStringLiteral("+ ")) ||
+        textView.startsWith(QStringLiteral("*")))
+        return false;
+    // block quote
+    if (textView.startsWith(QStringLiteral("> "))) return false;
+    // atx heading
+    if (textView.startsWith(QStringLiteral("#"))) {
+        int firstSpace = textView.indexOf(' ');
+        if (firstSpace > 0 && firstSpace <= 7) {
+            return false;
+        }
+    }
+    // hr
+    auto isThematicBreak = [textView]() {
+        return std::all_of(textView.begin(), textView.end(),
+                           [](QChar c) {
+                               auto ch = c.unicode();
+                               return ch == '-' || ch == ' ' || ch == '\t';
+                           }) ||
+               std::all_of(textView.begin(), textView.end(),
+                           [](QChar c) {
+                               auto ch = c.unicode();
+                               return ch == '+' || ch == ' ' || ch == '\t';
+                           }) ||
+               std::all_of(textView.begin(), textView.end(), [](QChar c) {
+                   auto ch = c.unicode();
+                   return ch == '*' || ch == ' ' || ch == '\t';
+               });
+    };
+    if (isThematicBreak()) return false;
+    // ordered list
+    if (textView.at(0).isDigit()) {
+        int i = 1;
+        for (; i < textView.size(); ++i) {
+            if (textView[i].isDigit())
+                continue;
+            else
+                break;
+        }
+        if (textView[i] == QLatin1Char('.') ||
+            textView[i] == QLatin1Char(')')) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 /**
@@ -501,8 +562,10 @@ void MarkdownHighlighter::highlightHeadline(const QString &text) {
     // take care of ==== and ---- headlines
     const QString prev = currentBlock().previous().text();
     auto prevSpaces = getIndentation(prev);
+    const bool isPrevParagraph = isParagraph(prev);
 
-    if (text.at(spacesOffset) == QLatin1Char('=') && prevSpaces < 4) {
+    if (text.at(spacesOffset) == QLatin1Char('=') && prevSpaces < 4 &&
+        isPrevParagraph) {
         const bool pattern1 =
             !prev.isEmpty() &&
             hasOnlyHeadChars(text, QLatin1Char('='), spacesOffset);
@@ -510,7 +573,8 @@ void MarkdownHighlighter::highlightHeadline(const QString &text) {
             highlightSubHeadline(text, H1);
             return;
         }
-    } else if (text.at(spacesOffset) == QLatin1Char('-') && prevSpaces < 4) {
+    } else if (text.at(spacesOffset) == QLatin1Char('-') && prevSpaces < 4 &&
+               isPrevParagraph) {
         const bool pattern2 =
             !prev.isEmpty() &&
             hasOnlyHeadChars(text, QLatin1Char('-'), spacesOffset);
@@ -523,10 +587,12 @@ void MarkdownHighlighter::highlightHeadline(const QString &text) {
     const QString nextBlockText = currentBlock().next().text();
     if (nextBlockText.isEmpty()) return;
     const int nextSpaces = getIndentation(nextBlockText);
+    const bool isCurrentParagraph = isParagraph(text);
 
     if (nextSpaces >= nextBlockText.length()) return;
 
-    if (nextBlockText.at(nextSpaces) == QLatin1Char('=') && nextSpaces < 4) {
+    if (nextBlockText.at(nextSpaces) == QLatin1Char('=') && nextSpaces < 4 &&
+        isCurrentParagraph) {
         const bool nextHasEqualChars =
             hasOnlyHeadChars(nextBlockText, QLatin1Char('='), nextSpaces);
         if (nextHasEqualChars) {
@@ -534,7 +600,7 @@ void MarkdownHighlighter::highlightHeadline(const QString &text) {
             setCurrentBlockState(HighlighterState::H1);
         }
     } else if (nextBlockText.at(nextSpaces) == QLatin1Char('-') &&
-               nextSpaces < 4) {
+               nextSpaces < 4 && isCurrentParagraph) {
         const bool nextHasMinusChars =
             hasOnlyHeadChars(nextBlockText, QLatin1Char('-'), nextSpaces);
         if (nextHasMinusChars) {
