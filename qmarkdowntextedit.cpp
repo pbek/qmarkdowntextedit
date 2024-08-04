@@ -716,8 +716,9 @@ bool QMarkdownTextEdit::handleBracketClosing(const QChar openingCharacter,
     // get the current text from the block (inserted character not included)
     // Remove whitespace at start of string (e.g. in multilevel-lists).
     const QString text = cursor.block().text().remove(QRegularExpression("^\\s+"));
+    // Subtract the length of leading whitespace
+    const int pib = cursor.positionInBlock() - (cursor.block().text().length() - text.length());
 
-    const int pib = cursor.positionInBlock() - cursor.block().text().length() + text.length();
     bool isPreviousAsterisk = pib > 0 && pib < text.length() && text.at(pib - 1) == '*';
     bool isNextAsterisk = pib < text.length() && text.at(pib) == '*';
     bool isMaybeBold = isPreviousAsterisk && isNextAsterisk;
