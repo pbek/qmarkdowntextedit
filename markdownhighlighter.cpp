@@ -38,8 +38,9 @@
 
 #include "qownlanguagedata.h"
 
-// We enable QStringView with Qt 5.15.1
-#if QT_VERSION < QT_VERSION_CHECK(5, 15, 1)
+// We enable QStringView with Qt 5.15.14
+// Note: QStringView::mid wasn't working correctly at least with 5.15.2 and 5.15.3, but 5.15.14 was fine
+#if QT_VERSION < QT_VERSION_CHECK(5, 15, 14)
 #define MH_SUBSTR(pos, len) text.midRef(pos, len)
 #else
 #define MH_SUBSTR(pos, len) QStringView(text).mid(pos, len)
