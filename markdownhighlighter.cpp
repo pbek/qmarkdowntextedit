@@ -499,12 +499,9 @@ static bool isParagraph(const QString &text) {
             else
                 break;
         }
-        if (i < textView.size() &&
-            (textView[i] == QLatin1Char('.') || textView[i] == QLatin1Char(')'))) {
-            // Check if there's a next character and if it's a space
-            if (i + 1 < textView.size() && textView[i + 1].isSpace()) {
-                return false;
-            }
+        if (textView[i] == QLatin1Char('.') ||
+            textView[i] == QLatin1Char(')')) {
+            return false;
         }
     }
 
