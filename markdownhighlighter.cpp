@@ -39,7 +39,8 @@
 #include "qownlanguagedata.h"
 
 // We enable QStringView with Qt 5.15.14
-// Note: QStringView::mid wasn't working correctly at least with 5.15.2 and 5.15.3, but 5.15.14 was fine
+// Note: QStringView::mid wasn't working correctly at least with 5.15.2
+// and 5.15.3, but 5.15.14 was fine
 #if QT_VERSION < QT_VERSION_CHECK(5, 15, 14)
 #define MH_SUBSTR(pos, len) text.midRef(pos, len)
 #else
@@ -461,8 +462,9 @@ static bool isParagraph(const QString &text) {
     // unordered listtextView
     if (textView.startsWith(QStringLiteral("- ")) ||
         textView.startsWith(QStringLiteral("+ ")) ||
-        textView.startsWith(QStringLiteral("*")))
+        textView.startsWith(QStringLiteral("* "))) {
         return false;
+    }
     // block quote
     if (textView.startsWith(QStringLiteral("> "))) return false;
     // atx heading
@@ -493,14 +495,20 @@ static bool isParagraph(const QString &text) {
     // ordered list
     if (textView.at(0).isDigit()) {
         int i = 1;
+        int count = 1;
         for (; i < textView.size(); ++i) {
-            if (textView[i].isDigit())
+            if (textView[i].isDigit()) {
+                count++;
                 continue;
-            else
+            } else
                 break;
         }
-        if (textView[i] == QLatin1Char('.') ||
-            textView[i] == QLatin1Char(')')) {
+
+        // ordered list marker can't be more than 9 numbers
+        if (count <= 9 && i + 1 < textView.size() &&
+            (textView[i] == QLatin1Char('.') ||
+             textView[i] == QLatin1Char(')')) &&
+            textView[i + 1] == QLatin1Char(' ')) {
             return false;
         }
     }
@@ -1830,9 +1838,10 @@ void MarkdownHighlighter::highlightLists(const QString &text) {
         int number = curPos;
         // move forward till first non-number char
         while (number < text.length() && text.at(number).isNumber()) ++number;
+        int count = number - curPos;
 
         // reached end?
-        if (number + 1 >= text.length()) return;
+        if (number + 1 >= text.length() || count > 9) return;
 
         // there should be a '.' or ')' after a number
         if ((text.at(number) == QLatin1Char('.') ||
