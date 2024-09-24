@@ -37,7 +37,6 @@
 #include <QRegularExpressionMatch>
 #include <QRegularExpressionMatchIterator>
 #include <QScrollBar>
-#include <QSettings>
 #include <QTextBlock>
 #include <QTimer>
 #include <QWheelEvent>
@@ -1094,7 +1093,6 @@ bool QMarkdownTextEdit::increaseSelectedTextIndention(
         if (reverse) {
             // un-indent text
 
-            //          QSettings settings;
             const int indentSize = indentCharacters == QStringLiteral("\t")
                                        ? 4
                                        : indentCharacters.length();
