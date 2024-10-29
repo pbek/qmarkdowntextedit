@@ -173,9 +173,10 @@ void MarkdownHighlighter::initHighlightingRules() {
     {
         HighlightingRule rule(HighlighterState::Table);
         rule.shouldContain = QStringLiteral("|");
-        // Support up to 3 spaces before the table because md4c seems to support that
+        // Support up to 3 leading spaces, because md4c seems to support it
         // See https://github.com/pbek/QOwnNotes/issues/3137
-        rule.pattern = QRegularExpression(QStringLiteral("^\\s{0,3}\\|.+?\\|$"));
+        rule.pattern = QRegularExpression(QStringLiteral("^\\s{0,3}(\\|.+?\\|)$"));
+        rule.capturingGroup = 1;
         _highlightingRules.append(rule);
     }
 }
