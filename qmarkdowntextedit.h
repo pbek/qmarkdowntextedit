@@ -10,8 +10,8 @@
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -125,14 +125,12 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     bool quotationMarkCheck(const QChar quotationCharacter);
     void focusOutEvent(QFocusEvent *event) override;
     void paintEvent(QPaintEvent *e) override;
-    bool handleCharRemoval(MarkdownHighlighter::RangeType type, int block, int position);
+    bool handleCharRemoval(MarkdownHighlighter::RangeType type, int block,
+                           int position);
     void resizeEvent(QResizeEvent *event) override;
     void setLineNumberLeftMarginOffset(int offset);
     int _lineNumberLeftMarginOffset = 0;
-    LineNumArea *lineNumberArea()
-    {
-        return _lineNumArea;
-    }
+    LineNumArea *lineNumberArea() { return _lineNumArea; }
     void updateLineNumAreaGeometry();
     void updateLineNumberArea(const QRect rect, int dy);
     Q_SLOT void updateLineNumberAreaWidth(int);

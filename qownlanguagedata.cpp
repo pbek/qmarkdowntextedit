@@ -10,8 +10,8 @@
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -138,58 +138,57 @@ void initCppData() {
         {('x'), QLatin1String("xor")},
         {('x'), QLatin1String("xor_eq")}};
 
-    cpp_types = {
-        {('a'), QLatin1String("auto")},
-        {('b'), QLatin1String("bool")},
-        {('c'), QLatin1String("char")},
-        {('c'), QLatin1String("char8_t")},
-        {('c'), QLatin1String("char16_t")},
-        {('c'), QLatin1String("char32_t")},
-        {('c'), QLatin1String("class")},
-        {('d'), QLatin1String("double")},
-        {('e'), QLatin1String("enum")},
-        {('f'), QLatin1String("float")},
-        {('i'), QLatin1String("int")},
-        {('i'), QLatin1String("int8_t")},
-        {('i'), QLatin1String("int16_t")},
-        {('i'), QLatin1String("int32_t")},
-        {('i'), QLatin1String("int64_t")},
-        {('i'), QLatin1String("int_fast8_t")},
-        {('i'), QLatin1String("int_fast16_t")},
-        {('i'), QLatin1String("int_fast32_t")},
-        {('i'), QLatin1String("int_fast64_t")},
-        {('i'), QLatin1String("intmax_t")},
-        {('i'), QLatin1String("intptr_t")},
-        {('l'), QLatin1String("long")},
-        {('n'), QLatin1String("namespace")},
-        {('Q'), QLatin1String("QHash")},
-        {('Q'), QLatin1String("QList")},
-        {('Q'), QLatin1String("QMap")},
-        {('Q'), QLatin1String("QString")},
-        {('Q'), QLatin1String("QVector")},
-        {('s'), QLatin1String("short")},
-        {('s'), QLatin1String("size_t")},
-        {('s'), QLatin1String("signed")},
-        {('s'), QLatin1String("struct")},
-        {('s'), QLatin1String("ssize_t")},
-        {('u'), QLatin1String("uint8_t")},
-        {('u'), QLatin1String("uint16_t")},
-        {('u'), QLatin1String("uint32_t")},
-        {('u'), QLatin1String("uint64_t")},
-        {('u'), QLatin1String("uint_fast8_t")},
-        {('u'), QLatin1String("uint_fast16_t")},
-        {('u'), QLatin1String("uint_fast32_t")},
-        {('u'), QLatin1String("uint_fast64_t")},
-        {('u'), QLatin1String("uint_least8_t")},
-        {('u'), QLatin1String("uint_least16_t")},
-        {('u'), QLatin1String("uint_least32_t")},
-        {('u'), QLatin1String("uint_least64_t")},
-        {('u'), QLatin1String("uintmax_t")},
-        {('u'), QLatin1String("uintptr_t")},
-        {('u'), QLatin1String("unsigned")},
-        {('u'), QLatin1String("union")},
-        {('v'), QLatin1String("void")},
-        {('w'), QLatin1String("wchar_t")}};
+    cpp_types = {{('a'), QLatin1String("auto")},
+                 {('b'), QLatin1String("bool")},
+                 {('c'), QLatin1String("char")},
+                 {('c'), QLatin1String("char8_t")},
+                 {('c'), QLatin1String("char16_t")},
+                 {('c'), QLatin1String("char32_t")},
+                 {('c'), QLatin1String("class")},
+                 {('d'), QLatin1String("double")},
+                 {('e'), QLatin1String("enum")},
+                 {('f'), QLatin1String("float")},
+                 {('i'), QLatin1String("int")},
+                 {('i'), QLatin1String("int8_t")},
+                 {('i'), QLatin1String("int16_t")},
+                 {('i'), QLatin1String("int32_t")},
+                 {('i'), QLatin1String("int64_t")},
+                 {('i'), QLatin1String("int_fast8_t")},
+                 {('i'), QLatin1String("int_fast16_t")},
+                 {('i'), QLatin1String("int_fast32_t")},
+                 {('i'), QLatin1String("int_fast64_t")},
+                 {('i'), QLatin1String("intmax_t")},
+                 {('i'), QLatin1String("intptr_t")},
+                 {('l'), QLatin1String("long")},
+                 {('n'), QLatin1String("namespace")},
+                 {('Q'), QLatin1String("QHash")},
+                 {('Q'), QLatin1String("QList")},
+                 {('Q'), QLatin1String("QMap")},
+                 {('Q'), QLatin1String("QString")},
+                 {('Q'), QLatin1String("QVector")},
+                 {('s'), QLatin1String("short")},
+                 {('s'), QLatin1String("size_t")},
+                 {('s'), QLatin1String("signed")},
+                 {('s'), QLatin1String("struct")},
+                 {('s'), QLatin1String("ssize_t")},
+                 {('u'), QLatin1String("uint8_t")},
+                 {('u'), QLatin1String("uint16_t")},
+                 {('u'), QLatin1String("uint32_t")},
+                 {('u'), QLatin1String("uint64_t")},
+                 {('u'), QLatin1String("uint_fast8_t")},
+                 {('u'), QLatin1String("uint_fast16_t")},
+                 {('u'), QLatin1String("uint_fast32_t")},
+                 {('u'), QLatin1String("uint_fast64_t")},
+                 {('u'), QLatin1String("uint_least8_t")},
+                 {('u'), QLatin1String("uint_least16_t")},
+                 {('u'), QLatin1String("uint_least32_t")},
+                 {('u'), QLatin1String("uint_least64_t")},
+                 {('u'), QLatin1String("uintmax_t")},
+                 {('u'), QLatin1String("uintptr_t")},
+                 {('u'), QLatin1String("unsigned")},
+                 {('u'), QLatin1String("union")},
+                 {('v'), QLatin1String("void")},
+                 {('w'), QLatin1String("wchar_t")}};
 
     cpp_literals = {{('f'), QLatin1String("false")},
                     {('n'), QLatin1String("nullptr")},
@@ -664,32 +663,22 @@ static QMultiHash<char, QLatin1String> nix_literals;
 static QMultiHash<char, QLatin1String> nix_builtin;
 static QMultiHash<char, QLatin1String> nix_other;
 
-// also see https://github.com/KDE/syntax-highlighting/blob/master/data/syntax/nix.xml
+// also see
+// https://github.com/KDE/syntax-highlighting/blob/master/data/syntax/nix.xml
 void initNixData() {
-    nix_keywords = {{('i'), QLatin1String("in")},
-                    {('a'), QLatin1String("assert")},
-                    {('k'), QLatin1String("keywords")},
-                    {('r'), QLatin1String("rec")},
-                    {('a'), QLatin1String("and")},
-                    {('o'), QLatin1String("or")},
-                    {('o'), QLatin1String("of")},
-                    {('i'), QLatin1String("if")},
-                    {('f'), QLatin1String("for")},
-                    {('w'), QLatin1String("while")},
-                    {('d'), QLatin1String("do")},
-                    {('r'), QLatin1String("return")},
-                    {('e'), QLatin1String("else")},
-                    {('b'), QLatin1String("break")},
-                    {('w'), QLatin1String("with")},
-                    {('c'), QLatin1String("case")},
-                    {('c'), QLatin1String("continue")},
-                    {('d'), QLatin1String("delete")},
-                    {('l'), QLatin1String("let")},
-                    {('e'), QLatin1String("export")},
-                    {('a'), QLatin1String("as")},
-                    {('i'), QLatin1String("import")},
-                    {('f'), QLatin1String("from")},
-                    {('a'), QLatin1String("as")}};
+    nix_keywords = {
+        {('i'), QLatin1String("in")},       {('a'), QLatin1String("assert")},
+        {('k'), QLatin1String("keywords")}, {('r'), QLatin1String("rec")},
+        {('a'), QLatin1String("and")},      {('o'), QLatin1String("or")},
+        {('o'), QLatin1String("of")},       {('i'), QLatin1String("if")},
+        {('f'), QLatin1String("for")},      {('w'), QLatin1String("while")},
+        {('d'), QLatin1String("do")},       {('r'), QLatin1String("return")},
+        {('e'), QLatin1String("else")},     {('b'), QLatin1String("break")},
+        {('w'), QLatin1String("with")},     {('c'), QLatin1String("case")},
+        {('c'), QLatin1String("continue")}, {('d'), QLatin1String("delete")},
+        {('l'), QLatin1String("let")},      {('e'), QLatin1String("export")},
+        {('a'), QLatin1String("as")},       {('i'), QLatin1String("import")},
+        {('f'), QLatin1String("from")},     {('a'), QLatin1String("as")}};
 
     nix_types = {};
 
@@ -699,17 +688,17 @@ void initNixData() {
         {('N'), QLatin1String("NaN")},   {('I'), QLatin1String("Infinity")}};
 
     nix_builtin = {{('a'), QLatin1String("abort")},
-           {('b'), QLatin1String("baseNameOf")},
-           {('d'), QLatin1String("derivation")},
-           {('d'), QLatin1String("dirOf")},
-           {('f'), QLatin1String("fetchTarball")},
-           {('f'), QLatin1String("fetchFromGitHub")},
-           {('i'), QLatin1String("import")},
-           {('i'), QLatin1String("isNull")},
-           {('m'), QLatin1String("map")},
-           {('r'), QLatin1String("removeAttrs")},
-           {('t'), QLatin1String("throw")},
-           {('t'), QLatin1String("toString")}};
+                   {('b'), QLatin1String("baseNameOf")},
+                   {('d'), QLatin1String("derivation")},
+                   {('d'), QLatin1String("dirOf")},
+                   {('f'), QLatin1String("fetchTarball")},
+                   {('f'), QLatin1String("fetchFromGitHub")},
+                   {('i'), QLatin1String("import")},
+                   {('i'), QLatin1String("isNull")},
+                   {('m'), QLatin1String("map")},
+                   {('r'), QLatin1String("removeAttrs")},
+                   {('t'), QLatin1String("throw")},
+                   {('t'), QLatin1String("toString")}};
 
     nix_other = {
         {('b'), QLatin1String("builtins")},
@@ -2219,40 +2208,23 @@ void initSystemVerilogData() {
     };
 
     systemverilog_types = {
-        {('w'), QLatin1String("wand")},
-        {('w'), QLatin1String("wor")},
-        {('x'), QLatin1String("xnor")},
-        {('x'), QLatin1String("xor")},
-        {('s'), QLatin1String("semaphore")},
-        {('s'), QLatin1String("supply0")},
-        {('s'), QLatin1String("supply1")},
-        {('u'), QLatin1String("uwire")},
-        {('t'), QLatin1String("tri")},
-        {('t'), QLatin1String("tri0")},
-        {('t'), QLatin1String("tri1")},
-        {('t'), QLatin1String("triand")},
-        {('t'), QLatin1String("trior")},
-        {('t'), QLatin1String("trireg")},
-        {('g'), QLatin1String("genvar")},
-        {('b'), QLatin1String("buf")},
-        {('b'), QLatin1String("bufif0")},
-        {('b'), QLatin1String("bufif1")},
-        {('w'), QLatin1String("wire")},
-        {('r'), QLatin1String("reg")},
-        {('l'), QLatin1String("logic")},
-        {('s'), QLatin1String("string")},
-        {('b'), QLatin1String("bit")},
-        {('b'), QLatin1String("byte")},
-        {('i'), QLatin1String("int")},
-        {('i'), QLatin1String("integer")},
-        {('t'), QLatin1String("time")},
-        {('r'), QLatin1String("realtime")},
-        {('l'), QLatin1String("longint")},
-        {('s'), QLatin1String("shortint")},
-        {('s'), QLatin1String("shortreal")},
-        {('r'), QLatin1String("real")},
-        {('e'), QLatin1String("enum")},
-        {('u'), QLatin1String("union")},
+        {('w'), QLatin1String("wand")},      {('w'), QLatin1String("wor")},
+        {('x'), QLatin1String("xnor")},      {('x'), QLatin1String("xor")},
+        {('s'), QLatin1String("semaphore")}, {('s'), QLatin1String("supply0")},
+        {('s'), QLatin1String("supply1")},   {('u'), QLatin1String("uwire")},
+        {('t'), QLatin1String("tri")},       {('t'), QLatin1String("tri0")},
+        {('t'), QLatin1String("tri1")},      {('t'), QLatin1String("triand")},
+        {('t'), QLatin1String("trior")},     {('t'), QLatin1String("trireg")},
+        {('g'), QLatin1String("genvar")},    {('b'), QLatin1String("buf")},
+        {('b'), QLatin1String("bufif0")},    {('b'), QLatin1String("bufif1")},
+        {('w'), QLatin1String("wire")},      {('r'), QLatin1String("reg")},
+        {('l'), QLatin1String("logic")},     {('s'), QLatin1String("string")},
+        {('b'), QLatin1String("bit")},       {('b'), QLatin1String("byte")},
+        {('i'), QLatin1String("int")},       {('i'), QLatin1String("integer")},
+        {('t'), QLatin1String("time")},      {('r'), QLatin1String("realtime")},
+        {('l'), QLatin1String("longint")},   {('s'), QLatin1String("shortint")},
+        {('s'), QLatin1String("shortreal")}, {('r'), QLatin1String("real")},
+        {('e'), QLatin1String("enum")},      {('u'), QLatin1String("union")},
         {('s'), QLatin1String("struct")},
     };
 
@@ -2262,14 +2234,10 @@ void initSystemVerilogData() {
     };
 
     systemverilog_builtin = {
-        {('d'), QLatin1String("display")},
-        {('e'), QLatin1String("error")},
-        {('w'), QLatin1String("warning")},
-        {('r'), QLatin1String("random")},
-        {('u'), QLatin1String("urandom")},
-        {('f'), QLatin1String("finish")},
-        {('p'), QLatin1String("print")},
-        {('m'), QLatin1String("monitor")},
+        {('d'), QLatin1String("display")}, {('e'), QLatin1String("error")},
+        {('w'), QLatin1String("warning")}, {('r'), QLatin1String("random")},
+        {('u'), QLatin1String("urandom")}, {('f'), QLatin1String("finish")},
+        {('p'), QLatin1String("print")},   {('m'), QLatin1String("monitor")},
     };
 
     systemverilog_other = {
@@ -2295,7 +2263,6 @@ void loadSystemVerilogData(QMultiHash<char, QLatin1String> &types,
     literals = systemverilog_literals;
     other = systemverilog_other;
 }
-
 
 /********************************************************/
 /***   JSON DATA      ***********************************/

@@ -10,8 +10,8 @@
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -59,8 +59,8 @@ QPlainTextEditSearchWidget::QPlainTextEditSearchWidget(QPlainTextEdit *parent)
     connect(ui->replaceAllButton, &QPushButton::clicked, this,
             &QPlainTextEditSearchWidget::doReplaceAll);
 
-    connect(&_debounceTimer, &QTimer::timeout,
-            this, &QPlainTextEditSearchWidget::performSearch);
+    connect(&_debounceTimer, &QTimer::timeout, this,
+            &QPlainTextEditSearchWidget::performSearch);
 
     installEventFilter(this);
     ui->searchLineEdit->installEventFilter(this);
@@ -127,15 +127,16 @@ bool QPlainTextEditSearchWidget::eventFilter(QObject *obj, QEvent *event) {
         } else if ((!_debounceTimer.isActive() &&
                     keyEvent->modifiers().testFlag(Qt::ShiftModifier) &&
                     (keyEvent->key() == Qt::Key_Return)) ||
-                    (keyEvent->key() == Qt::Key_Up)) {
+                   (keyEvent->key() == Qt::Key_Up)) {
             doSearchUp();
             return true;
         } else if (!_debounceTimer.isActive() &&
-                    ((keyEvent->key() == Qt::Key_Return) ||
-                     (keyEvent->key() == Qt::Key_Down))) {
+                   ((keyEvent->key() == Qt::Key_Return) ||
+                    (keyEvent->key() == Qt::Key_Down))) {
             doSearchDown();
             return true;
-        } else if (!_debounceTimer.isActive() && keyEvent->key() == Qt::Key_F3) {
+        } else if (!_debounceTimer.isActive() &&
+                   keyEvent->key() == Qt::Key_F3) {
             doSearch(!keyEvent->modifiers().testFlag(Qt::ShiftModifier));
             return true;
         }
@@ -165,8 +166,7 @@ void QPlainTextEditSearchWidget::searchLineEditTextChanged(
     }
 }
 
-void QPlainTextEditSearchWidget::performSearch()
-{
+void QPlainTextEditSearchWidget::performSearch() {
     doSearchCount();
     updateSearchExtraSelections();
     doSearchDown();
@@ -190,7 +190,8 @@ void QPlainTextEditSearchWidget::updateSearchExtraSelections() {
     while (doSearch(true, false, false)) {
         findCounter++;
 
-        // prevent infinite loops from regular expression searches like "$", "^" or "\b"
+        // prevent infinite loops from regular expression searches like "$", "^"
+        // or "\b"
         if (searchMode == RegularExpressionMode && findCounter >= 10000) {
             break;
         }
@@ -210,8 +211,7 @@ void QPlainTextEditSearchWidget::setSearchExtraSelections() const {
     this->_textEdit->setExtraSelections(this->_searchExtraSelections);
 }
 
-void QPlainTextEditSearchWidget::stopDebounce()
-{
+void QPlainTextEditSearchWidget::stopDebounce() {
     _debounceTimer.stop();
     ui->searchDownButton->setEnabled(true);
     ui->searchUpButton->setEnabled(true);
@@ -378,11 +378,11 @@ bool QPlainTextEditSearchWidget::doSearch(bool searchDown,
         }
 
         // add a background color according if we found the text or not
-        const QString bgColorCode =
-            _darkMode
-                ? (found ? QStringLiteral("#135a13")
-                         : QStringLiteral("#8d2b36"))
-                : found ? QStringLiteral("#D5FAE2") : QStringLiteral("#FAE9EB");
+        const QString bgColorCode = _darkMode
+                                        ? (found ? QStringLiteral("#135a13")
+                                                 : QStringLiteral("#8d2b36"))
+                                    : found ? QStringLiteral("#D5FAE2")
+                                            : QStringLiteral("#FAE9EB");
         const QString fgColorCode =
             _darkMode ? QStringLiteral("#cccccc") : QStringLiteral("#404040");
 
@@ -418,8 +418,10 @@ void QPlainTextEditSearchWidget::doSearchCount() {
             _searchResultCount++;
         }
 
-        // prevent infinite loops from regular expression searches like "$", "^" or "\b"
-        if (searchMode == RegularExpressionMode && _searchResultCount >= 10000) {
+        // prevent infinite loops from regular expression searches like "$", "^"
+        // or "\b"
+        if (searchMode == RegularExpressionMode &&
+            _searchResultCount >= 10000) {
             break;
         }
     } while (found);
@@ -439,8 +441,7 @@ void QPlainTextEditSearchWidget::setSearchMode(SearchMode searchMode) {
     ui->modeComboBox->setCurrentIndex(searchMode);
 }
 
-void QPlainTextEditSearchWidget::setDebounceDelay(uint debounceDelay)
-{
+void QPlainTextEditSearchWidget::setDebounceDelay(uint debounceDelay) {
     _debounceTimer.setInterval(static_cast<int>(debounceDelay));
 }
 
