@@ -714,7 +714,8 @@ bool QMarkdownTextEdit::handleBracketClosing(const QChar openingCharacter,
 
     // get the current text from the block (inserted character not included)
     // Remove whitespace at start of string (e.g. in multilevel-lists).
-    const QString text = cursor.block().text().remove(QRegularExpression("^\\s+"));
+    static QRegularExpression regex1("^\\s+");
+    const QString text = cursor.block().text().remove(regex1);
 
     const int pib = cursor.positionInBlock();
     bool isPreviousAsterisk = pib > 0 && pib < text.length() && text.at(pib - 1) == '*';
@@ -758,7 +759,7 @@ bool QMarkdownTextEdit::handleBracketClosing(const QChar openingCharacter,
         }
     }
 
-    // Auto completion for ``` pair
+    // Auto-completion for ``` pair
     if (openingCharacter == QLatin1Char('`')) {
 #if QT_VERSION < QT_VERSION_CHECK(5, 12, 0)
         if (QRegExp(QStringLiteral("[^`]*``")).exactMatch(text)) {
@@ -1121,7 +1122,8 @@ bool QMarkdownTextEdit::increaseSelectedTextIndention(
                 .prepend(indentCharacters);
 
             // remove trailing \t
-            newText.remove(QRegularExpression(QStringLiteral("\\t$")));
+            static QRegularExpression regex1(QStringLiteral("\\t$"));
+            newText.remove(regex1);
         }
 
         // insert the new text
@@ -1149,8 +1151,8 @@ bool QMarkdownTextEdit::increaseSelectedTextIndention(
             }
 
             // check for \t or space in front of cursor
-            QRegularExpression re(QStringLiteral("[\\t ]"));
-            QRegularExpressionMatch match = re.match(cursor.selectedText());
+            static QRegularExpression regex1(QStringLiteral("[\\t ]"));
+            QRegularExpressionMatch match = regex1.match(cursor.selectedText());
 
             if (!match.hasMatch()) {
                 // (select to) check for \t or space after the cursor
@@ -1161,7 +1163,7 @@ bool QMarkdownTextEdit::increaseSelectedTextIndention(
                 }
             }
 
-            match = re.match(cursor.selectedText());
+            match = regex1.match(cursor.selectedText());
 
             if (match.hasMatch()) {
                 cursor.removeSelectedText();
@@ -1229,8 +1231,8 @@ bool QMarkdownTextEdit::openLinkAtCursorPosition() {
  * @return
  */
 bool QMarkdownTextEdit::isValidUrl(const QString &urlString) {
-    const QRegularExpressionMatch match =
-        QRegularExpression(R"(^\w+:\/\/.+)").match(urlString);
+    static QRegularExpression regex(R"(^\w+:\/\/.+)");
+    const QRegularExpressionMatch match = regex.match(urlString);
     return match.hasMatch();
 }
 
@@ -1282,13 +1284,12 @@ void QMarkdownTextEdit::setIgnoredClickUrlSchemata(
 QMap<QString, QString> QMarkdownTextEdit::parseMarkdownUrlsFromText(
     const QString &text) {
     QMap<QString, QString> urlMap;
-    QRegularExpression regex;
     QRegularExpressionMatchIterator iterator;
 
     // match urls like this: <http://mylink>
     //    re = QRegularExpression("(<(.+?:\\/\\/.+?)>)");
-    regex = QRegularExpression(QStringLiteral("(<(.+?)>)"));
-    iterator = regex.globalMatch(text);
+    static QRegularExpression regex1(QStringLiteral("(<(.+?)>)"));
+    iterator = regex1.globalMatch(text);
     while (iterator.hasNext()) {
         QRegularExpressionMatch match = iterator.next();
         QString linkText = match.captured(1);
@@ -1298,8 +1299,8 @@ QMap<QString, QString> QMarkdownTextEdit::parseMarkdownUrlsFromText(
 
     // match urls like this: [this url](http://mylink)
     //    QRegularExpression re("(\\[.*?\\]\\((.+?:\\/\\/.+?)\\))");
-    regex = QRegularExpression(R"((\[.*?\]\((.+?)\)))");
-    iterator = regex.globalMatch(text);
+    static QRegularExpression regex2(R"((\[.*?\]\((.+?)\)))");
+    iterator = regex2.globalMatch(text);
     while (iterator.hasNext()) {
         QRegularExpressionMatch match = iterator.next();
         QString linkText = match.captured(1);
@@ -1308,8 +1309,8 @@ QMap<QString, QString> QMarkdownTextEdit::parseMarkdownUrlsFromText(
     }
 
     // match urls like this: http://mylink
-    regex = QRegularExpression(R"(\b\w+?:\/\/[^\s]+[^\s>\)])");
-    iterator = regex.globalMatch(text);
+    static QRegularExpression regex3(R"(\b\w+?:\/\/[^\s]+[^\s>\)])");
+    iterator = regex3.globalMatch(text);
     while (iterator.hasNext()) {
         QRegularExpressionMatch match = iterator.next();
         QString url = match.captured(0);
@@ -1317,8 +1318,8 @@ QMap<QString, QString> QMarkdownTextEdit::parseMarkdownUrlsFromText(
     }
 
     // match urls like this: www.github.com
-    regex = QRegularExpression(R"(\bwww\.[^\s]+\.[^\s]+\b)");
-    iterator = regex.globalMatch(text);
+    static QRegularExpression regex4(R"(\bwww\.[^\s]+\.[^\s]+\b)");
+    iterator = regex4.globalMatch(text);
     while (iterator.hasNext()) {
         QRegularExpressionMatch match = iterator.next();
         QString url = match.captured(0);
@@ -1327,8 +1328,8 @@ QMap<QString, QString> QMarkdownTextEdit::parseMarkdownUrlsFromText(
 
     // match reference urls like this: [this url][1] with this later:
     // [1]: http://domain
-    regex = QRegularExpression(R"((\[.*?\]\[(.+?)\]))");
-    iterator = regex.globalMatch(text);
+    static QRegularExpression regex5(R"((\[.*?\]\[(.+?)\]))");
+    iterator = regex5.globalMatch(text);
     while (iterator.hasNext()) {
         QRegularExpressionMatch match = iterator.next();
         QString linkText = match.captured(1);
@@ -1488,9 +1489,9 @@ bool QMarkdownTextEdit::handleReturnEntered() {
     // if return is pressed and there is just an unordered list symbol then we
     // want to remove the list symbol Valid listCharacters: '+ ', '-' , '* ', '+
     // [ ] ', '+ [x] ', '- [ ] ', '- [-] ', '- [x] ', '* [ ] ', '* [x] '.
-    QRegularExpression regex(R"(^(\s*)([+|\-|\*] \[(x|-| |)\]|[+\-\*])(\s+)$)");
+    static QRegularExpression regex1(R"(^(\s*)([+|\-|\*] \[(x|-| |)\]|[+\-\*])(\s+)$)");
     QRegularExpressionMatchIterator iterator =
-        regex.globalMatch(currentLineText);
+        regex1.globalMatch(currentLineText);
     if (iterator.hasNext()) {
         cursor.removeSelectedText();
         return true;
@@ -1498,8 +1499,8 @@ bool QMarkdownTextEdit::handleReturnEntered() {
 
     // if return is pressed and there is just an ordered list symbol then we
     // want to remove the list symbol
-    regex = QRegularExpression(R"(^(\s*)(\d+[\.|\)])(\s+)$)");
-    iterator = regex.globalMatch(currentLineText);
+    static QRegularExpression regex2(R"(^(\s*)(\d+[\.|\)])(\s+)$)");
+    iterator = regex2.globalMatch(currentLineText);
     if (iterator.hasNext()) {
         qDebug() << cursor.selectedText();
         cursor.removeSelectedText();
@@ -1527,21 +1528,20 @@ bool QMarkdownTextEdit::handleReturnEntered() {
         // whitespaces) add the whitespaces at the next line too
         // Valid listCharacters: '+ ', '-' , '* ', '+ [ ] ', '+ [x] ', '- [ ] ',
         // '- [x] ', '- [-] ', '* [ ] ', '* [x] '.
-        regex =
-            QRegularExpression(R"(^(\s*)([+|\-|\*] \[(x|-| |)\]|[+\-\*])(\s+))");
-        iterator = regex.globalMatch(currentLineText);
+        static QRegularExpression regex3(R"(^(\s*)([+|\-|\*] \[(x|-| |)\]|[+\-\*])(\s+))");
+        iterator = regex3.globalMatch(currentLineText);
         if (iterator.hasNext()) {
             const QRegularExpressionMatch match = iterator.next();
             const QString whitespaces = match.captured(1);
             QString listCharacter = match.captured(2);
             const QString whitespaceCharacter = match.captured(4);
 
+            static QRegularExpression regex4(R"(^([+|\-|\*]) \[(x| |)\])");
             // start new checkbox list item with an unchecked checkbox
-            iterator = QRegularExpression(R"(^([+|\-|\*]) \[(x| |)\])")
-                           .globalMatch(listCharacter);
+            iterator = regex4.globalMatch(listCharacter);
             if (iterator.hasNext()) {
-                const QRegularExpressionMatch match = iterator.next();
-                const QString realListCharacter = match.captured(1);
+                const QRegularExpressionMatch match1 = iterator.next();
+                const QString realListCharacter = match1.captured(1);
                 listCharacter = realListCharacter + QStringLiteral(" [ ]");
             }
 
@@ -1556,8 +1556,8 @@ bool QMarkdownTextEdit::handleReturnEntered() {
     }
 
     // check for ordered lists and increment the list number in the next line
-    regex = QRegularExpression(R"(^(\s*)(\d+)([\.|\)])(\s+))");
-    iterator = regex.globalMatch(currentLineText);
+    static QRegularExpression regex5(R"(^(\s*)(\d+)([\.|\)])(\s+))");
+    iterator = regex5.globalMatch(currentLineText);
     if (iterator.hasNext()) {
         const QRegularExpressionMatch match = iterator.next();
         const QString whitespaces = match.captured(1);
@@ -1575,8 +1575,8 @@ bool QMarkdownTextEdit::handleReturnEntered() {
     }
 
     // intent next line with same whitespaces as in current line
-    regex = QRegularExpression(R"(^(\s+))");
-    iterator = regex.globalMatch(currentLineText);
+    static QRegularExpression regex6(R"(^(\s+))");
+    iterator = regex6.globalMatch(currentLineText);
     if (iterator.hasNext()) {
         const QRegularExpressionMatch match = iterator.next();
         const QString whitespaces = match.captured(1);
@@ -1611,8 +1611,8 @@ bool QMarkdownTextEdit::handleTabEntered(bool reverse,
         // check if we want to indent or un-indent an ordered list
         // Valid listCharacters: '+ ', '-' , '* ', '+ [ ] ', '+ [x] ', '- [ ] ',
         // '- [x] ', '- [-] ', '* [ ] ', '* [x] '.
-        QRegularExpression re(R"(^(\s*)([+|\-|\*] \[(x|-| )\]|[+\-\*])(\s+)$)");
-        QRegularExpressionMatchIterator i = re.globalMatch(currentLineText);
+        static QRegularExpression regex1(R"(^(\s*)([+|\-|\*] \[(x|-| )\]|[+\-\*])(\s+)$)");
+        QRegularExpressionMatchIterator i = regex1.globalMatch(currentLineText);
 
         if (i.hasNext()) {
             QRegularExpressionMatch match = i.next();
@@ -1638,8 +1638,8 @@ bool QMarkdownTextEdit::handleTabEntered(bool reverse,
         }
 
         // check if we want to indent or un-indent an ordered list
-        re = QRegularExpression(R"(^(\s*)(\d+)([\.|\)])(\s+)$)");
-        i = re.globalMatch(currentLineText);
+        static QRegularExpression regex2(R"(^(\s*)(\d+)([\.|\)])(\s+)$)");
+        i = regex2.globalMatch(currentLineText);
 
         if (i.hasNext()) {
             const QRegularExpressionMatch match = i.next();
