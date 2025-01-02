@@ -1534,7 +1534,7 @@ bool QMarkdownTextEdit::handleReturnEntered() {
             QString listCharacter = match.captured(2);
             const QString whitespaceCharacter = match.captured(4);
 
-            static QRegularExpression regex4(R"(^([+|\-|\*]) \[(x| |)\])");
+            static QRegularExpression regex4(R"(^([+|\-|\*]) \[(x| |\-|)\])");
             // start new checkbox list item with an unchecked checkbox
             iterator = regex4.globalMatch(listCharacter);
             if (iterator.hasNext()) {
