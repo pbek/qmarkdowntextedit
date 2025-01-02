@@ -1480,9 +1480,12 @@ bool QMarkdownTextEdit::handleReturnEntered() {
 
     QTextCursor cursor = this->textCursor();
     const int position = cursor.position();
+    const bool cursorAtLineStart = cursor.atBlockStart();
 
     cursor.movePosition(QTextCursor::StartOfBlock, QTextCursor::KeepAnchor);
-    const QString currentLineText = cursor.selectedText();
+    const QString currentLinePartialText = cursor.selectedText();
+    cursor.select(QTextCursor::BlockUnderCursor);
+    const QString currentLineText = cursor.selectedText().trimmed();
 
     // if return is pressed and there is just an unordered list symbol then we
     // want to remove the list symbol Valid listCharacters: '+ ', '-' , '* ', '+
@@ -1490,19 +1493,21 @@ bool QMarkdownTextEdit::handleReturnEntered() {
     static QRegularExpression regex1(
         R"(^(\s*)([+|\-|\*] \[(x|-| |)\]|[+\-\*])(\s+)$)");
     QRegularExpressionMatchIterator iterator =
-        regex1.globalMatch(currentLineText);
+        regex1.globalMatch(currentLinePartialText);
     if (iterator.hasNext()) {
         cursor.removeSelectedText();
+        cursor.insertText("\n");
         return true;
     }
 
     // if return is pressed and there is just an ordered list symbol then we
     // want to remove the list symbol
     static QRegularExpression regex2(R"(^(\s*)(\d+[\.|\)])(\s+)$)");
-    iterator = regex2.globalMatch(currentLineText);
+    iterator = regex2.globalMatch(currentLinePartialText);
     if (iterator.hasNext()) {
         qDebug() << cursor.selectedText();
         cursor.removeSelectedText();
+        cursor.insertText("\n");
         return true;
     }
 
@@ -1510,7 +1515,7 @@ bool QMarkdownTextEdit::handleReturnEntered() {
     // We are in a list when we have '* ', '- ' or '+ ', possibly with preceding
     // whitespace. If e.g. user has entered '**text**' and pressed enter - we
     // don't want to do more list-stuff.
-    QString currentLine = currentLineText.trimmed();
+    QString currentLine = currentLinePartialText.trimmed();
     QChar char0;
     QChar char1;
     if (currentLine.length() >= 1) char0 = currentLine.at(0);
@@ -1527,7 +1532,7 @@ bool QMarkdownTextEdit::handleReturnEntered() {
         // '- [x] ', '- [-] ', '* [ ] ', '* [x] '.
         static QRegularExpression regex3(
             R"(^(\s*)([+|\-|\*] \[(x|-| |)\]|[+\-\*])(\s+))");
-        iterator = regex3.globalMatch(currentLineText);
+        iterator = regex3.globalMatch(currentLinePartialText);
         if (iterator.hasNext()) {
             const QRegularExpressionMatch match = iterator.next();
             const QString whitespaces = match.captured(1);
@@ -1555,7 +1560,7 @@ bool QMarkdownTextEdit::handleReturnEntered() {
 
     // check for ordered lists and increment the list number in the next line
     static QRegularExpression regex5(R"(^(\s*)(\d+)([\.|\)])(\s+))");
-    iterator = regex5.globalMatch(currentLineText);
+    iterator = regex5.globalMatch(currentLinePartialText);
     if (iterator.hasNext()) {
         const QRegularExpressionMatch match = iterator.next();
         const QString whitespaces = match.captured(1);
@@ -1574,7 +1579,7 @@ bool QMarkdownTextEdit::handleReturnEntered() {
 
     // intent next line with same whitespaces as in current line
     static QRegularExpression regex6(R"(^(\s+))");
-    iterator = regex6.globalMatch(currentLineText);
+    iterator = regex6.globalMatch(currentLinePartialText);
     if (iterator.hasNext()) {
         const QRegularExpressionMatch match = iterator.next();
         const QString whitespaces = match.captured(1);
@@ -1585,6 +1590,39 @@ bool QMarkdownTextEdit::handleReturnEntered() {
         // scroll to the cursor if we are at the bottom of the document
         ensureCursorVisible();
         return true;
+    }
+
+    // Add new list item above current line if we are at the start the line of a
+    // list item
+    if (cursorAtLineStart) {
+        static QRegularExpression regex7(
+            R"(^([+|\-|\*] \[(x|-| |)\]|[+\-\*])(\s+))");
+        iterator = regex7.globalMatch(currentLineText);
+        if (iterator.hasNext()) {
+            const QRegularExpressionMatch match = iterator.next();
+            QString listCharacter = match.captured(1);
+            const QString whitespaceCharacter = match.captured(3);
+
+            static QRegularExpression regex8(R"(^([+|\-|\*]) \[(x| |\-|)\])");
+            // start new checkbox list item with an unchecked checkbox
+            iterator = regex8.globalMatch(listCharacter);
+            if (iterator.hasNext()) {
+                const QRegularExpressionMatch match1 = iterator.next();
+                const QString realListCharacter = match1.captured(1);
+                listCharacter = realListCharacter + QStringLiteral(" [ ]");
+            }
+
+            cursor.setPosition(position);
+            // Enter new list item above current line
+            cursor.insertText(listCharacter + whitespaceCharacter + "\n");
+            // Move the cursor at the end of the new list item
+            cursor.movePosition(QTextCursor::Left);
+            setTextCursor(cursor);
+
+            // scroll to the cursor if we are at the bottom of the document
+            ensureCursorVisible();
+            return true;
+        }
     }
 
     return false;
