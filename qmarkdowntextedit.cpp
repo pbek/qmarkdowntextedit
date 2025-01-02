@@ -1478,14 +1478,19 @@ bool QMarkdownTextEdit::handleReturnEntered() {
         return true;
     }
 
+    // This will be the main cursor to add or remove text
     QTextCursor cursor = this->textCursor();
-    const int position = cursor.position();
-    const bool cursorAtLineStart = cursor.atBlockStart();
 
+    // We need a 2nd cursor to get the text of the current block without moving
+    // the main cursor that is used to remove the selected text
+    QTextCursor cursor2 = this->textCursor();
+    cursor2.select(QTextCursor::BlockUnderCursor);
+    const QString currentLineText = cursor2.selectedText().trimmed();
+
+    const int position = cursor.position();
+    const bool cursorAtBlockStart = cursor.atBlockStart();
     cursor.movePosition(QTextCursor::StartOfBlock, QTextCursor::KeepAnchor);
     const QString currentLinePartialText = cursor.selectedText();
-    cursor.select(QTextCursor::BlockUnderCursor);
-    const QString currentLineText = cursor.selectedText().trimmed();
 
     // if return is pressed and there is just an unordered list symbol then we
     // want to remove the list symbol Valid listCharacters: '+ ', '-' , '* ', '+
@@ -1496,7 +1501,6 @@ bool QMarkdownTextEdit::handleReturnEntered() {
         regex1.globalMatch(currentLinePartialText);
     if (iterator.hasNext()) {
         cursor.removeSelectedText();
-        cursor.insertText("\n");
         return true;
     }
 
@@ -1507,7 +1511,6 @@ bool QMarkdownTextEdit::handleReturnEntered() {
     if (iterator.hasNext()) {
         qDebug() << cursor.selectedText();
         cursor.removeSelectedText();
-        cursor.insertText("\n");
         return true;
     }
 
@@ -1594,7 +1597,7 @@ bool QMarkdownTextEdit::handleReturnEntered() {
 
     // Add new list item above current line if we are at the start the line of a
     // list item
-    if (cursorAtLineStart) {
+    if (cursorAtBlockStart) {
         static QRegularExpression regex7(
             R"(^([+|\-|\*] \[(x|-| |)\]|[+\-\*])(\s+))");
         iterator = regex7.globalMatch(currentLineText);
