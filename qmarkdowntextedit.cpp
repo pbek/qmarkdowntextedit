@@ -487,7 +487,7 @@ void QMarkdownTextEdit::centerTheCursor() {
         return;
     }
 
-    // centers the cursor every time, but not on the top and bottom
+    // Centers the cursor every time, but not on the top and bottom,
     // bottom is done by setCenterOnScroll() in updateSettings()
     centerCursor();
 
