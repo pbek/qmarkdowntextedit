@@ -285,12 +285,14 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             return bracketClosingCheck(QLatin1Char('<'), QLatin1Char('>'));
         } else if ((keyEvent->key() == Qt::Key_Return ||
                     keyEvent->key() == Qt::Key_Enter) &&
+                   !isReadOnly() &&
                    keyEvent->modifiers().testFlag(Qt::ShiftModifier)) {
             QTextCursor cursor = this->textCursor();
             cursor.insertText("  \n");
             return true;
         } else if ((keyEvent->key() == Qt::Key_Return ||
                     keyEvent->key() == Qt::Key_Enter) &&
+                   !isReadOnly() &&
                    keyEvent->modifiers().testFlag(Qt::ControlModifier)) {
             QTextCursor cursor = this->textCursor();
             cursor.movePosition(QTextCursor::EndOfBlock);
@@ -560,6 +562,10 @@ void QMarkdownTextEdit::centerTheCursor() {
  * bracket closing was used otherwise performs normal undo
  */
 void QMarkdownTextEdit::undo() {
+    if (isReadOnly()) {
+        return;
+    }
+
     QTextCursor cursor = textCursor();
     // if no text selected, call undo
     if (!cursor.hasSelection()) {
@@ -589,6 +595,10 @@ void QMarkdownTextEdit::undo() {
 }
 
 void QMarkdownTextEdit::moveTextUpDown(bool up) {
+    if (isReadOnly()) {
+        return;
+    }
+
     QTextCursor cursor = textCursor();
     QTextCursor move = cursor;
 
@@ -1391,6 +1401,10 @@ QString QMarkdownTextEdit::getMarkdownUrlAtPosition(const QString &text,
  * @brief Duplicates the text in the text edit
  */
 void QMarkdownTextEdit::duplicateText() {
+    if (isReadOnly()) {
+        return;
+    }
+
     QTextCursor cursor = this->textCursor();
     QString selectedText = cursor.selectedText();
 
