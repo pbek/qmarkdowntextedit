@@ -6,8 +6,7 @@ os:
 
 branches:
   only:
-    - develop
-    - master
+    - main
     - testing
 
 env:

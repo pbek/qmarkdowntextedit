@@ -1,6 +1,6 @@
 # [QMarkdownTextEdit](https://github.com/pbek/qmarkdowntextedit)
-[![Build Status GitHub Actions](https://github.com/pbek/qmarkdowntextedit/workflows/Build/badge.svg?branch=develop)](https://github.com/pbek/qmarkdowntextedit/actions)
-[![Build Status Linux/OS X](https://travis-ci.org/pbek/qmarkdowntextedit.svg?branch=develop)](https://travis-ci.org/pbek/qmarkdowntextedit)
+[![Build Status GitHub Actions](https://github.com/pbek/qmarkdowntextedit/workflows/Build/badge.svg?branch=main)](https://github.com/pbek/qmarkdowntextedit/actions)
+[![Build Status Linux/OS X](https://travis-ci.org/pbek/qmarkdowntextedit.svg?branch=main)](https://travis-ci.org/pbek/qmarkdowntextedit)
 [![Build Status Windows](https://ci.appveyor.com/api/projects/status/github/pbek/qmarkdowntextedit)](https://ci.appveyor.com/project/pbek/qmarkdowntextedit)
 
 QMarkdownTextEdit is a C++ Qt [QPlainTextEdit](http://doc.qt.io/qt-5/qplaintextedit.html) widget with [markdown](https://en.wikipedia.org/wiki/Markdown) highlighting and some other goodies.
@@ -46,12 +46,12 @@ There are multiple ways to use this. You can use the editor directly, or you can
 ### Using the editor
 
 #### QMake
-- Include [qmarkdowntextedit.pri](https://github.com/pbek/qmarkdowntextedit/blob/develop/qmarkdowntextedit.pri) 
+- Include [qmarkdowntextedit.pri](https://github.com/pbek/qmarkdowntextedit/blob/main/qmarkdowntextedit.pri) 
   to your project like this `include (qmarkdowntextedit/qmarkdowntextedit.pri)`
 - add a normal `QPlainTextEdit` to your UI and promote it to `QMarkdownTextEdit` (base class `QPlainTextEdit`)
 
 #### CMake
-- Include [CMakeLists.txt](https://github.com/pbek/qmarkdowntextedit/blob/develop/CMakeLists.txt)
+- Include [CMakeLists.txt](https://github.com/pbek/qmarkdowntextedit/blob/main/CMakeLists.txt)
   to your project like this `add_subdirectory(qmarkdowntextedit)`
 - add a normal `QPlainTextEdit` to your UI and promote it to `QMarkdownTextEdit` (base class `QPlainTextEdit`)
 
