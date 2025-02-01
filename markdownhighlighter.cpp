@@ -374,7 +374,9 @@ void MarkdownHighlighter::initCodeLangs() {
             {QLatin1String("yaml"), MarkdownHighlighter::CodeYAML},
             {QLatin1String("forth"), MarkdownHighlighter::CodeForth},
             {QLatin1String("systemverilog"),
-             MarkdownHighlighter::CodeSystemVerilog}};
+             MarkdownHighlighter::CodeSystemVerilog},
+            {QLatin1String("gdscript"), MarkdownHighlighter::CodeGDScript},
+    };
 }
 
 /**
@@ -768,6 +770,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
     bool isYAML = false;
     bool isMake = false;
     bool isForth = false;
+    bool isGDScript = false;
 
     QMultiHash<char, QLatin1String> keywords{};
     QMultiHash<char, QLatin1String> others{};
@@ -920,6 +923,12 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
         case HighlighterState::CodeSystemVerilog:
         case HighlighterState::CodeSystemVerilogComment:
             loadSystemVerilogData(types, keywords, builtin, literals, others);
+            break;
+        case HighlighterState::CodeGDScript:
+        case HighlighterState::CodeGDScript + tildeOffset:
+            isGDScript = true;
+            loadGDScriptData(types, keywords, builtin, literals, others);
+            comment = QLatin1Char('#');
             break;
         default:
             setFormat(0, textLen, _formats[CodeBlock]);
@@ -1082,6 +1091,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
     if (isYAML) ymlHighlighter(text);
     if (isMake) makeHighlighter(text);
     if (isForth) forthHighlighter(text);
+    if (isGDScript) gdscriptHighlighter(text);
 }
 
 /**
@@ -1692,6 +1702,36 @@ void MarkdownHighlighter::forthHighlighter(const QString &text) {
                 text[lastBracket] == QLatin1Char(' ')) {
                 setFormat(i, lastBracket, _formats[CodeComment]);
             }
+        }
+    }
+}
+
+/**
+ * @brief The GDScript highlighter
+ * @param text
+ * @details This function is responsible for GDScript highlighting.
+ * 1. Hightlight '$' NodePath constructs.
+ * 2. Highlight '%' UniqueNode constructs.
+ * 3. Highlight '@' annotations as `CodeOther`
+ */
+void MarkdownHighlighter::gdscriptHighlighter(const QString &text) {
+    if (text.isEmpty()) return;
+    const auto textLen = text.length();
+
+    for (int i = 0; i < textLen; ++i) {
+        // 1. Hightlight '$' NodePath constructs.
+        if (i + 1 <= textLen && text[i] == QLatin1Char('$')) {
+            /* TODO: Hightlight '$' NodePath constructs */
+            setFormat(i, 1, _formats[CodeNumLiteral]);
+        }
+        // 2. Highlight '%' UniqueNode constructs.
+        else if (i + 1 <= textLen && text[i] == QLatin1Char('%')) {
+            /* TODO: Highlight '%' UniqueNode constructs */
+            setFormat(i, 1, _formats[CodeNumLiteral]);
+        }
+        // 3. Hightlight '@' annotations symbol
+        else if (i + 1 <= textLen && text[i] == QLatin1Char('@')) {
+            setFormat(i, 1, _formats[CodeOther]);
         }
     }
 }

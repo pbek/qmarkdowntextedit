@@ -213,6 +213,7 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
         CodeForthComment = 249,
         CodeSystemVerilog = 250,
         CodeSystemVerilogComment = 251,
+        CodeGDScript = 252,
     };
     Q_ENUM(HighlighterState)
 
@@ -331,8 +332,9 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
     void makeHighlighter(const QString &text);
 
     void forthHighlighter(const QString &text);
-
     void taggerScriptHighlighter(const QString &text);
+
+    void gdscriptHighlighter(const QString &text);
 
     void addDirtyBlock(const QTextBlock &block);
 
