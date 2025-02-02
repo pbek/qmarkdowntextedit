@@ -771,6 +771,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
     bool isMake = false;
     bool isForth = false;
     bool isGDScript = false;
+    bool isSQL = false;
 
     QMultiHash<char, QLatin1String> keywords{};
     QMultiHash<char, QLatin1String> others{};
@@ -854,7 +855,11 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
             break;
         case HighlighterState::CodeSQL:
         case HighlighterState::CodeSQL + tildeOffset:
+        case HighlighterState::CodeSQLComment:
+        case HighlighterState::CodeSQLComment + tildeOffset:
             loadSQLData(types, keywords, builtin, literals, others);
+            isSQL = true;
+            comment = QLatin1Char('-'); // prevent the default comment highlighting
             break;
         case HighlighterState::CodeJSON:
         case HighlighterState::CodeJSON + tildeOffset:
@@ -1092,6 +1097,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
     if (isMake) makeHighlighter(text);
     if (isForth) forthHighlighter(text);
     if (isGDScript) gdscriptHighlighter(text);
+    if (isSQL) sqlHighlighter(text);
 }
 
 /**
@@ -1732,6 +1738,55 @@ void MarkdownHighlighter::gdscriptHighlighter(const QString &text) {
         // 3. Hightlight '@' annotations symbol
         else if (i + 1 <= textLen && text[i] == QLatin1Char('@')) {
             setFormat(i, 1, _formats[CodeOther]);
+        }
+    }
+}
+
+
+/**
+ * @brief The SQL highlighter
+ * @param text
+ * @details This function is responsible for SQL comment highlighting.
+ * 1. Highlight "--" comments
+ * 2. Highlight "/ *"-style multi-line comments 
+ */
+void MarkdownHighlighter::sqlHighlighter(const QString &text) {
+    if (text.isEmpty()) return;
+    const auto textLen = text.length();
+
+    for (int i = 0; i < textLen; ++i) {
+        if (i + 1 > textLen) {
+            break;
+        }
+        // Check for comments: single-line, or multi-line start or end
+        if (text[i] == QLatin1Char('-') && text[i + 1] == QLatin1Char('-')) {
+            setFormat(i, textLen, _formats[CodeComment]);
+        } else if (text[i] == QLatin1Char('/') && text[i + 1] == QLatin1Char('*')) {
+            // we're in a multi-line comment now
+            if(currentBlockState() % 2 == 0) {
+                setCurrentBlockState(currentBlockState() + 1);
+                // Did the multi-line comment end in the same line?
+                int endingComment = text.indexOf(QLatin1String("*/"), i + 2);
+                int highlightEnd = textLen;
+                if (endingComment > -1) {
+                    highlightEnd = endingComment + 2;
+                }
+
+                setFormat(i, highlightEnd - i, _formats[CodeComment]);
+            }
+        } else if (text[i] == QLatin1Char('*') && text[i + 1] == QLatin1Char('/')) {
+            // we're now no longer in a multi-line comment
+            if(currentBlockState() % 2 != 0){
+                setCurrentBlockState(currentBlockState() - 1);
+                // Did the multi-line comment start in the same line?
+                int startingComment = text.indexOf(QLatin1String("/*"), 0);
+                int highlightStart = 0;
+                if (startingComment > -1) {
+                    highlightStart = startingComment;
+                }
+
+                setFormat(highlightStart - i, i + 1 , _formats[CodeComment]);
+            }
         }
     }
 }

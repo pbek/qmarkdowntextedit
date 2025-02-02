@@ -195,6 +195,7 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
         CodeV = 222,
         CodeVComment = 223,
         CodeSQL = 224,
+        CodeSQLComment = 225,
         CodeJSON = 226,
         CodeXML = 228,
         CodeCSS = 230,
@@ -335,6 +336,7 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
     void taggerScriptHighlighter(const QString &text);
 
     void gdscriptHighlighter(const QString &text);
+    void sqlHighlighter(const QString &text);
 
     void addDirtyBlock(const QTextBlock &block);
 
