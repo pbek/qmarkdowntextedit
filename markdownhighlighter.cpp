@@ -376,7 +376,7 @@ void MarkdownHighlighter::initCodeLangs() {
             {QLatin1String("systemverilog"),
              MarkdownHighlighter::CodeSystemVerilog},
             {QLatin1String("gdscript"), MarkdownHighlighter::CodeGDScript},
-    };
+        };
 }
 
 /**
@@ -859,7 +859,8 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
         case HighlighterState::CodeSQLComment + tildeOffset:
             loadSQLData(types, keywords, builtin, literals, others);
             isSQL = true;
-            comment = QLatin1Char('-'); // prevent the default comment highlighting
+            comment =
+                QLatin1Char('-');    // prevent the default comment highlighting
             break;
         case HighlighterState::CodeJSON:
         case HighlighterState::CodeJSON + tildeOffset:
@@ -1742,13 +1743,12 @@ void MarkdownHighlighter::gdscriptHighlighter(const QString &text) {
     }
 }
 
-
 /**
  * @brief The SQL highlighter
  * @param text
  * @details This function is responsible for SQL comment highlighting.
  * 1. Highlight "--" comments
- * 2. Highlight "/ *"-style multi-line comments 
+ * 2. Highlight "/ *"-style multi-line comments
  */
 void MarkdownHighlighter::sqlHighlighter(const QString &text) {
     if (text.isEmpty()) return;
@@ -1761,9 +1761,10 @@ void MarkdownHighlighter::sqlHighlighter(const QString &text) {
         // Check for comments: single-line, or multi-line start or end
         if (text[i] == QLatin1Char('-') && text[i + 1] == QLatin1Char('-')) {
             setFormat(i, textLen, _formats[CodeComment]);
-        } else if (text[i] == QLatin1Char('/') && text[i + 1] == QLatin1Char('*')) {
+        } else if (text[i] == QLatin1Char('/') &&
+                   text[i + 1] == QLatin1Char('*')) {
             // we're in a multi-line comment now
-            if(currentBlockState() % 2 == 0) {
+            if (currentBlockState() % 2 == 0) {
                 setCurrentBlockState(currentBlockState() + 1);
                 // Did the multi-line comment end in the same line?
                 int endingComment = text.indexOf(QLatin1String("*/"), i + 2);
@@ -1774,9 +1775,10 @@ void MarkdownHighlighter::sqlHighlighter(const QString &text) {
 
                 setFormat(i, highlightEnd - i, _formats[CodeComment]);
             }
-        } else if (text[i] == QLatin1Char('*') && text[i + 1] == QLatin1Char('/')) {
+        } else if (text[i] == QLatin1Char('*') &&
+                   text[i + 1] == QLatin1Char('/')) {
             // we're now no longer in a multi-line comment
-            if(currentBlockState() % 2 != 0){
+            if (currentBlockState() % 2 != 0) {
                 setCurrentBlockState(currentBlockState() - 1);
                 // Did the multi-line comment start in the same line?
                 int startingComment = text.indexOf(QLatin1String("/*"), 0);
@@ -1785,7 +1787,7 @@ void MarkdownHighlighter::sqlHighlighter(const QString &text) {
                     highlightStart = startingComment;
                 }
 
-                setFormat(highlightStart - i, i + 1 , _formats[CodeComment]);
+                setFormat(highlightStart - i, i + 1, _formats[CodeComment]);
             }
         }
     }
