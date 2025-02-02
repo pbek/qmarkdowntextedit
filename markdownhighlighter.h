@@ -195,6 +195,7 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
         CodeV = 222,
         CodeVComment = 223,
         CodeSQL = 224,
+        CodeSQLComment = 225,
         CodeJSON = 226,
         CodeXML = 228,
         CodeCSS = 230,
