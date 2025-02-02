@@ -771,6 +771,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
     bool isMake = false;
     bool isForth = false;
     bool isGDScript = false;
+    bool isSQL = false;
 
     QMultiHash<char, QLatin1String> keywords{};
     QMultiHash<char, QLatin1String> others{};
@@ -855,6 +856,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
         case HighlighterState::CodeSQL:
         case HighlighterState::CodeSQL + tildeOffset:
             loadSQLData(types, keywords, builtin, literals, others);
+            isSQL = true;
             break;
         case HighlighterState::CodeJSON:
         case HighlighterState::CodeJSON + tildeOffset:
@@ -1092,6 +1094,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
     if (isMake) makeHighlighter(text);
     if (isForth) forthHighlighter(text);
     if (isGDScript) gdscriptHighlighter(text);
+    if (isSQL) sqlHighlighter(text);
 }
 
 /**
@@ -1732,6 +1735,25 @@ void MarkdownHighlighter::gdscriptHighlighter(const QString &text) {
         // 3. Hightlight '@' annotations symbol
         else if (i + 1 <= textLen && text[i] == QLatin1Char('@')) {
             setFormat(i, 1, _formats[CodeOther]);
+        }
+    }
+}
+
+
+/**
+ * @brief The SQL highlighter
+ * @param text
+ * @details This function is responsible for SQL comment highlighting.
+ * 1. Highlight "--" comments
+ */
+void MarkdownHighlighter::sqlHighlighter(const QString &text) {
+    if (text.isEmpty()) return;
+    const auto textLen = text.length();
+
+    for (int i = 0; i < textLen; ++i) {
+        if (i + 1 <= textLen && text[i] == QLatin1Char('-') && 
+            text[i+1] == QLatin1Char('-')) {
+            setFormat(i, textLen, _formats[CodeComment]);
         }
     }
 }

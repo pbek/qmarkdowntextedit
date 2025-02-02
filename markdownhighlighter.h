@@ -335,6 +335,7 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
     void taggerScriptHighlighter(const QString &text);
 
     void gdscriptHighlighter(const QString &text);
+    void sqlHighlighter(const QString &text);
 
     void addDirtyBlock(const QTextBlock &block);
 
