@@ -1814,7 +1814,6 @@ void MarkdownHighlighter::tomlHighlighter(const QString &text) {
     const auto textLen = text.length();
 
     bool onlyWhitespaceBeforeHeader = true; 
-    bool isComment = false;
     int possibleAssignmentPos = text.indexOf(QLatin1Char('='), 0);
     int singleQStringStart = -1;
     int doubleQStringStart = -1;
@@ -1828,6 +1827,10 @@ void MarkdownHighlighter::tomlHighlighter(const QString &text) {
             break;
         }   
 
+        // track the state of strings
+        // multiline highlighting doesn't quite behave due to clashing handling of " and '
+        // chars, but this accomodates normal " and ' strings, as well as
+        // ones wrapped by either """ or '''
         if (text[i] == doubleQ){
             if (i + 2 <= textLen && text[i + 1] == doubleQ && text[i + 2] == doubleQ){
                 if (multiDoubleQStringStart > -1){
@@ -1877,15 +1880,14 @@ void MarkdownHighlighter::tomlHighlighter(const QString &text) {
         bool inString = doubleQStringStart > -1 || singleQStringStart > -1 
             || multiSingleQStringStart > -1 || multiDoubleQStringStart > -1;
 
-        qDebug() <<  "char " << text[i] << " at " << i << " is in string " << inString;
-
+        // do comment highlighting
         if (text[i] == QLatin1Char('#') && !inString){
             setFormat(i, textLen - i, _formats[CodeComment]);
             return;
         }
 
         // table header (all stuff preceeding must only be whitespace)
-        if (text[i] == QLatin1Char('[') && onlyWhitespaceBeforeHeader && !isComment){
+        if (text[i] == QLatin1Char('[') && onlyWhitespaceBeforeHeader){
             int headerEnd = text.indexOf(QLatin1Char(']'), i);
             if (headerEnd > -1){
                 setFormat(i, headerEnd + 1 - i, _formats[CodeType]);
@@ -1893,6 +1895,7 @@ void MarkdownHighlighter::tomlHighlighter(const QString &text) {
             }
         }
 
+        // handle numbers, inf, nan and datetime the same way
         if (i > possibleAssignmentPos && !inString && (text[i].isNumber() || 
                 text.indexOf(QLatin1String("inf"), i) > 0 || 
                 text.indexOf(QLatin1String("nan"), i) > 0)) {
