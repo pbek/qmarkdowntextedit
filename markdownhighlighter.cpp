@@ -949,7 +949,8 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
         default:
             setFormat(0, textLen, _formats[CodeBlock]);
             return;
-}
+    }
+
     auto applyCodeFormat =
         [this](int i, const QMultiHash<char, QLatin1String> &data,
                const QString &text, const QTextCharFormat &fmt) -> int {
