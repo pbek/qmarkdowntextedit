@@ -1813,7 +1813,7 @@ void MarkdownHighlighter::tomlHighlighter(const QString &text) {
     if (text.isEmpty()) return;
     const auto textLen = text.length();
 
-    bool onlyWhitespaceBeforeHeader = true; 
+    bool onlyWhitespaceBeforeHeader = true;
     int possibleAssignmentPos = text.indexOf(QLatin1Char('='), 0);
     int singleQStringStart = -1;
     int doubleQStringStart = -1;
@@ -1825,21 +1825,24 @@ void MarkdownHighlighter::tomlHighlighter(const QString &text) {
     for (int i = 0; i < textLen; ++i) {
         if (i + 1 > textLen) {
             break;
-        }   
+        }
 
         // track the state of strings
-        // multiline highlighting doesn't quite behave due to clashing handling of " and '
-        // chars, but this accomodates normal " and ' strings, as well as
-        // ones wrapped by either """ or '''
-        if (text[i] == doubleQ){
-            if (i + 2 <= textLen && text[i + 1] == doubleQ && text[i + 2] == doubleQ){
-                if (multiDoubleQStringStart > -1){
+        // multiline highlighting doesn't quite behave due to clashing handling
+        // of " and ' chars, but this accomodates normal " and ' strings, as
+        // well as ones wrapped by either """ or '''
+        if (text[i] == doubleQ) {
+            if (i + 2 <= textLen && text[i + 1] == doubleQ &&
+                text[i + 2] == doubleQ) {
+                if (multiDoubleQStringStart > -1) {
                     multiDoubleQStringStart = -1;
                 } else {
                     multiDoubleQStringStart = i;
-                    int multiDoubleQStringEnd = text.indexOf(QLatin1String("\"\"\""), i + 1);
-                    if (multiDoubleQStringEnd > -1){
-                        setFormat(i, multiDoubleQStringEnd - i, _formats[CodeString]);
+                    int multiDoubleQStringEnd =
+                        text.indexOf(QLatin1String("\"\"\""), i + 1);
+                    if (multiDoubleQStringEnd > -1) {
+                        setFormat(i, multiDoubleQStringEnd - i,
+                                  _formats[CodeString]);
                         i = multiDoubleQStringEnd + 2;
                         multiDoubleQStringEnd = -1;
                         multiDoubleQStringStart = -1;
@@ -1853,15 +1856,18 @@ void MarkdownHighlighter::tomlHighlighter(const QString &text) {
                     doubleQStringStart = i;
                 }
             }
-        } else if (text[i] == singleQ){
-            if (i + 2 <= textLen && text[i + 1] == singleQ && text[i + 2] == singleQ){
-                if (multiSingleQStringStart > -1){
+        } else if (text[i] == singleQ) {
+            if (i + 2 <= textLen && text[i + 1] == singleQ &&
+                text[i + 2] == singleQ) {
+                if (multiSingleQStringStart > -1) {
                     multiSingleQStringStart = -1;
                 } else {
                     multiSingleQStringStart = i;
-                    int multiSingleQStringEnd = text.indexOf(QLatin1String("'''"), i + 1);
-                    if (multiSingleQStringEnd > -1){
-                        setFormat(i, multiSingleQStringEnd - i, _formats[CodeString]);
+                    int multiSingleQStringEnd =
+                        text.indexOf(QLatin1String("'''"), i + 1);
+                    if (multiSingleQStringEnd > -1) {
+                        setFormat(i, multiSingleQStringEnd - i,
+                                  _formats[CodeString]);
                         i = multiSingleQStringEnd + 2;
                         multiSingleQStringEnd = -1;
                         multiSingleQStringStart = -1;
@@ -1877,47 +1883,51 @@ void MarkdownHighlighter::tomlHighlighter(const QString &text) {
             }
         }
 
-        bool inString = doubleQStringStart > -1 || singleQStringStart > -1 
-            || multiSingleQStringStart > -1 || multiDoubleQStringStart > -1;
+        bool inString = doubleQStringStart > -1 || singleQStringStart > -1 ||
+                        multiSingleQStringStart > -1 ||
+                        multiDoubleQStringStart > -1;
 
         // do comment highlighting
-        if (text[i] == QLatin1Char('#') && !inString){
+        if (text[i] == QLatin1Char('#') && !inString) {
             setFormat(i, textLen - i, _formats[CodeComment]);
             return;
         }
 
         // table header (all stuff preceeding must only be whitespace)
-        if (text[i] == QLatin1Char('[') && onlyWhitespaceBeforeHeader){
+        if (text[i] == QLatin1Char('[') && onlyWhitespaceBeforeHeader) {
             int headerEnd = text.indexOf(QLatin1Char(']'), i);
-            if (headerEnd > -1){
+            if (headerEnd > -1) {
                 setFormat(i, headerEnd + 1 - i, _formats[CodeType]);
                 return;
             }
         }
 
         // handle numbers, inf, nan and datetime the same way
-        if (i > possibleAssignmentPos && !inString && (text[i].isNumber() || 
-                text.indexOf(QLatin1String("inf"), i) > 0 || 
-                text.indexOf(QLatin1String("nan"), i) > 0)) {
+        if (i > possibleAssignmentPos && !inString &&
+            (text[i].isNumber() || text.indexOf(QLatin1String("inf"), i) > 0 ||
+             text.indexOf(QLatin1String("nan"), i) > 0)) {
             int nextWhitespace = text.indexOf(QLatin1Char(' '), i);
             int endOfNumber = textLen;
             if (nextWhitespace > -1) {
-                if (text[nextWhitespace - 1] == QLatin1Char(',')) nextWhitespace--;
+                if (text[nextWhitespace - 1] == QLatin1Char(','))
+                    nextWhitespace--;
                 endOfNumber = nextWhitespace;
             }
 
             int highlightStart = i;
             if (i > 0) {
-                if (text[i - 1] == QLatin1Char('-') || text[i - 1] == QLatin1Char('+')){
+                if (text[i - 1] == QLatin1Char('-') ||
+                    text[i - 1] == QLatin1Char('+')) {
                     highlightStart--;
                 }
             }
-            setFormat(highlightStart, endOfNumber - highlightStart, _formats[CodeNumLiteral]);
+            setFormat(highlightStart, endOfNumber - highlightStart,
+                      _formats[CodeNumLiteral]);
             i = endOfNumber;
         }
 
-        if (!text[i].isSpace()){
-           onlyWhitespaceBeforeHeader = false;
+        if (!text[i].isSpace()) {
+            onlyWhitespaceBeforeHeader = false;
         }
     }
 }
