@@ -7264,3 +7264,42 @@ void loadGDScriptData(QMultiHash<char, QLatin1String> &types,
     literals = gdscript_literals;
     other = gdscript_other;
 }
+
+/********************************************************/
+/***   TOML DATA  ***************************************/
+/********************************************************/
+static bool TOMLDataInitialized = false;
+static QMultiHash<char, QLatin1String> TOML_keywords;
+static QMultiHash<char, QLatin1String> TOML_types;
+static QMultiHash<char, QLatin1String> TOML_literals;
+static QMultiHash<char, QLatin1String> TOML_builtin;
+static QMultiHash<char, QLatin1String> TOML_other;
+void initTOMLData() {
+    TOML_keywords = {};
+    TOML_types = {};
+    TOML_literals = {
+        {('f'), QLatin1String("false")},
+        {('t'), QLatin1String("true")},
+        {('n'), QLatin1String("null")},
+        {('i'), QLatin1String("inf")},
+        {('n'), QLatin1String("nan")},
+    };
+
+    TOML_builtin = {};
+    TOML_other = {};
+}
+void loadTOMLData(QMultiHash<char, QLatin1String> &types,
+                  QMultiHash<char, QLatin1String> &keywords,
+                  QMultiHash<char, QLatin1String> &builtin,
+                  QMultiHash<char, QLatin1String> &literals,
+                  QMultiHash<char, QLatin1String> &other) {
+    if (!TOMLDataInitialized) {
+        initTOMLData();
+        TOMLDataInitialized = true;
+    }
+    types = TOML_types;
+    keywords = TOML_keywords;
+    builtin = TOML_builtin;
+    literals = TOML_literals;
+    other = TOML_other;
+}

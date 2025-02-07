@@ -376,6 +376,7 @@ void MarkdownHighlighter::initCodeLangs() {
             {QLatin1String("systemverilog"),
              MarkdownHighlighter::CodeSystemVerilog},
             {QLatin1String("gdscript"), MarkdownHighlighter::CodeGDScript},
+            {QLatin1String("toml"), MarkdownHighlighter::CodeTOML},
         };
 }
 
@@ -772,6 +773,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
     bool isForth = false;
     bool isGDScript = false;
     bool isSQL = false;
+    bool isTOML = false;
 
     QMultiHash<char, QLatin1String> keywords{};
     QMultiHash<char, QLatin1String> others{};
@@ -934,6 +936,14 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
         case HighlighterState::CodeGDScript + tildeOffset:
             isGDScript = true;
             loadGDScriptData(types, keywords, builtin, literals, others);
+            comment = QLatin1Char('#');
+            break;
+        case HighlighterState::CodeTOML:
+        case HighlighterState::CodeTOML + tildeOffset:
+        case HighlighterState::CodeTOMLString:
+        case HighlighterState::CodeTOMLString + tildeOffset:
+            isTOML = true;
+            loadTOMLData(types, keywords, builtin, literals, others);
             comment = QLatin1Char('#');
             break;
         default:
@@ -1099,6 +1109,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
     if (isForth) forthHighlighter(text);
     if (isGDScript) gdscriptHighlighter(text);
     if (isSQL) sqlHighlighter(text);
+    if (isTOML) tomlHighlighter(text);
 }
 
 /**
@@ -1786,6 +1797,134 @@ void MarkdownHighlighter::sqlHighlighter(const QString &text) {
 
                 setFormat(highlightStart - i, i + 1, _formats[CodeComment]);
             }
+        }
+    }
+}
+
+/**
+ * @brief The TOML highlighter
+ * @param text
+ * @details This function is responsible for TOML highlighting.
+ */
+void MarkdownHighlighter::tomlHighlighter(const QString &text) {
+    if (text.isEmpty()) return;
+    const auto textLen = text.length();
+
+    bool onlyWhitespaceBeforeHeader = true;
+    int possibleAssignmentPos = text.indexOf(QLatin1Char('='), 0);
+    int singleQStringStart = -1;
+    int doubleQStringStart = -1;
+    int multiSingleQStringStart = -1;
+    int multiDoubleQStringStart = -1;
+    QLatin1Char singleQ = QLatin1Char('\'');
+    QLatin1Char doubleQ = QLatin1Char('"');
+
+    for (int i = 0; i < textLen; ++i) {
+        if (i + 1 > textLen) {
+            break;
+        }
+
+        // track the state of strings
+        // multiline highlighting doesn't quite behave due to clashing handling
+        // of " and ' chars, but this accomodates normal " and ' strings, as
+        // well as ones wrapped by either """ or '''
+        if (text[i] == doubleQ) {
+            if (i + 2 <= textLen && text[i + 1] == doubleQ &&
+                text[i + 2] == doubleQ) {
+                if (multiDoubleQStringStart > -1) {
+                    multiDoubleQStringStart = -1;
+                } else {
+                    multiDoubleQStringStart = i;
+                    int multiDoubleQStringEnd =
+                        text.indexOf(QLatin1String("\"\"\""), i + 1);
+                    if (multiDoubleQStringEnd > -1) {
+                        setFormat(i, multiDoubleQStringEnd - i,
+                                  _formats[CodeString]);
+                        i = multiDoubleQStringEnd + 2;
+                        multiDoubleQStringEnd = -1;
+                        multiDoubleQStringStart = -1;
+                        continue;
+                    }
+                }
+            } else {
+                if (doubleQStringStart > -1) {
+                    doubleQStringStart = -1;
+                } else {
+                    doubleQStringStart = i;
+                }
+            }
+        } else if (text[i] == singleQ) {
+            if (i + 2 <= textLen && text[i + 1] == singleQ &&
+                text[i + 2] == singleQ) {
+                if (multiSingleQStringStart > -1) {
+                    multiSingleQStringStart = -1;
+                } else {
+                    multiSingleQStringStart = i;
+                    int multiSingleQStringEnd =
+                        text.indexOf(QLatin1String("'''"), i + 1);
+                    if (multiSingleQStringEnd > -1) {
+                        setFormat(i, multiSingleQStringEnd - i,
+                                  _formats[CodeString]);
+                        i = multiSingleQStringEnd + 2;
+                        multiSingleQStringEnd = -1;
+                        multiSingleQStringStart = -1;
+                        continue;
+                    }
+                }
+            } else {
+                if (singleQStringStart > -1) {
+                    singleQStringStart = -1;
+                } else {
+                    singleQStringStart = i;
+                }
+            }
+        }
+
+        bool inString = doubleQStringStart > -1 || singleQStringStart > -1 ||
+                        multiSingleQStringStart > -1 ||
+                        multiDoubleQStringStart > -1;
+
+        // do comment highlighting
+        if (text[i] == QLatin1Char('#') && !inString) {
+            setFormat(i, textLen - i, _formats[CodeComment]);
+            return;
+        }
+
+        // table header (all stuff preceeding must only be whitespace)
+        if (text[i] == QLatin1Char('[') && onlyWhitespaceBeforeHeader) {
+            int headerEnd = text.indexOf(QLatin1Char(']'), i);
+            if (headerEnd > -1) {
+                setFormat(i, headerEnd + 1 - i, _formats[CodeType]);
+                return;
+            }
+        }
+
+        // handle numbers, inf, nan and datetime the same way
+        if (i > possibleAssignmentPos && !inString &&
+            (text[i].isNumber() || text.indexOf(QLatin1String("inf"), i) > 0 ||
+             text.indexOf(QLatin1String("nan"), i) > 0)) {
+            int nextWhitespace = text.indexOf(QLatin1Char(' '), i);
+            int endOfNumber = textLen;
+            if (nextWhitespace > -1) {
+                if (text[nextWhitespace - 1] == QLatin1Char(','))
+                    nextWhitespace--;
+                endOfNumber = nextWhitespace;
+            }
+
+            int highlightStart = i;
+            if (i > 0) {
+                if (text[i - 1] == QLatin1Char('-') ||
+                    text[i - 1] == QLatin1Char('+')) {
+                    highlightStart--;
+                }
+            }
+            setFormat(highlightStart, endOfNumber - highlightStart,
+                      _formats[CodeNumLiteral]);
+            i = endOfNumber;
+        }
+
+        if (!text[i].isSpace()) {
+            onlyWhitespaceBeforeHeader = false;
         }
     }
 }
