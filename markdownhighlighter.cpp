@@ -1813,11 +1813,12 @@ void MarkdownHighlighter::tomlHighlighter(const QString &text) {
     if (text.isEmpty()) return;
     const auto textLen = text.length();
 
-    bool preHeaderWhiteSpace = true; 
+    bool onlyWhitespaceBeforeHeader = true; 
     bool isComment = false;
     int possibleAssignmentPos = text.indexOf(QLatin1Char('='), 0);
+    int singleQStringStart = -1;
+    int doubleQStringStart = -1;
 
-    qDebug() << text;
     for (int i = 0; i < textLen; ++i) {
         if (i + 1 > textLen) {
             break;
@@ -1827,8 +1828,23 @@ void MarkdownHighlighter::tomlHighlighter(const QString &text) {
             isComment = true;
         }
 
+        // Can only handle single line strings at the moment
+        if (text[i] == QLatin1Char('"')){
+            if(doubleQStringStart > -1){
+                doubleQStringStart = -1; // string has ended
+            } else {
+                doubleQStringStart = i;
+            }
+        } else if (text[i] == QLatin1Char('\'')){
+            if(singleQStringStart > -1){
+                singleQStringStart = -1; // string has ended
+            } else {
+                singleQStringStart = i;
+            }
+        }
+
         // table header (all stuff preceeding must only be whitespace)
-        if (text[i] == QLatin1Char('[') && preHeaderWhiteSpace && !isComment){
+        if (text[i] == QLatin1Char('[') && onlyWhitespaceBeforeHeader && !isComment){
             int headerEnd = text.indexOf(QLatin1Char(']'), i);
             if (headerEnd > -1){
                 setFormat(i, headerEnd + 1 - i, _formats[CodeType]);
@@ -1836,9 +1852,9 @@ void MarkdownHighlighter::tomlHighlighter(const QString &text) {
             }
         }
 
-        if (i > possibleAssignmentPos && (text[i].isNumber() || 
-            text.indexOf(QLatin1String("inf"), i) > 0 || 
-            text.indexOf(QLatin1String("nan"), i) > 0)) { // also not in a string
+        if (i > possibleAssignmentPos && singleQStringStart == -1 && doubleQStringStart == -1 && 
+            (text[i].isNumber() || text.indexOf(QLatin1String("inf"), i) > 0 || 
+                text.indexOf(QLatin1String("nan"), i) > 0)) {
             int nextWhitespace = text.indexOf(QLatin1Char(' '), i);
             int endOfNumber = textLen;
             if (nextWhitespace > -1) {
@@ -1862,7 +1878,7 @@ void MarkdownHighlighter::tomlHighlighter(const QString &text) {
         }
 
         if (!text[i].isSpace()){
-           preHeaderWhiteSpace = false;
+           onlyWhitespaceBeforeHeader = false;
         }
     }
 }
