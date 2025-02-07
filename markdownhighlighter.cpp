@@ -1723,22 +1723,19 @@ void MarkdownHighlighter::forthHighlighter(const QString &text) {
  */
 void MarkdownHighlighter::gdscriptHighlighter(const QString &text) {
     if (text.isEmpty()) return;
-    const auto textLen = text.length();
 
-    for (int i = 0; i < textLen; ++i) {
-        // 1. Hightlight '$' NodePath constructs.
-        if (i + 1 <= textLen && text[i] == QLatin1Char('$')) {
-            /* TODO: Hightlight '$' NodePath constructs */
-            setFormat(i, 1, _formats[CodeNumLiteral]);
-        }
-        // 2. Highlight '%' UniqueNode constructs.
-        else if (i + 1 <= textLen && text[i] == QLatin1Char('%')) {
-            /* TODO: Highlight '%' UniqueNode constructs */
-            setFormat(i, 1, _formats[CodeNumLiteral]);
-        }
-        // 3. Hightlight '@' annotations symbol
-        else if (i + 1 <= textLen && text[i] == QLatin1Char('@')) {
-            setFormat(i, 1, _formats[CodeOther]);
+    // 1. Hightlight '$' NodePath constructs.
+    // 2. Highlight '%' UniqueNode constructs.
+    const QRegularExpression re = QRegularExpression(QStringLiteral(R"([$%][a-zA-Z_][a-zA-Z0-9_]*(/[a-zA-Z_][a-zA-Z0-9_]*)*|@)"));
+    QRegularExpressionMatchIterator i = re.globalMatch(text);
+    while (i.hasNext()) {
+        QRegularExpressionMatch match = i.next();
+        // 3. Hightlight '@' annotation symbol
+        if (match.captured().startsWith(QLatin1Char('@')))
+        {
+            setFormat(match.capturedStart(), match.capturedLength(), _formats[CodeOther]);
+        } else {
+            setFormat(match.capturedStart(), match.capturedLength(), _formats[CodeNumLiteral]);
         }
     }
 }
