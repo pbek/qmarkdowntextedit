@@ -376,6 +376,7 @@ void MarkdownHighlighter::initCodeLangs() {
             {QLatin1String("systemverilog"),
              MarkdownHighlighter::CodeSystemVerilog},
             {QLatin1String("gdscript"), MarkdownHighlighter::CodeGDScript},
+            {QLatin1String("toml"), MarkdownHighlighter::CodeTOML},
         };
 }
 
@@ -772,6 +773,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
     bool isForth = false;
     bool isGDScript = false;
     bool isSQL = false;
+    bool isTOML = false;
 
     QMultiHash<char, QLatin1String> keywords{};
     QMultiHash<char, QLatin1String> others{};
@@ -936,11 +938,18 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
             loadGDScriptData(types, keywords, builtin, literals, others);
             comment = QLatin1Char('#');
             break;
+        case HighlighterState::CodeTOML:
+        case HighlighterState::CodeTOML + tildeOffset:
+        case HighlighterState::CodeTOMLString:
+        case HighlighterState::CodeTOMLString + tildeOffset:
+            isTOML = true;
+            loadTOMLData(types, keywords, builtin, literals, others);
+            comment = QLatin1Char('#');
+            break;
         default:
             setFormat(0, textLen, _formats[CodeBlock]);
             return;
-    }
-
+}
     auto applyCodeFormat =
         [this](int i, const QMultiHash<char, QLatin1String> &data,
                const QString &text, const QTextCharFormat &fmt) -> int {
@@ -1099,6 +1108,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
     if (isForth) forthHighlighter(text);
     if (isGDScript) gdscriptHighlighter(text);
     if (isSQL) sqlHighlighter(text);
+    if (isTOML) tomlHighlighter(text);
 }
 
 /**
@@ -1789,6 +1799,69 @@ void MarkdownHighlighter::sqlHighlighter(const QString &text) {
 
                 setFormat(highlightStart - i, i + 1, _formats[CodeComment]);
             }
+        }
+    }
+}
+
+/**
+ * @brief The TOML highlighter
+ * @param text
+ * @details This function is responsible for TOML highlighting.
+ */
+void MarkdownHighlighter::tomlHighlighter(const QString &text) {
+    if (text.isEmpty()) return;
+    const auto textLen = text.length();
+
+    bool preHeaderWhiteSpace = true; 
+    bool isComment = false;
+    int possibleAssignmentPos = text.indexOf(QLatin1Char('='), 0);
+
+    qDebug() << text;
+    for (int i = 0; i < textLen; ++i) {
+        if (i + 1 > textLen) {
+            break;
+        }
+
+        if (text[i] == QLatin1Char('#')){
+            isComment = true;
+        }
+
+        // table header (all stuff preceeding must only be whitespace)
+        if (text[i] == QLatin1Char('[') && preHeaderWhiteSpace && !isComment){
+            int headerEnd = text.indexOf(QLatin1Char(']'), i);
+            if (headerEnd > -1){
+                setFormat(i, headerEnd + 1 - i, _formats[CodeType]);
+                return;
+            }
+        }
+
+        if (i > possibleAssignmentPos && (text[i].isNumber() || 
+            text.indexOf(QLatin1String("inf"), i) > 0 || 
+            text.indexOf(QLatin1String("nan"), i) > 0)) { // also not in a string
+            int nextWhitespace = text.indexOf(QLatin1Char(' '), i);
+            int endOfNumber = textLen;
+            if (nextWhitespace > -1) {
+                if (text[nextWhitespace - 1] == QLatin1Char(',')) nextWhitespace--;
+                endOfNumber = nextWhitespace;
+            }
+
+            int highlightStart = i;
+            if (i > 0) {
+                if (text[i - 1] == QLatin1Char('-') || text[i - 1] == QLatin1Char('+')){
+                    highlightStart--;
+                }
+            }
+            setFormat(highlightStart, endOfNumber - highlightStart, _formats[CodeNumLiteral]);
+            i = endOfNumber;
+        }
+
+        if (isComment){
+            setFormat(i, textLen - i, _formats[CodeComment]);
+            return;
+        }
+
+        if (!text[i].isSpace()){
+           preHeaderWhiteSpace = false;
         }
     }
 }

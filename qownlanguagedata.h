@@ -259,4 +259,12 @@ void loadGDScriptData(QMultiHash<char, QLatin1String> &types,
                       QMultiHash<char, QLatin1String> &builtin,
                       QMultiHash<char, QLatin1String> &literals,
                       QMultiHash<char, QLatin1String> &other);
+/********************************************************/
+/***   TOML DATA  **************************************/
+/********************************************************/
+void loadTOMLData(QMultiHash<char, QLatin1String> &types,
+                  QMultiHash<char, QLatin1String> &keywords,
+                  QMultiHash<char, QLatin1String> &builtin,
+                  QMultiHash<char, QLatin1String> &literals,
+                  QMultiHash<char, QLatin1String> &other);
 #endif
