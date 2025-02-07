@@ -1818,29 +1818,70 @@ void MarkdownHighlighter::tomlHighlighter(const QString &text) {
     int possibleAssignmentPos = text.indexOf(QLatin1Char('='), 0);
     int singleQStringStart = -1;
     int doubleQStringStart = -1;
+    int multiSingleQStringStart = -1;
+    int multiDoubleQStringStart = -1;
+    QLatin1Char singleQ = QLatin1Char('\'');
+    QLatin1Char doubleQ = QLatin1Char('"');
 
     for (int i = 0; i < textLen; ++i) {
         if (i + 1 > textLen) {
             break;
+        }   
+
+        if (text[i] == doubleQ){
+            if (i + 2 <= textLen && text[i + 1] == doubleQ && text[i + 2] == doubleQ){
+                if (multiDoubleQStringStart > -1){
+                    multiDoubleQStringStart = -1;
+                } else {
+                    multiDoubleQStringStart = i;
+                    int multiDoubleQStringEnd = text.indexOf(QLatin1String("\"\"\""), i + 1);
+                    if (multiDoubleQStringEnd > -1){
+                        setFormat(i, multiDoubleQStringEnd - i, _formats[CodeString]);
+                        i = multiDoubleQStringEnd + 2;
+                        multiDoubleQStringEnd = -1;
+                        multiDoubleQStringStart = -1;
+                        continue;
+                    }
+                }
+            } else {
+                if (doubleQStringStart > -1) {
+                    doubleQStringStart = -1;
+                } else {
+                    doubleQStringStart = i;
+                }
+            }
+        } else if (text[i] == singleQ){
+            if (i + 2 <= textLen && text[i + 1] == singleQ && text[i + 2] == singleQ){
+                if (multiSingleQStringStart > -1){
+                    multiSingleQStringStart = -1;
+                } else {
+                    multiSingleQStringStart = i;
+                    int multiSingleQStringEnd = text.indexOf(QLatin1String("'''"), i + 1);
+                    if (multiSingleQStringEnd > -1){
+                        setFormat(i, multiSingleQStringEnd - i, _formats[CodeString]);
+                        i = multiSingleQStringEnd + 2;
+                        multiSingleQStringEnd = -1;
+                        multiSingleQStringStart = -1;
+                        continue;
+                    }
+                }
+            } else {
+                if (singleQStringStart > -1) {
+                    singleQStringStart = -1;
+                } else {
+                    singleQStringStart = i;
+                }
+            }
         }
 
-        if (text[i] == QLatin1Char('#')){
-            isComment = true;
-        }
+        bool inString = doubleQStringStart > -1 || singleQStringStart > -1 
+            || multiSingleQStringStart > -1 || multiDoubleQStringStart > -1;
 
-        // Can only handle single line strings at the moment
-        if (text[i] == QLatin1Char('"')){
-            if(doubleQStringStart > -1){
-                doubleQStringStart = -1; // string has ended
-            } else {
-                doubleQStringStart = i;
-            }
-        } else if (text[i] == QLatin1Char('\'')){
-            if(singleQStringStart > -1){
-                singleQStringStart = -1; // string has ended
-            } else {
-                singleQStringStart = i;
-            }
+        qDebug() <<  "char " << text[i] << " at " << i << " is in string " << inString;
+
+        if (text[i] == QLatin1Char('#') && !inString){
+            setFormat(i, textLen - i, _formats[CodeComment]);
+            return;
         }
 
         // table header (all stuff preceeding must only be whitespace)
@@ -1852,8 +1893,8 @@ void MarkdownHighlighter::tomlHighlighter(const QString &text) {
             }
         }
 
-        if (i > possibleAssignmentPos && singleQStringStart == -1 && doubleQStringStart == -1 && 
-            (text[i].isNumber() || text.indexOf(QLatin1String("inf"), i) > 0 || 
+        if (i > possibleAssignmentPos && !inString && (text[i].isNumber() || 
+                text.indexOf(QLatin1String("inf"), i) > 0 || 
                 text.indexOf(QLatin1String("nan"), i) > 0)) {
             int nextWhitespace = text.indexOf(QLatin1Char(' '), i);
             int endOfNumber = textLen;
@@ -1870,11 +1911,6 @@ void MarkdownHighlighter::tomlHighlighter(const QString &text) {
             }
             setFormat(highlightStart, endOfNumber - highlightStart, _formats[CodeNumLiteral]);
             i = endOfNumber;
-        }
-
-        if (isComment){
-            setFormat(i, textLen - i, _formats[CodeComment]);
-            return;
         }
 
         if (!text[i].isSpace()){
