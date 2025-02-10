@@ -7278,10 +7278,8 @@ void initTOMLData() {
     TOML_keywords = {};
     TOML_types = {};
     TOML_literals = {
-        {('f'), QLatin1String("false")},
-        {('t'), QLatin1String("true")},
-        {('n'), QLatin1String("null")},
-        {('i'), QLatin1String("inf")},
+        {('f'), QLatin1String("false")}, {('t'), QLatin1String("true")},
+        {('n'), QLatin1String("null")},  {('i'), QLatin1String("inf")},
         {('n'), QLatin1String("nan")},
     };
 

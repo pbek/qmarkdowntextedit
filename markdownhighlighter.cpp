@@ -1737,16 +1737,18 @@ void MarkdownHighlighter::gdscriptHighlighter(const QString &text) {
 
     // 1. Hightlight '$' NodePath constructs.
     // 2. Highlight '%' UniqueNode constructs.
-    const QRegularExpression re = QRegularExpression(QStringLiteral(R"([$%][a-zA-Z_][a-zA-Z0-9_]*(/[a-zA-Z_][a-zA-Z0-9_]*)*|@)"));
+    const QRegularExpression re = QRegularExpression(QStringLiteral(
+        R"([$%][a-zA-Z_][a-zA-Z0-9_]*(/[a-zA-Z_][a-zA-Z0-9_]*)*|@)"));
     QRegularExpressionMatchIterator i = re.globalMatch(text);
     while (i.hasNext()) {
         QRegularExpressionMatch match = i.next();
         // 3. Hightlight '@' annotation symbol
-        if (match.captured().startsWith(QLatin1Char('@')))
-        {
-            setFormat(match.capturedStart(), match.capturedLength(), _formats[CodeOther]);
+        if (match.captured().startsWith(QLatin1Char('@'))) {
+            setFormat(match.capturedStart(), match.capturedLength(),
+                      _formats[CodeOther]);
         } else {
-            setFormat(match.capturedStart(), match.capturedLength(), _formats[CodeNumLiteral]);
+            setFormat(match.capturedStart(), match.capturedLength(),
+                      _formats[CodeNumLiteral]);
         }
     }
 }
