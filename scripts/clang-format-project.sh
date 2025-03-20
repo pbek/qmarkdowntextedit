@@ -12,16 +12,16 @@ FMT=""
 # that's present, otherwise we work backwards from highest version to lowest
 # version.
 for clangfmt in clang-format{,-{4,3}.{9,8,7,6,5,4,3,2,1,0}}; do
-    if which "$clangfmt" &>/dev/null; then
-        FMT="$clangfmt"
-        break
-    fi
+  if which "$clangfmt" &>/dev/null; then
+    FMT="$clangfmt"
+    break
+  fi
 done
 
 # Check if we found a working clang-format
 if [ -z "$FMT" ]; then
-    echo "failed to find clang-format"
-    exit 1
+  echo "failed to find clang-format"
+  exit 1
 fi
 
 $FMT -i *.cpp
