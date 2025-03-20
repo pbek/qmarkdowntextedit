@@ -1,0 +1,39 @@
+# https://github.com/numtide/treefmt
+# https://github.com/numtide/treefmt-nix
+
+on-unmatched = "info"
+
+[formatter.clang-format]
+command = "clang-format"
+
+# Only target the exact directories we want
+includes = [
+  "*.cpp",
+  "*.h",
+]
+
+[formatter.prettier]
+command = "prettier"
+options = ["--write"]
+includes = ["*.md", "*.yaml", "*.yml"]
+
+[formatter.shfmt]
+command = "shfmt"
+excludes = []
+includes = ["*.sh", "*.bash", "*.envrc", "*.envrc.*"]
+options = ["-s", "-w", "-i", "2"]
+
+[formatter.just]
+command = "just"
+includes = ["*.just"]
+
+[formatter.taplo]
+command = "taplo"
+includes = ["*.toml"]
+options = ["format"]
+
+[formatter.nixfmt-rfc-style]
+command = "nixfmt"
+excludes = []
+includes = ["*.nix"]
+options = []
