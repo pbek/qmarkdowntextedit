@@ -1,7 +1,7 @@
 TARGET = QMarkdownTextedit
 TEMPLATE = lib
 QT += core gui widgets
-CONFIG += c++11 create_prl no_install_prl create_pc
+CONFIG += c++20 create_prl no_install_prl create_pc
 
 include(qmarkdowntextedit.pri)
 

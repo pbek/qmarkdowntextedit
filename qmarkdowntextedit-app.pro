@@ -1,7 +1,7 @@
 TARGET   = QMarkdownTextedit
 TEMPLATE = app
 QT += core gui widgets
-CONFIG += c++11
+CONFIG += c++20
 
 SOURCES = main.cpp mainwindow.cpp
 HEADERS = mainwindow.h
