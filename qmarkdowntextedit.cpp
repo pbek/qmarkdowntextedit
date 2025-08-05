@@ -286,6 +286,16 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
         } else if ((keyEvent->key() == Qt::Key_Return ||
                     keyEvent->key() == Qt::Key_Enter) &&
                    !isReadOnly() &&
+                   keyEvent->modifiers().testFlag(Qt::ShiftModifier) &&
+                   keyEvent->modifiers().testFlag(Qt::ControlModifier)) {
+            QTextCursor cursor = this->textCursor();
+            cursor.movePosition(QTextCursor::StartOfBlock);
+            cursor.insertText(QStringLiteral("\n"));
+            setTextCursor(cursor);
+            return true;
+        } else if ((keyEvent->key() == Qt::Key_Return ||
+                    keyEvent->key() == Qt::Key_Enter) &&
+                   !isReadOnly() &&
                    keyEvent->modifiers().testFlag(Qt::ShiftModifier)) {
             QTextCursor cursor = this->textCursor();
             cursor.insertText("  \n");
