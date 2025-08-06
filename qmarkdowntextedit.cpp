@@ -291,6 +291,7 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             QTextCursor cursor = this->textCursor();
             cursor.movePosition(QTextCursor::StartOfBlock);
             cursor.insertText(QStringLiteral("\n"));
+            cursor.movePosition(QTextCursor::Up);
             setTextCursor(cursor);
             return true;
         } else if ((keyEvent->key() == Qt::Key_Return ||
