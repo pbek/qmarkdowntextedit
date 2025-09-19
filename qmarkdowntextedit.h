@@ -57,6 +57,7 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     MarkdownHighlighter *highlighter();
     QPlainTextEditSearchWidget *searchWidget();
     void setIgnoredClickUrlSchemata(QStringList ignoredUrlSchemata);
+    void setIgnoredClickUrlRegexps(QList<QRegularExpression> ignoredClickUrlRegexps);
     virtual void openUrl(const QString &urlString);
     QString getMarkdownUrlAtPosition(const QString &text, int position);
     void initSearchFrame(QWidget *searchFrame, bool darkMode = false);
@@ -100,6 +101,7 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     MarkdownHighlighter *_highlighter = nullptr;
     bool _highlightingEnabled;
     QStringList _ignoredClickUrlSchemata;
+    QList<QRegularExpression> _ignoredClickUrlRegexps;
     QPlainTextEditSearchWidget *_searchWidget;
     QWidget *_searchFrame;
     AutoTextOptions _autoTextOptions;

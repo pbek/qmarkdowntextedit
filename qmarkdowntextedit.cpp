@@ -1231,6 +1231,13 @@ bool QMarkdownTextEdit::openLinkAtCursorPosition() {
 
     if ((url.isValid() && isValidUrl(urlString)) || isRelativeFileUrl ||
         isLegacyAttachmentUrl) {
+        // Check if URL matches any ignored regular expressions
+        for (const QRegularExpression &regex : _ignoredClickUrlRegexps) {
+            if (regex.match(urlString).hasMatch()) {
+                return true; // URL matches ignored regex, don't open it
+            }
+        }
+
         // ignore some schemata
         if (!(_ignoredClickUrlSchemata.contains(url.scheme()) ||
               isRelativeFileUrl || isLegacyAttachmentUrl)) {
@@ -1293,6 +1300,15 @@ QPlainTextEditSearchWidget *QMarkdownTextEdit::searchWidget() {
 void QMarkdownTextEdit::setIgnoredClickUrlSchemata(
     QStringList ignoredUrlSchemata) {
     _ignoredClickUrlSchemata = std::move(ignoredUrlSchemata);
+}
+
+/**
+ * @brief Sets url regular expressions that will be ignored when clicked on
+ * @param ignoredClickUrlRegexps
+ */
+void QMarkdownTextEdit::setIgnoredClickUrlRegexps(
+    QList<QRegularExpression> ignoredClickUrlRegexps) {
+    _ignoredClickUrlRegexps = std::move(ignoredClickUrlRegexps);
 }
 
 /**
