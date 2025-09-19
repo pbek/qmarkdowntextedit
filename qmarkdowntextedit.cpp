@@ -1295,7 +1295,7 @@ QPlainTextEditSearchWidget *QMarkdownTextEdit::searchWidget() {
 
 /**
  * @brief Sets url schemata that will be ignored when clicked on
- * @param urlSchemes
+ * @param ignoredUrlSchemata
  */
 void QMarkdownTextEdit::setIgnoredClickUrlSchemata(
     QStringList ignoredUrlSchemata) {
