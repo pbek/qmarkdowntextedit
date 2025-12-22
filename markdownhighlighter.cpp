@@ -2,7 +2,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2014-2025 Patrizio Bekerle -- <patrizio@bekerle.com>
+ * Copyright (c) 2014-2026 Patrizio Bekerle -- <patrizio@bekerle.com>
  * Copyright (c) 2019-2021 Waqar Ahmed      -- <waqar.17a@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
