@@ -469,11 +469,8 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             (mouseEvent->button() == Qt::LeftButton)) {
             auto modifiers = QGuiApplication::keyboardModifiers();
 
-            qDebug() << "Mouse click detected, modifiers:" << modifiers;
-
             // Check for Ctrl+Shift+Click (open in new tab)
             if (modifiers.testFlag(Qt::ControlModifier) && modifiers.testFlag(Qt::ShiftModifier)) {
-                qDebug() << "Ctrl+Shift+Click detected - opening in new tab";
                 _openLinkInNewTab = true;
                 openLinkAtCursorPosition();
                 _openLinkInNewTab = false;
@@ -481,7 +478,6 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             }
             // Check for Ctrl+Click (open in current tab)
             else if (modifiers == Qt::ControlModifier || modifiers == Qt::ExtraButton24) {
-                qDebug() << "Ctrl+Click detected - opening in current tab";
                 _openLinkInNewTab = false;
                 openLinkAtCursorPosition();
                 return true;
