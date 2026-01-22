@@ -58,7 +58,7 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     QPlainTextEditSearchWidget *searchWidget();
     void setIgnoredClickUrlSchemata(QStringList ignoredUrlSchemata);
     void setIgnoredClickUrlRegexps(QList<QRegularExpression> ignoredClickUrlRegexps);
-    virtual void openUrl(const QString &urlString);
+    virtual void openUrl(const QString &urlString, bool openInNewTab = false);
     QString getMarkdownUrlAtPosition(const QString &text, int position);
     void initSearchFrame(QWidget *searchFrame, bool darkMode = false);
     void setAutoTextOptions(AutoTextOptions options);
@@ -108,6 +108,7 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     bool _mouseButtonDown = false;
     bool _centerCursor = false;
     bool _highlightCurrentLine = false;
+    bool _openLinkInNewTab = false;
     QColor _currentLineHighlightColor = QColor();
     uint _debounceDelay = 0;
 

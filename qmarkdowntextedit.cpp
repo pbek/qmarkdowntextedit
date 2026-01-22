@@ -464,14 +464,28 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
         _mouseButtonDown = false;
         auto *mouseEvent = static_cast<QMouseEvent *>(event);
 
-        // track `Ctrl + Click` in the text edit
+        // track `Ctrl + Click` and `Ctrl + Shift + Click` in the text edit
         if ((obj == this->viewport()) &&
-            (mouseEvent->button() == Qt::LeftButton) &&
-            (QGuiApplication::keyboardModifiers() == Qt::ExtraButton24)) {
-            // open the link (if any) at the current position
-            // in the noteTextEdit
-            openLinkAtCursorPosition();
-            return true;
+            (mouseEvent->button() == Qt::LeftButton)) {
+            auto modifiers = QGuiApplication::keyboardModifiers();
+
+            qDebug() << "Mouse click detected, modifiers:" << modifiers;
+
+            // Check for Ctrl+Shift+Click (open in new tab)
+            if (modifiers.testFlag(Qt::ControlModifier) && modifiers.testFlag(Qt::ShiftModifier)) {
+                qDebug() << "Ctrl+Shift+Click detected - opening in new tab";
+                _openLinkInNewTab = true;
+                openLinkAtCursorPosition();
+                _openLinkInNewTab = false;
+                return true;
+            }
+            // Check for Ctrl+Click (open in current tab)
+            else if (modifiers == Qt::ControlModifier || modifiers == Qt::ExtraButton24) {
+                qDebug() << "Ctrl+Click detected - opening in current tab";
+                _openLinkInNewTab = false;
+                openLinkAtCursorPosition();
+                return true;
+            }
         }
     } else if (event->type() == QEvent::MouseButtonPress) {
         _mouseButtonDown = true;
@@ -1242,7 +1256,7 @@ bool QMarkdownTextEdit::openLinkAtCursorPosition() {
         if (!(_ignoredClickUrlSchemata.contains(url.scheme()) ||
               isRelativeFileUrl || isLegacyAttachmentUrl)) {
             // open the url
-            openUrl(urlString);
+            openUrl(urlString, _openLinkInNewTab);
         }
 
         return true;
@@ -1272,7 +1286,8 @@ bool QMarkdownTextEdit::isValidUrl(const QString &urlString) {
  *   "/path/to/my/file/QOwnNotes.pdf" if the operating system supports that
  *  handler
  */
-void QMarkdownTextEdit::openUrl(const QString &urlString) {
+void QMarkdownTextEdit::openUrl(const QString &urlString, bool openInNewTab) {
+    Q_UNUSED(openInNewTab)
     qDebug() << "QMarkdownTextEdit " << __func__
              << " - 'urlString': " << urlString;
 
