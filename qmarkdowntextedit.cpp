@@ -470,14 +470,16 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             auto modifiers = QGuiApplication::keyboardModifiers();
 
             // Check for Ctrl+Shift+Click (open in new tab)
-            if (modifiers.testFlag(Qt::ControlModifier) && modifiers.testFlag(Qt::ShiftModifier)) {
+            if (modifiers.testFlag(Qt::ControlModifier) &&
+                modifiers.testFlag(Qt::ShiftModifier)) {
                 _openLinkInNewTab = true;
                 openLinkAtCursorPosition();
                 _openLinkInNewTab = false;
                 return true;
             }
             // Check for Ctrl+Click (open in current tab)
-            else if (modifiers == Qt::ControlModifier || modifiers == Qt::ExtraButton24) {
+            else if (modifiers == Qt::ControlModifier ||
+                     modifiers == Qt::ExtraButton24) {
                 _openLinkInNewTab = false;
                 openLinkAtCursorPosition();
                 return true;
@@ -1237,24 +1239,42 @@ bool QMarkdownTextEdit::openLinkAtCursorPosition() {
 
     qDebug() << __func__ << " - 'emit urlClicked( urlString )': " << urlString;
 
+    // Check if URL matches any ignored regular expressions
+    for (const QRegularExpression &regex : _ignoredClickUrlRegexps) {
+        if (regex.match(urlString).hasMatch()) {
+            return true;    // URL matches ignored regex, don't open it
+        }
+    }
+
+    // Emit signal to let derived classes handle URL opening
     Q_EMIT urlClicked(urlString);
 
+    // Check if there are signal handlers connected
+    const int numReceivers = receivers(SIGNAL(urlClicked(QString)));
+    qDebug() << __func__
+             << " - number of urlClicked receivers:" << numReceivers;
+    qDebug() << __func__ << " - _openLinkInNewTab:" << _openLinkInNewTab;
+
+    // If signal handlers are connected, they will handle opening the URL
+    // Don't call openUrl() here to avoid duplicate opening
+    if (numReceivers > 0) {
+        qDebug()
+            << __func__
+            << " - Signal handlers present, letting them handle URL opening";
+        return true;
+    }
+
+    // No signal handlers connected, use base class logic (backward
+    // compatibility)
+    qDebug() << __func__ << " - No signal handlers, using base class openUrl";
     if ((url.isValid() && isValidUrl(urlString)) || isRelativeFileUrl ||
         isLegacyAttachmentUrl) {
-        // Check if URL matches any ignored regular expressions
-        for (const QRegularExpression &regex : _ignoredClickUrlRegexps) {
-            if (regex.match(urlString).hasMatch()) {
-                return true; // URL matches ignored regex, don't open it
-            }
-        }
-
         // ignore some schemata
         if (!(_ignoredClickUrlSchemata.contains(url.scheme()) ||
               isRelativeFileUrl || isLegacyAttachmentUrl)) {
             // open the url
             openUrl(urlString, _openLinkInNewTab);
         }
-
         return true;
     }
 
