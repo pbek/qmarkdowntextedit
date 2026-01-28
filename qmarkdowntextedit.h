@@ -74,6 +74,7 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     void setLineNumbersCurrentLineColor(QColor color);
     void setLineNumbersOtherLineColor(QColor color);
     void setSearchWidgetDebounceDelay(uint debounceDelay);
+    void setBookmarkLines(const QHash<int, int> &bookmarkLines);
 
     void setHighlightingEnabled(bool enabled);
     [[nodiscard]] bool highlightingEnabled() const;

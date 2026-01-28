@@ -2,6 +2,7 @@
 #define LINENUMBERAREA_H
 
 #include <QDebug>
+#include <QHash>
 #include <QPainter>
 #include <QScrollBar>
 #include <QWidget>
@@ -30,6 +31,11 @@ class LineNumArea final : public QWidget {
         _otherLinesColor = std::move(color);
     }
 
+    void setBookmarkLines(const QHash<int, int> &bookmarks) {
+        _bookmarkLines = bookmarks;
+        update();
+    }
+
     int lineNumAreaWidth() const {
         if (!enabled) {
             return 0;
@@ -49,6 +55,15 @@ class LineNumArea final : public QWidget {
         int space =
             13 + textEdit->fontMetrics().width(QLatin1Char('9')) * digits;
 #endif
+
+        // Add extra space for bookmark markers (if any bookmarks exist)
+        if (!_bookmarkLines.isEmpty()) {
+#if QT_VERSION >= 0x050B00
+            space += 5 + textEdit->fontMetrics().horizontalAdvance(u'9');
+#else
+            space += 5 + textEdit->fontMetrics().width(QLatin1Char('9'));
+#endif
+        }
 
         return space;
     }
@@ -82,6 +97,17 @@ class LineNumArea final : public QWidget {
         const QPen otherLines = _otherLinesColor;
         painter.setFont(font());
 
+        // Calculate widths for layout
+        int lineNumberWidth = sizeHint().width();
+        int bookmarkWidth = 0;
+        if (!_bookmarkLines.isEmpty()) {
+#if QT_VERSION >= 0x050B00
+            bookmarkWidth = textEdit->fontMetrics().horizontalAdvance(u'9') + 5;
+#else
+            bookmarkWidth = textEdit->fontMetrics().width(QLatin1Char('9')) + 5;
+#endif
+        }
+
         while (block.isValid() && top <= event->rect().bottom()) {
             top = bottom;
             bottom = top + textEdit->blockBoundingRect(block).height();
@@ -92,9 +118,31 @@ class LineNumArea final : public QWidget {
                     textEdit->textCursor().blockNumber() == blockNumber;
                 painter.setPen(isCurrentLine ? currentLine : otherLines);
 
-                painter.drawText(-5, top, sizeHint().width(),
+                // Draw line number
+                int lineNumRightMargin = bookmarkWidth > 0 ? bookmarkWidth : 0;
+                painter.drawText(-5, top, lineNumberWidth - lineNumRightMargin,
                                  textEdit->fontMetrics().height(),
                                  Qt::AlignRight, number);
+
+                // Draw bookmark marker if this line has a bookmark
+                if (bookmarkWidth > 0) {
+                    // Check if current line (blockNumber + 1) has a bookmark
+                    int currentLineNumber = blockNumber + 1;
+                    for (auto it = _bookmarkLines.constBegin();
+                         it != _bookmarkLines.constEnd(); ++it) {
+                        if (it.value() == currentLineNumber) {
+                            // Draw the bookmark slot number (1-9)
+                            QString bookmarkSlot = QString::number(it.key());
+                            painter.setPen(QColor(QStringLiteral(
+                                "#ff6b6b")));    // Red color for bookmark
+                            painter.drawText(lineNumberWidth - bookmarkWidth,
+                                             top, bookmarkWidth - 5,
+                                             textEdit->fontMetrics().height(),
+                                             Qt::AlignRight, bookmarkSlot);
+                            break;
+                        }
+                    }
+                }
             }
 
             block = block.next();
@@ -107,6 +155,8 @@ class LineNumArea final : public QWidget {
     QMarkdownTextEdit *textEdit;
     QColor _currentLineColor;
     QColor _otherLinesColor;
+    QHash<int, int>
+        _bookmarkLines;    // Maps bookmark slot (0-9) to line number
 };
 
 #endif    // LINENUMBERAREA_H
