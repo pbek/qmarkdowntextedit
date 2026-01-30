@@ -1250,6 +1250,11 @@ bool QMarkdownTextEdit::openLinkAtCursorPosition() {
         }
     }
 
+    // Return false if no URL was found at the cursor position
+    if (urlString.isEmpty()) {
+        return false;
+    }
+
     // Emit signal to let derived classes handle URL opening
     Q_EMIT urlClicked(urlString);
 
