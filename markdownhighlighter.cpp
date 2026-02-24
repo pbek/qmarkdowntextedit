@@ -589,6 +589,11 @@ void MarkdownHighlighter::highlightHeadline(const QString &text) {
             highlightSubHeadline(text, H1);
             return;
         }
+        if (previousBlockState() == H1) {
+            QTextBlock previousBlock = currentBlock().previous();
+            previousBlock.setUserState(NoState);
+            addDirtyBlock(previousBlock);
+        }
     } else if (text.at(spacesOffset) == QLatin1Char('-') && prevSpaces < 4 &&
                isPrevParagraph) {
         const bool pattern2 =
@@ -597,6 +602,11 @@ void MarkdownHighlighter::highlightHeadline(const QString &text) {
         if (pattern2) {
             highlightSubHeadline(text, H2);
             return;
+        }
+        if (previousBlockState() == H2) {
+            QTextBlock previousBlock = currentBlock().previous();
+            previousBlock.setUserState(NoState);
+            addDirtyBlock(previousBlock);
         }
     }
 
