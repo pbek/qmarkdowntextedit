@@ -466,6 +466,19 @@ static bool isParagraph(const QString &text) {
     const auto textView = MH_SUBSTR(indent, -1);
     if (textView.isEmpty()) return false;
 
+    // Tab-indented lines (e.g. list subitems like "\t- subitem") are not
+    // paragraphs; strip leading tabs and check for list item prefixes
+    if (text.at(0) == QLatin1Char('\t')) {
+        int i = 0;
+        while (i < text.length() && text.at(i) == QLatin1Char('\t')) ++i;
+        const auto tabStripped = text.mid(i);
+        if (tabStripped.startsWith(QStringLiteral("- ")) ||
+            tabStripped.startsWith(QStringLiteral("+ ")) ||
+            tabStripped.startsWith(QStringLiteral("* "))) {
+            return false;
+        }
+    }
+
     // unordered listtextView
     if (textView.startsWith(QStringLiteral("- ")) ||
         textView.startsWith(QStringLiteral("+ ")) ||
