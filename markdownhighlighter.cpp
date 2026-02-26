@@ -212,7 +212,7 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize) {
     format = QTextCharFormat();
     format.setForeground(Qt::darkGray);
     format.setBackground(Qt::lightGray);
-    _formats[HorizontalRuler] = std::move(format);
+    _formats[HorizontalRule] = std::move(format);
 
     // set character format for lists
     format = QTextCharFormat();
@@ -2043,7 +2043,7 @@ void MarkdownHighlighter::highlightThematicBreak(const QString &text) {
     }
     if (len < 3) return;
 
-    if (hasSameChars) setFormat(0, text.length(), _formats[HorizontalRuler]);
+    if (hasSameChars) setFormat(0, text.length(), _formats[HorizontalRule]);
 }
 
 void MarkdownHighlighter::highlightCheckbox(const QString &text, int curPos) {

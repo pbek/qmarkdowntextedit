@@ -133,7 +133,7 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
         H5,
         H6,
         BlockQuote,
-        HorizontalRuler = 21,
+        HorizontalRule = 21,
         Table,
         InlineCodeBlock,
         MaskedSyntax,
