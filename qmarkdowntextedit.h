@@ -130,6 +130,7 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     bool quotationMarkCheck(const QChar quotationCharacter);
     void focusOutEvent(QFocusEvent *event) override;
     void paintEvent(QPaintEvent *e) override;
+    static int listContentIndentLength(const QString &text);
     bool handleCharRemoval(MarkdownHighlighter::RangeType type, int block,
                            int position);
     void resizeEvent(QResizeEvent *event) override;

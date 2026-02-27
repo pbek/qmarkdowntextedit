@@ -1831,12 +1831,50 @@ void QMarkdownTextEdit::updateLineNumberAreaWidth(int) {
 }
 
 /**
+ * Returns the number of characters that form the list prefix in a Markdown
+ * list line, including leading whitespace, list marker, and trailing space.
+ * Returns 0 if the line is not a list item.
+ *
+ * Examples:
+ *   "- text"       -> 2  (marker "- ")
+ *   "  - text"     -> 4  (2 spaces + "- ")
+ *   "* text"       -> 2
+ *   "+ [ ] text"   -> 6  (marker "+ [ ] ")
+ *   "1. text"      -> 3  (marker "1. ")
+ *   "  10. text"   -> 6  (2 spaces + "10. ")
+ *   "  2) text"    -> 5  (2 spaces + "2) ")
+ *   "not a list"   -> 0
+ */
+int QMarkdownTextEdit::listContentIndentLength(const QString &text) {
+    // Match unordered list items: optional whitespace + [-*+] + optional
+    // checkbox + space(s)
+    static QRegularExpression unorderedRegex(
+        QStringLiteral(R"(^(\s*)[+\-\*](?:\s\[[ x\-]\])?\s)"));
+    QRegularExpressionMatch match = unorderedRegex.match(text);
+    if (match.hasMatch()) {
+        return match.capturedLength(0);
+    }
+
+    // Match ordered list items: optional whitespace + digits + [.)] + space(s)
+    static QRegularExpression orderedRegex(
+        QStringLiteral(R"(^(\s*)\d+[.\)]\s)"));
+    match = orderedRegex.match(text);
+    if (match.hasMatch()) {
+        return match.capturedLength(0);
+    }
+
+    return 0;
+}
+
+/**
  * @param e
- * @details This does two things
+ * @details This does three things:
  * 1. Overrides QPlainTextEdit::paintEvent to fix the RTL bug of QPlainTextEdit
  * 2. Paints a rectangle around code block fences [Code taken from
  * ghostwriter(which in turn is based on QPlaintextEdit::paintEvent() with
  * modifications and minor improvements for our use
+ * 3. Applies hanging indentation to wrapped Markdown list lines so that
+ * continuation lines align with the list content rather than the list marker
  */
 void QMarkdownTextEdit::paintEvent(QPaintEvent *e) {
     QTextBlock block = firstVisibleBlock();
@@ -1976,7 +2014,104 @@ void QMarkdownTextEdit::paintEvent(QPaintEvent *e) {
     }
 
     painter.end();
+
+    // Apply hanging indentation to wrapped Markdown list lines before the
+    // base class paints the text. We re-layout list blocks so that
+    // continuation lines are indented to align with the content after the
+    // list marker (e.g. "- " or "1. ").
+    struct BlockLayoutBackup {
+        QTextBlock block;
+        QVector<QPair<QPointF, qreal>> linePositionsAndWidths;
+    };
+    QVector<BlockLayoutBackup> backups;
+
+    const QFontMetrics fm(font());
+    const qreal availableWidth = document()->textWidth() > 0
+                                     ? document()->textWidth()
+                                     : static_cast<qreal>(viewport()->width());
+
+    QTextBlock listBlock = firstVisibleBlock();
+    QPointF listOffset(contentOffset());
+    while (listBlock.isValid()) {
+        const QRectF r = blockBoundingRect(listBlock).translated(listOffset);
+        listOffset.ry() += r.height();
+
+        // Stop once we're past the viewport
+        if (r.top() > viewport()->rect().bottom()) {
+            break;
+        }
+
+        const QString text = listBlock.text();
+        const int indentChars = listContentIndentLength(text);
+
+        // Only process list items that have a prefix and wrap to multiple lines
+        if (indentChars > 0) {
+            QTextLayout *layout = listBlock.layout();
+            const int lineCount = layout->lineCount();
+
+            if (lineCount > 1) {
+                // Compute the pixel width of the list prefix
+#if QT_VERSION < QT_VERSION_CHECK(5, 11, 0)
+                const qreal indentPixels = fm.width(text.left(indentChars));
+#else
+                const qreal indentPixels =
+                    fm.horizontalAdvance(text.left(indentChars));
+#endif
+
+                // Back up original line positions and widths for restoring
+                // later
+                BlockLayoutBackup backup;
+                backup.block = listBlock;
+                for (int i = 0; i < lineCount; ++i) {
+                    QTextLine line = layout->lineAt(i);
+                    backup.linePositionsAndWidths.append(
+                        qMakePair(line.position(), line.naturalTextWidth()));
+                }
+                backups.append(backup);
+
+                // Re-layout the block with hanging indent for continuation
+                // lines
+                layout->clearLayout();
+                layout->beginLayout();
+                for (int i = 0;; ++i) {
+                    QTextLine line = layout->createLine();
+                    if (!line.isValid()) break;
+
+                    if (i == 0) {
+                        // First line: full width, no offset
+                        line.setLineWidth(availableWidth);
+                        line.setPosition(QPointF(0, 0));
+                    } else {
+                        // Continuation lines: indented, reduced width
+                        line.setLineWidth(availableWidth - indentPixels);
+                        const qreal y = layout->lineAt(i - 1).position().y() +
+                                        layout->lineAt(i - 1).height();
+                        line.setPosition(QPointF(indentPixels, y));
+                    }
+                }
+                layout->endLayout();
+            }
+        }
+
+        listBlock = listBlock.next();
+    }
+
     QPlainTextEdit::paintEvent(e);
+
+    // Restore original layouts so the document layout engine is not confused
+    for (const auto &backup : backups) {
+        QTextLayout *layout = backup.block.layout();
+        layout->clearLayout();
+        layout->beginLayout();
+        for (int i = 0; i < backup.linePositionsAndWidths.size(); ++i) {
+            QTextLine line = layout->createLine();
+            if (!line.isValid()) break;
+
+            line.setLineWidth(availableWidth);
+            line.setPosition(backup.linePositionsAndWidths[i].first);
+        }
+        layout->endLayout();
+    }
 }
 
 /**
