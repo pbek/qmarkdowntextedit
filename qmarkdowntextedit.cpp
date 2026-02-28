@@ -2019,16 +2019,15 @@ void QMarkdownTextEdit::paintEvent(QPaintEvent *e) {
     // base class paints the text. We re-layout list blocks so that
     // continuation lines are indented to align with the content after the
     // list marker (e.g. "- " or "1. ").
+    struct LineBackup {
+        QPointF position;
+        qreal width;
+    };
     struct BlockLayoutBackup {
         QTextBlock block;
-        QVector<QPair<QPointF, qreal>> linePositionsAndWidths;
+        QVector<LineBackup> lines;
     };
     QVector<BlockLayoutBackup> backups;
-
-    const QFontMetrics fm(font());
-    const qreal availableWidth = document()->textWidth() > 0
-                                     ? document()->textWidth()
-                                     : static_cast<qreal>(viewport()->width());
 
     QTextBlock listBlock = firstVisibleBlock();
     QPointF listOffset(contentOffset());
@@ -2050,46 +2049,35 @@ void QMarkdownTextEdit::paintEvent(QPaintEvent *e) {
             const int lineCount = layout->lineCount();
 
             if (lineCount > 1) {
-                // Compute the pixel width of the list prefix
-#if QT_VERSION < QT_VERSION_CHECK(5, 11, 0)
-                const qreal indentPixels = fm.width(text.left(indentChars));
-#else
+                // Get the exact pixel position of the list content start
+                // from the original layout, which matches non-wrapped items
                 const qreal indentPixels =
-                    fm.horizontalAdvance(text.left(indentChars));
-#endif
+                    layout->lineAt(0).cursorToX(indentChars);
 
-                // Back up original line positions and widths for restoring
-                // later
+                // Back up original continuation line positions and widths
+                // for restoring later
                 BlockLayoutBackup backup;
                 backup.block = listBlock;
                 for (int i = 0; i < lineCount; ++i) {
                     QTextLine line = layout->lineAt(i);
-                    backup.linePositionsAndWidths.append(
-                        qMakePair(line.position(), line.naturalTextWidth()));
+                    LineBackup lb;
+                    lb.position = line.position();
+                    lb.width = line.width();
+                    backup.lines.append(lb);
                 }
                 backups.append(backup);
 
-                // Re-layout the block with hanging indent for continuation
-                // lines
-                layout->clearLayout();
-                layout->beginLayout();
-                for (int i = 0;; ++i) {
-                    QTextLine line = layout->createLine();
-                    if (!line.isValid()) break;
-
-                    if (i == 0) {
-                        // First line: full width, no offset
-                        line.setLineWidth(availableWidth);
-                        line.setPosition(QPointF(0, 0));
-                    } else {
-                        // Continuation lines: indented, reduced width
-                        line.setLineWidth(availableWidth - indentPixels);
-                        const qreal y = layout->lineAt(i - 1).position().y() +
-                                        layout->lineAt(i - 1).height();
-                        line.setPosition(QPointF(indentPixels, y));
-                    }
+                // Modify continuation lines in-place to apply hanging
+                // indent without clearing/re-creating the layout, which
+                // preserves the original text shaping on the first line
+                for (int i = 1; i < lineCount; ++i) {
+                    QTextLine line = layout->lineAt(i);
+                    const qreal origWidth = line.width();
+                    line.setLineWidth(origWidth - indentPixels +
+                                      line.position().x());
+                    line.setPosition(
+                        QPointF(indentPixels, line.position().y()));
                 }
-                layout->endLayout();
             }
         }
 
@@ -2098,19 +2086,16 @@ void QMarkdownTextEdit::paintEvent(QPaintEvent *e) {
 
     QPlainTextEdit::paintEvent(e);
 
-    // Restore original layouts so the document layout engine is not confused
+    // Restore original line positions and widths so the document layout
+    // engine is not confused
     for (const auto &backup : backups) {
         QTextLayout *layout = backup.block.layout();
-        layout->clearLayout();
-        layout->beginLayout();
-        for (int i = 0; i < backup.linePositionsAndWidths.size(); ++i) {
-            QTextLine line = layout->createLine();
-            if (!line.isValid()) break;
-
-            line.setLineWidth(availableWidth);
-            line.setPosition(backup.linePositionsAndWidths[i].first);
+        const int lineCount = layout->lineCount();
+        for (int i = 0; i < lineCount && i < backup.lines.size(); ++i) {
+            QTextLine line = layout->lineAt(i);
+            line.setLineWidth(backup.lines[i].width);
+            line.setPosition(backup.lines[i].position);
         }
-        layout->endLayout();
     }
 }
 
