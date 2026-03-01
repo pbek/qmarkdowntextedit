@@ -2055,11 +2055,6 @@ void QMarkdownTextEdit::paintEvent(QPaintEvent *e) {
             if (lineCount > 1) {
                 // Get the exact pixel position of the list content start
                 // from the original layout, which matches non-wrapped items
-                const QTextLine firstLine = layout->lineAt(0);
-                const qreal baseX = firstLine.position().x();
-                const qreal indentPixels =
-                    baseX + firstLine.cursorToX(indentChars);
-
                 // Back up original continuation line positions and widths
                 // for restoring later
                 BlockLayoutBackup backup;
@@ -2073,6 +2068,11 @@ void QMarkdownTextEdit::paintEvent(QPaintEvent *e) {
                 }
                 backups.append(backup);
 
+                const QTextLine firstLine = layout->lineAt(0);
+                const qreal baseX = firstLine.position().x();
+                const qreal indentPixels = firstLine.cursorToX(indentChars);
+                const qreal textAreaWidth = backup.lines.first().width;
+
                 // Re-layout the block with hanging indent for continuation
                 // lines while in layout mode to avoid QTextLine warnings.
                 layout->clearLayout();
@@ -2082,12 +2082,12 @@ void QMarkdownTextEdit::paintEvent(QPaintEvent *e) {
                     if (!line.isValid()) break;
 
                     if (i == 0) {
-                        line.setLineWidth(
-                            qMax<qreal>(0.0, availableWidth - baseX));
+                        line.setLineWidth(qMax<qreal>(0.0, textAreaWidth));
                         line.setPosition(QPointF(baseX, 0));
                     } else {
+                        const qreal indentOffset = indentPixels - baseX;
                         line.setLineWidth(
-                            qMax<qreal>(0.0, availableWidth - indentPixels));
+                            qMax<qreal>(0.0, textAreaWidth - indentOffset));
                         const qreal y = layout->lineAt(i - 1).position().y() +
                                         layout->lineAt(i - 1).height();
                         line.setPosition(QPointF(indentPixels, y));
