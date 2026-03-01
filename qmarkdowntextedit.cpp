@@ -2029,6 +2029,10 @@ void QMarkdownTextEdit::paintEvent(QPaintEvent *e) {
     };
     QVector<BlockLayoutBackup> backups;
 
+    const qreal availableWidth = document()->textWidth() > 0
+                                     ? document()->textWidth()
+                                     : static_cast<qreal>(viewport()->width());
+
     QTextBlock listBlock = firstVisibleBlock();
     QPointF listOffset(contentOffset());
     while (listBlock.isValid()) {
@@ -2051,8 +2055,10 @@ void QMarkdownTextEdit::paintEvent(QPaintEvent *e) {
             if (lineCount > 1) {
                 // Get the exact pixel position of the list content start
                 // from the original layout, which matches non-wrapped items
+                const QTextLine firstLine = layout->lineAt(0);
+                const qreal baseX = firstLine.position().x();
                 const qreal indentPixels =
-                    layout->lineAt(0).cursorToX(indentChars);
+                    baseX + firstLine.cursorToX(indentChars);
 
                 // Back up original continuation line positions and widths
                 // for restoring later
@@ -2067,17 +2073,27 @@ void QMarkdownTextEdit::paintEvent(QPaintEvent *e) {
                 }
                 backups.append(backup);
 
-                // Modify continuation lines in-place to apply hanging
-                // indent without clearing/re-creating the layout, which
-                // preserves the original text shaping on the first line
-                for (int i = 1; i < lineCount; ++i) {
-                    QTextLine line = layout->lineAt(i);
-                    const qreal origWidth = line.width();
-                    line.setLineWidth(origWidth - indentPixels +
-                                      line.position().x());
-                    line.setPosition(
-                        QPointF(indentPixels, line.position().y()));
+                // Re-layout the block with hanging indent for continuation
+                // lines while in layout mode to avoid QTextLine warnings.
+                layout->clearLayout();
+                layout->beginLayout();
+                for (int i = 0; i < backup.lines.size(); ++i) {
+                    QTextLine line = layout->createLine();
+                    if (!line.isValid()) break;
+
+                    if (i == 0) {
+                        line.setLineWidth(
+                            qMax<qreal>(0.0, availableWidth - baseX));
+                        line.setPosition(QPointF(baseX, 0));
+                    } else {
+                        line.setLineWidth(
+                            qMax<qreal>(0.0, availableWidth - indentPixels));
+                        const qreal y = layout->lineAt(i - 1).position().y() +
+                                        layout->lineAt(i - 1).height();
+                        line.setPosition(QPointF(indentPixels, y));
+                    }
                 }
+                layout->endLayout();
             }
         }
 
@@ -2090,12 +2106,16 @@ void QMarkdownTextEdit::paintEvent(QPaintEvent *e) {
     // engine is not confused
     for (const auto &backup : backups) {
         QTextLayout *layout = backup.block.layout();
-        const int lineCount = layout->lineCount();
-        for (int i = 0; i < lineCount && i < backup.lines.size(); ++i) {
-            QTextLine line = layout->lineAt(i);
+        layout->clearLayout();
+        layout->beginLayout();
+        for (int i = 0; i < backup.lines.size(); ++i) {
+            QTextLine line = layout->createLine();
+            if (!line.isValid()) break;
+
             line.setLineWidth(backup.lines[i].width);
             line.setPosition(backup.lines[i].position);
         }
+        layout->endLayout();
     }
 }
 
