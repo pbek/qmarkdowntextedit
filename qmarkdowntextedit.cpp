@@ -2073,8 +2073,9 @@ QMarkdownTextEdit::applyHangingIndentLayout() {
                         line.setPosition(QPointF(baseX, 0));
                     } else {
                         const qreal indentOffset = indentPixels - baseX;
-                        line.setLineWidth(
-                            qMax<qreal>(0.0, textAreaWidth - indentOffset));
+                        const qreal extraWidth = 2.0;
+                        line.setLineWidth(qMax<qreal>(
+                            0.0, textAreaWidth - indentOffset + extraWidth));
                         const qreal y = layout->lineAt(i - 1).position().y() +
                                         layout->lineAt(i - 1).height();
                         line.setPosition(QPointF(indentPixels, y));
