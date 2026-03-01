@@ -2029,10 +2029,6 @@ void QMarkdownTextEdit::paintEvent(QPaintEvent *e) {
     };
     QVector<BlockLayoutBackup> backups;
 
-    const qreal availableWidth = document()->textWidth() > 0
-                                     ? document()->textWidth()
-                                     : static_cast<qreal>(viewport()->width());
-
     QTextBlock listBlock = firstVisibleBlock();
     QPointF listOffset(contentOffset());
     while (listBlock.isValid()) {
