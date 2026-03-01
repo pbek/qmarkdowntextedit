@@ -26,11 +26,15 @@
 
 #include <QEvent>
 #include <QPlainTextEdit>
+#include <QPointF>
+#include <QTextBlock>
+#include <QVector>
 
 #include "markdownhighlighter.h"
 #include "qplaintexteditsearchwidget.h"
 
 class LineNumArea;
+class QMouseEvent;
 
 class QMarkdownTextEdit : public QPlainTextEdit {
     Q_OBJECT
@@ -134,6 +138,10 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     bool handleCharRemoval(MarkdownHighlighter::RangeType type, int block,
                            int position);
     void resizeEvent(QResizeEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
+    void mouseDoubleClickEvent(QMouseEvent *event) override;
     void setLineNumberLeftMarginOffset(int offset);
     int _lineNumberLeftMarginOffset = 0;
     LineNumArea *lineNumberArea() { return _lineNumArea; }
@@ -142,6 +150,18 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     Q_SLOT void updateLineNumberAreaWidth(int);
     bool _handleBracketClosingUsed;
     LineNumArea *_lineNumArea;
+
+   private:
+    struct LineBackup {
+        QPointF position;
+        qreal width;
+    };
+    struct BlockLayoutBackup {
+        QTextBlock block;
+        QVector<LineBackup> lines;
+    };
+    QVector<BlockLayoutBackup> applyHangingIndentLayout();
+    void restoreHangingIndentLayout(const QVector<BlockLayoutBackup> &backups);
 
    Q_SIGNALS:
     void urlClicked(QString url);

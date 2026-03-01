@@ -31,6 +31,7 @@
 #include <QGuiApplication>
 #include <QKeyEvent>
 #include <QLayout>
+#include <QMouseEvent>
 #include <QPainter>
 #include <QPainterPath>
 #include <QRegularExpression>
@@ -2015,20 +2016,14 @@ void QMarkdownTextEdit::paintEvent(QPaintEvent *e) {
 
     painter.end();
 
-    // Apply hanging indentation to wrapped Markdown list lines before the
-    // base class paints the text. We re-layout list blocks so that
-    // continuation lines are indented to align with the content after the
-    // list marker (e.g. "- " or "1. ").
-    struct LineBackup {
-        QPointF position;
-        qreal width;
-    };
-    struct BlockLayoutBackup {
-        QTextBlock block;
-        QVector<LineBackup> lines;
-    };
-    QVector<BlockLayoutBackup> backups;
+    const QVector<BlockLayoutBackup> backups = applyHangingIndentLayout();
+    QPlainTextEdit::paintEvent(e);
+    restoreHangingIndentLayout(backups);
+}
 
+QVector<QMarkdownTextEdit::BlockLayoutBackup>
+QMarkdownTextEdit::applyHangingIndentLayout() {
+    QVector<BlockLayoutBackup> backups;
     QTextBlock listBlock = firstVisibleBlock();
     QPointF listOffset(contentOffset());
     while (listBlock.isValid()) {
@@ -2049,10 +2044,6 @@ void QMarkdownTextEdit::paintEvent(QPaintEvent *e) {
             const int lineCount = layout->lineCount();
 
             if (lineCount > 1) {
-                // Get the exact pixel position of the list content start
-                // from the original layout, which matches non-wrapped items
-                // Back up original continuation line positions and widths
-                // for restoring later
                 BlockLayoutBackup backup;
                 backup.block = listBlock;
                 for (int i = 0; i < lineCount; ++i) {
@@ -2096,10 +2087,13 @@ void QMarkdownTextEdit::paintEvent(QPaintEvent *e) {
         listBlock = listBlock.next();
     }
 
-    QPlainTextEdit::paintEvent(e);
+    return backups;
+}
 
+void QMarkdownTextEdit::restoreHangingIndentLayout(
+    const QVector<BlockLayoutBackup> &backups) {
     // Restore original line positions and widths so the document layout
-    // engine is not confused
+    // engine is not confused.
     for (const auto &backup : backups) {
         QTextLayout *layout = backup.block.layout();
         layout->clearLayout();
@@ -2113,6 +2107,30 @@ void QMarkdownTextEdit::paintEvent(QPaintEvent *e) {
         }
         layout->endLayout();
     }
+}
+
+void QMarkdownTextEdit::mousePressEvent(QMouseEvent *event) {
+    const QVector<BlockLayoutBackup> backups = applyHangingIndentLayout();
+    QPlainTextEdit::mousePressEvent(event);
+    restoreHangingIndentLayout(backups);
+}
+
+void QMarkdownTextEdit::mouseMoveEvent(QMouseEvent *event) {
+    const QVector<BlockLayoutBackup> backups = applyHangingIndentLayout();
+    QPlainTextEdit::mouseMoveEvent(event);
+    restoreHangingIndentLayout(backups);
+}
+
+void QMarkdownTextEdit::mouseReleaseEvent(QMouseEvent *event) {
+    const QVector<BlockLayoutBackup> backups = applyHangingIndentLayout();
+    QPlainTextEdit::mouseReleaseEvent(event);
+    restoreHangingIndentLayout(backups);
+}
+
+void QMarkdownTextEdit::mouseDoubleClickEvent(QMouseEvent *event) {
+    const QVector<BlockLayoutBackup> backups = applyHangingIndentLayout();
+    QPlainTextEdit::mouseDoubleClickEvent(event);
+    restoreHangingIndentLayout(backups);
 }
 
 /**
