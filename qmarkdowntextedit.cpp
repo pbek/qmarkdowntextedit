@@ -140,7 +140,15 @@ void QMarkdownTextEdit::setHighlightCurrentLine(bool set) {
     _highlightCurrentLine = set;
 }
 
+void QMarkdownTextEdit::setHangingIndentEnabled(bool enabled) {
+    _hangingIndentEnabled = enabled;
+}
+
 bool QMarkdownTextEdit::highlightCurrentLine() { return _highlightCurrentLine; }
+
+bool QMarkdownTextEdit::hangingIndentEnabled() const {
+    return _hangingIndentEnabled;
+}
 
 void QMarkdownTextEdit::setCurrentLineHighlightColor(const QColor &color) {
     _currentLineHighlightColor = color;
@@ -2016,14 +2024,21 @@ void QMarkdownTextEdit::paintEvent(QPaintEvent *e) {
 
     painter.end();
 
-    const QVector<BlockLayoutBackup> backups = applyHangingIndentLayout();
-    QPlainTextEdit::paintEvent(e);
-    restoreHangingIndentLayout(backups);
+    if (_hangingIndentEnabled) {
+        const QVector<BlockLayoutBackup> backups = applyHangingIndentLayout();
+        QPlainTextEdit::paintEvent(e);
+        restoreHangingIndentLayout(backups);
+    } else {
+        QPlainTextEdit::paintEvent(e);
+    }
 }
 
 QVector<QMarkdownTextEdit::BlockLayoutBackup>
 QMarkdownTextEdit::applyHangingIndentLayout() {
     QVector<BlockLayoutBackup> backups;
+    if (!_hangingIndentEnabled) {
+        return backups;
+    }
     QTextBlock listBlock = firstVisibleBlock();
     QPointF listOffset(contentOffset());
     while (listBlock.isValid()) {
@@ -2111,27 +2126,43 @@ void QMarkdownTextEdit::restoreHangingIndentLayout(
 }
 
 void QMarkdownTextEdit::mousePressEvent(QMouseEvent *event) {
-    const QVector<BlockLayoutBackup> backups = applyHangingIndentLayout();
-    QPlainTextEdit::mousePressEvent(event);
-    restoreHangingIndentLayout(backups);
+    if (_hangingIndentEnabled) {
+        const QVector<BlockLayoutBackup> backups = applyHangingIndentLayout();
+        QPlainTextEdit::mousePressEvent(event);
+        restoreHangingIndentLayout(backups);
+    } else {
+        QPlainTextEdit::mousePressEvent(event);
+    }
 }
 
 void QMarkdownTextEdit::mouseMoveEvent(QMouseEvent *event) {
-    const QVector<BlockLayoutBackup> backups = applyHangingIndentLayout();
-    QPlainTextEdit::mouseMoveEvent(event);
-    restoreHangingIndentLayout(backups);
+    if (_hangingIndentEnabled) {
+        const QVector<BlockLayoutBackup> backups = applyHangingIndentLayout();
+        QPlainTextEdit::mouseMoveEvent(event);
+        restoreHangingIndentLayout(backups);
+    } else {
+        QPlainTextEdit::mouseMoveEvent(event);
+    }
 }
 
 void QMarkdownTextEdit::mouseReleaseEvent(QMouseEvent *event) {
-    const QVector<BlockLayoutBackup> backups = applyHangingIndentLayout();
-    QPlainTextEdit::mouseReleaseEvent(event);
-    restoreHangingIndentLayout(backups);
+    if (_hangingIndentEnabled) {
+        const QVector<BlockLayoutBackup> backups = applyHangingIndentLayout();
+        QPlainTextEdit::mouseReleaseEvent(event);
+        restoreHangingIndentLayout(backups);
+    } else {
+        QPlainTextEdit::mouseReleaseEvent(event);
+    }
 }
 
 void QMarkdownTextEdit::mouseDoubleClickEvent(QMouseEvent *event) {
-    const QVector<BlockLayoutBackup> backups = applyHangingIndentLayout();
-    QPlainTextEdit::mouseDoubleClickEvent(event);
-    restoreHangingIndentLayout(backups);
+    if (_hangingIndentEnabled) {
+        const QVector<BlockLayoutBackup> backups = applyHangingIndentLayout();
+        QPlainTextEdit::mouseDoubleClickEvent(event);
+        restoreHangingIndentLayout(backups);
+    } else {
+        QPlainTextEdit::mouseDoubleClickEvent(event);
+    }
 }
 
 /**

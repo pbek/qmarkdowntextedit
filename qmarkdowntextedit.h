@@ -86,6 +86,9 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     void setHighlightCurrentLine(bool set);
     bool highlightCurrentLine();
 
+    void setHangingIndentEnabled(bool enabled);
+    [[nodiscard]] bool hangingIndentEnabled() const;
+
     void setCurrentLineHighlightColor(const QColor &c);
     QColor currentLineHighlightColor();
 
@@ -115,6 +118,7 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     bool _centerCursor = false;
     bool _highlightCurrentLine = false;
     bool _openLinkInNewTab = false;
+    bool _hangingIndentEnabled = true;
     QColor _currentLineHighlightColor = QColor();
     uint _debounceDelay = 0;
 
