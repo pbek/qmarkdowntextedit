@@ -2077,26 +2077,33 @@ QMarkdownTextEdit::applyHangingIndentLayout() {
                 const qreal cursorPadding =
                     qMax<qreal>(2.0, cursorWidth() + 1.0);
 
+                // Use the first line's width as the text area width since
+                // all original lines share the same width
+                const qreal textAreaWidth = backup.lines.first().width;
+                const qreal indentOffset = indentPixels - baseX;
+                const qreal continuationWidth = qMax<qreal>(
+                    0.0, textAreaWidth - indentOffset + cursorPadding);
+
                 // Re-layout the block with hanging indent for continuation
-                // lines while in layout mode to avoid QTextLine warnings.
+                // lines. Since narrower continuation lines may cause text
+                // to reflow into more lines than the original layout, we
+                // keep creating lines until all text is consumed.
                 layout->clearLayout();
                 layout->beginLayout();
-                for (int i = 0; i < backup.lines.size(); ++i) {
+                for (int i = 0;; ++i) {
                     QTextLine line = layout->createLine();
                     if (!line.isValid()) break;
 
                     if (i == 0) {
-                        line.setLineWidth(
-                            qMax<qreal>(0.0, backup.lines[i].width));
+                        line.setLineWidth(qMax<qreal>(0.0, textAreaWidth));
                         line.setPosition(
-                            QPointF(baseX, backup.lines[i].position.y()));
+                            QPointF(baseX, backup.lines[0].position.y()));
                     } else {
-                        const qreal indentOffset = indentPixels - baseX;
-                        line.setLineWidth(
-                            qMax<qreal>(0.0, backup.lines[i].width -
-                                                 indentOffset + cursorPadding));
-                        line.setPosition(QPointF(indentPixels,
-                                                 backup.lines[i].position.y()));
+                        line.setLineWidth(continuationWidth);
+                        // Compute y-position from the previous line
+                        const QTextLine prev = layout->lineAt(i - 1);
+                        const qreal y = prev.position().y() + prev.height();
+                        line.setPosition(QPointF(indentPixels, y));
                     }
                 }
                 layout->endLayout();
