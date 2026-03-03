@@ -2072,8 +2072,10 @@ QMarkdownTextEdit::applyHangingIndentLayout() {
 
                 const QTextLine firstLine = layout->lineAt(0);
                 const qreal baseX = firstLine.position().x();
-                const qreal indentPixels = firstLine.cursorToX(indentChars);
-                const qreal textAreaWidth = backup.lines.first().width;
+                const qreal indentPixels =
+                    qRound(firstLine.cursorToX(indentChars));
+                const qreal cursorPadding =
+                    qMax<qreal>(2.0, cursorWidth() + 1.0);
 
                 // Re-layout the block with hanging indent for continuation
                 // lines while in layout mode to avoid QTextLine warnings.
@@ -2084,16 +2086,17 @@ QMarkdownTextEdit::applyHangingIndentLayout() {
                     if (!line.isValid()) break;
 
                     if (i == 0) {
-                        line.setLineWidth(qMax<qreal>(0.0, textAreaWidth));
-                        line.setPosition(QPointF(baseX, 0));
+                        line.setLineWidth(
+                            qMax<qreal>(0.0, backup.lines[i].width));
+                        line.setPosition(
+                            QPointF(baseX, backup.lines[i].position.y()));
                     } else {
                         const qreal indentOffset = indentPixels - baseX;
-                        const qreal extraWidth = 2.0;
-                        line.setLineWidth(qMax<qreal>(
-                            0.0, textAreaWidth - indentOffset + extraWidth));
-                        const qreal y = layout->lineAt(i - 1).position().y() +
-                                        layout->lineAt(i - 1).height();
-                        line.setPosition(QPointF(indentPixels, y));
+                        line.setLineWidth(
+                            qMax<qreal>(0.0, backup.lines[i].width -
+                                                 indentOffset + cursorPadding));
+                        line.setPosition(QPointF(indentPixels,
+                                                 backup.lines[i].position.y()));
                     }
                 }
                 layout->endLayout();
