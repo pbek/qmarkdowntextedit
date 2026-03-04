@@ -39,6 +39,7 @@
 #include <QRegularExpressionMatchIterator>
 #include <QScrollBar>
 #include <QTextBlock>
+#include <QTextLayout>
 #include <QTimer>
 #include <QWheelEvent>
 #include <utility>
@@ -113,6 +114,29 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
     connect(this, &QPlainTextEdit::updateRequest, this,
             &QMarkdownTextEdit::updateLineNumberArea);
 
+    _hangingCursorRepaintTimer = new QTimer(this);
+    _hangingCursorRepaintTimer->setSingleShot(false);
+    _hangingCursorRepaintTimer->setInterval(500);
+    connect(_hangingCursorRepaintTimer, &QTimer::timeout, this, [this]() {
+        const QRect repaintRect = hangingCursorBlockRepaintRect();
+        if (!repaintRect.isEmpty()) {
+            viewport()->update(repaintRect);
+        }
+    });
+    connect(this, &QPlainTextEdit::cursorPositionChanged, this, [this]() {
+        const QRect repaintRect = hangingCursorBlockRepaintRect();
+        if (!repaintRect.isEmpty()) {
+            viewport()->update(repaintRect);
+            if (_hangingCursorRepaintTimer &&
+                !_hangingCursorRepaintTimer->isActive()) {
+                _hangingCursorRepaintTimer->start();
+            }
+        } else if (_hangingCursorRepaintTimer &&
+                   _hangingCursorRepaintTimer->isActive()) {
+            _hangingCursorRepaintTimer->stop();
+        }
+    });
+
     updateSettings();
 
     // workaround for disabled signals up initialization
@@ -142,6 +166,23 @@ void QMarkdownTextEdit::setHighlightCurrentLine(bool set) {
 
 void QMarkdownTextEdit::setHangingIndentEnabled(bool enabled) {
     _hangingIndentEnabled = enabled;
+
+    if (!_hangingCursorRepaintTimer) {
+        return;
+    }
+
+    if (!enabled) {
+        _hangingCursorRepaintTimer->stop();
+        return;
+    }
+
+    const QRect repaintRect = hangingCursorBlockRepaintRect();
+    if (!repaintRect.isEmpty()) {
+        viewport()->update(repaintRect);
+        if (!_hangingCursorRepaintTimer->isActive()) {
+            _hangingCursorRepaintTimer->start();
+        }
+    }
 }
 
 bool QMarkdownTextEdit::highlightCurrentLine() { return _highlightCurrentLine; }
@@ -712,8 +753,24 @@ void QMarkdownTextEdit::resetMouseCursor() const {
  * Resets the cursor to Qt::IBeamCursor if the widget looses the focus
  */
 void QMarkdownTextEdit::focusOutEvent(QFocusEvent *event) {
+    if (_hangingCursorRepaintTimer) {
+        _hangingCursorRepaintTimer->stop();
+    }
     resetMouseCursor();
     QPlainTextEdit::focusOutEvent(event);
+}
+
+void QMarkdownTextEdit::focusInEvent(QFocusEvent *event) {
+    const QRect repaintRect = hangingCursorBlockRepaintRect();
+    if (!repaintRect.isEmpty()) {
+        viewport()->update(repaintRect);
+        if (_hangingCursorRepaintTimer &&
+            !_hangingCursorRepaintTimer->isActive()) {
+            _hangingCursorRepaintTimer->start();
+        }
+    }
+
+    QPlainTextEdit::focusInEvent(event);
 }
 
 /**
@@ -1809,11 +1866,61 @@ void QMarkdownTextEdit::updateLineNumberArea(const QRect rect, int dy) {
         _lineNumArea->update(0, rect.y(), _lineNumArea->sizeHint().width(),
                              rect.height());
 
+    if (_hangingIndentEnabled && dy == 0 && hasFocus()) {
+        const bool isCaretUpdate =
+            rect.width() <= (cursorWidth() + 4) &&
+            rect.height() <= (fontMetrics().height() + 4);
+        if (isCaretUpdate) {
+            const QRect repaintRect = hangingCursorBlockRepaintRect();
+            if (!repaintRect.isEmpty()) {
+                viewport()->update(repaintRect);
+                if (_hangingCursorRepaintTimer &&
+                    !_hangingCursorRepaintTimer->isActive()) {
+                    _hangingCursorRepaintTimer->start();
+                }
+            } else if (_hangingCursorRepaintTimer &&
+                       _hangingCursorRepaintTimer->isActive()) {
+                _hangingCursorRepaintTimer->stop();
+            }
+        }
+    }
+
     updateLineNumAreaGeometry();
 
     if (rect.contains(viewport()->rect())) {
         updateLineNumberAreaWidth(0);
     }
+}
+
+QRect QMarkdownTextEdit::hangingCursorBlockRepaintRect() const {
+    if (!_hangingIndentEnabled || !hasFocus()) {
+        return {};
+    }
+
+    const QTextCursor cursor = textCursor();
+    const QTextBlock cursorBlock = cursor.block();
+    if (!cursorBlock.isValid()) {
+        return {};
+    }
+
+    if (listContentIndentLength(cursorBlock.text()) <= 0) {
+        return {};
+    }
+
+    QTextLayout *layout = cursorBlock.layout();
+    if (!layout || layout->lineCount() <= 1) {
+        return {};
+    }
+
+    const QTextLine cursorLine =
+        layout->lineForTextPosition(cursor.positionInBlock());
+    if (!cursorLine.isValid() || cursorLine.lineNumber() <= 0) {
+        return {};
+    }
+
+    const QRect blockRect =
+        blockBoundingGeometry(cursorBlock).translated(contentOffset()).toRect();
+    return QRect(0, blockRect.y(), viewport()->width(), blockRect.height());
 }
 
 void QMarkdownTextEdit::updateLineNumberAreaWidth(int) {

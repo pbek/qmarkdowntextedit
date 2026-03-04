@@ -35,6 +35,7 @@
 
 class LineNumArea;
 class QMouseEvent;
+class QTimer;
 
 class QMarkdownTextEdit : public QPlainTextEdit {
     Q_OBJECT
@@ -136,6 +137,7 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     bool bracketClosingCheck(const QChar openingCharacter,
                              QChar closingCharacter);
     bool quotationMarkCheck(const QChar quotationCharacter);
+    void focusInEvent(QFocusEvent *event) override;
     void focusOutEvent(QFocusEvent *event) override;
     void paintEvent(QPaintEvent *e) override;
     static int listContentIndentLength(const QString &text);
@@ -164,8 +166,10 @@ class QMarkdownTextEdit : public QPlainTextEdit {
         QTextBlock block;
         QVector<LineBackup> lines;
     };
+    QRect hangingCursorBlockRepaintRect() const;
     QVector<BlockLayoutBackup> applyHangingIndentLayout();
     void restoreHangingIndentLayout(const QVector<BlockLayoutBackup> &backups);
+    QTimer *_hangingCursorRepaintTimer = nullptr;
 
    Q_SIGNALS:
     void urlClicked(QString url);
