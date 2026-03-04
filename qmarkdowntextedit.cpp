@@ -1897,8 +1897,7 @@ QRect QMarkdownTextEdit::hangingCursorBlockRepaintRect() const {
         return {};
     }
 
-    const QTextCursor cursor = textCursor();
-    const QTextBlock cursorBlock = cursor.block();
+    const QTextBlock cursorBlock = textCursor().block();
     if (!cursorBlock.isValid()) {
         return {};
     }
@@ -1909,12 +1908,6 @@ QRect QMarkdownTextEdit::hangingCursorBlockRepaintRect() const {
 
     QTextLayout *layout = cursorBlock.layout();
     if (!layout || layout->lineCount() <= 1) {
-        return {};
-    }
-
-    const QTextLine cursorLine =
-        layout->lineForTextPosition(cursor.positionInBlock());
-    if (!cursorLine.isValid() || cursorLine.lineNumber() <= 0) {
         return {};
     }
 
