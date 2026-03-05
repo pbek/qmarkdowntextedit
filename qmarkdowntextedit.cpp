@@ -2113,14 +2113,10 @@ void QMarkdownTextEdit::paintEvent(QPaintEvent *e) {
         // Current line highlight
         QTextCursor cursor = textCursor();
         if (highlightCurrentLine() && cursor.block() == block) {
-            QTextLine line =
-                block.layout()->lineForTextPosition(cursor.positionInBlock());
-            QRectF lineRect = line.rect();
-            lineRect.moveTop(lineRect.top() + r.top());
-            lineRect.setLeft(0.);
-            lineRect.setRight(viewportRect.width());
-            painter.fillRect(lineRect.toAlignedRect(),
-                             currentLineHighlightColor());
+            QRect lineRect = cursorRect(cursor);
+            lineRect.setLeft(0);
+            lineRect.setWidth(viewportRect.width());
+            painter.fillRect(lineRect, currentLineHighlightColor());
         }
 
         block = block.next();
@@ -2244,6 +2240,16 @@ void QMarkdownTextEdit::mousePressEvent(QMouseEvent *event) {
         restoreHangingIndentLayout(backups);
     } else {
         QPlainTextEdit::mousePressEvent(event);
+    }
+}
+
+void QMarkdownTextEdit::keyPressEvent(QKeyEvent *event) {
+    if (_hangingIndentEnabled) {
+        const QVector<BlockLayoutBackup> backups = applyHangingIndentLayout();
+        QPlainTextEdit::keyPressEvent(event);
+        restoreHangingIndentLayout(backups);
+    } else {
+        QPlainTextEdit::keyPressEvent(event);
     }
 }
 

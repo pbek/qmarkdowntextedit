@@ -34,6 +34,7 @@
 #include "qplaintexteditsearchwidget.h"
 
 class LineNumArea;
+class QKeyEvent;
 class QMouseEvent;
 class QTimer;
 
@@ -144,6 +145,7 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     bool handleCharRemoval(MarkdownHighlighter::RangeType type, int block,
                            int position);
     void resizeEvent(QResizeEvent *event) override;
+    void keyPressEvent(QKeyEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
