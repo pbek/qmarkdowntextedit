@@ -1986,6 +1986,11 @@ int QMarkdownTextEdit::listContentIndentLength(const QString &text) {
  * continuation lines align with the list content rather than the list marker
  */
 void QMarkdownTextEdit::paintEvent(QPaintEvent *e) {
+    QVector<BlockLayoutBackup> hangingIndentBackups;
+    if (_hangingIndentEnabled) {
+        hangingIndentBackups = applyHangingIndentLayout();
+    }
+
     QTextBlock block = firstVisibleBlock();
 
     QPainter painter(viewport());
@@ -2124,12 +2129,10 @@ void QMarkdownTextEdit::paintEvent(QPaintEvent *e) {
 
     painter.end();
 
+    QPlainTextEdit::paintEvent(e);
+
     if (_hangingIndentEnabled) {
-        const QVector<BlockLayoutBackup> backups = applyHangingIndentLayout();
-        QPlainTextEdit::paintEvent(e);
-        restoreHangingIndentLayout(backups);
-    } else {
-        QPlainTextEdit::paintEvent(e);
+        restoreHangingIndentLayout(hangingIndentBackups);
     }
 }
 
@@ -2172,10 +2175,9 @@ QMarkdownTextEdit::applyHangingIndentLayout() {
 
                 const QTextLine firstLine = layout->lineAt(0);
                 const qreal baseX = firstLine.position().x();
-                const qreal indentPixels =
-                    qRound(firstLine.cursorToX(indentChars));
+                const qreal indentPixels = firstLine.cursorToX(indentChars);
                 const qreal cursorPadding =
-                    qMax<qreal>(2.0, cursorWidth() + 1.0);
+                    qMax<qreal>(4.0, qreal(cursorWidth()) + 2.0);
 
                 // Use the first line's width as the text area width since
                 // all original lines share the same width
