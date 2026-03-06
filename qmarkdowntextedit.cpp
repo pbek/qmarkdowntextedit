@@ -123,19 +123,8 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
             viewport()->update(repaintRect);
         }
     });
-    connect(this, &QPlainTextEdit::cursorPositionChanged, this, [this]() {
-        const QRect repaintRect = hangingCursorBlockRepaintRect();
-        if (!repaintRect.isEmpty()) {
-            viewport()->update(repaintRect);
-            if (_hangingCursorRepaintTimer &&
-                !_hangingCursorRepaintTimer->isActive()) {
-                _hangingCursorRepaintTimer->start();
-            }
-        } else if (_hangingCursorRepaintTimer &&
-                   _hangingCursorRepaintTimer->isActive()) {
-            _hangingCursorRepaintTimer->stop();
-        }
-    });
+    connect(this, &QPlainTextEdit::cursorPositionChanged, this,
+            [this]() { updateHangingCursorRepaintState(); });
 
     updateSettings();
 
@@ -176,13 +165,7 @@ void QMarkdownTextEdit::setHangingIndentEnabled(bool enabled) {
         return;
     }
 
-    const QRect repaintRect = hangingCursorBlockRepaintRect();
-    if (!repaintRect.isEmpty()) {
-        viewport()->update(repaintRect);
-        if (!_hangingCursorRepaintTimer->isActive()) {
-            _hangingCursorRepaintTimer->start();
-        }
-    }
+    updateHangingCursorRepaintState();
 }
 
 bool QMarkdownTextEdit::highlightCurrentLine() { return _highlightCurrentLine; }
@@ -761,14 +744,7 @@ void QMarkdownTextEdit::focusOutEvent(QFocusEvent *event) {
 }
 
 void QMarkdownTextEdit::focusInEvent(QFocusEvent *event) {
-    const QRect repaintRect = hangingCursorBlockRepaintRect();
-    if (!repaintRect.isEmpty()) {
-        viewport()->update(repaintRect);
-        if (_hangingCursorRepaintTimer &&
-            !_hangingCursorRepaintTimer->isActive()) {
-            _hangingCursorRepaintTimer->start();
-        }
-    }
+    updateHangingCursorRepaintState();
 
     QPlainTextEdit::focusInEvent(event);
 }
@@ -1871,17 +1847,7 @@ void QMarkdownTextEdit::updateLineNumberArea(const QRect rect, int dy) {
             rect.width() <= (cursorWidth() + 4) &&
             rect.height() <= (fontMetrics().height() + 4);
         if (isCaretUpdate) {
-            const QRect repaintRect = hangingCursorBlockRepaintRect();
-            if (!repaintRect.isEmpty()) {
-                viewport()->update(repaintRect);
-                if (_hangingCursorRepaintTimer &&
-                    !_hangingCursorRepaintTimer->isActive()) {
-                    _hangingCursorRepaintTimer->start();
-                }
-            } else if (_hangingCursorRepaintTimer &&
-                       _hangingCursorRepaintTimer->isActive()) {
-                _hangingCursorRepaintTimer->stop();
-            }
+            updateHangingCursorRepaintState();
         }
     }
 
@@ -1914,6 +1880,22 @@ QRect QMarkdownTextEdit::hangingCursorBlockRepaintRect() const {
     const QRect blockRect =
         blockBoundingGeometry(cursorBlock).translated(contentOffset()).toRect();
     return QRect(0, blockRect.y(), viewport()->width(), blockRect.height());
+}
+
+void QMarkdownTextEdit::updateHangingCursorRepaintState() {
+    if (!_hangingCursorRepaintTimer) {
+        return;
+    }
+
+    const QRect repaintRect = hangingCursorBlockRepaintRect();
+    if (!repaintRect.isEmpty()) {
+        viewport()->update(repaintRect);
+        if (!_hangingCursorRepaintTimer->isActive()) {
+            _hangingCursorRepaintTimer->start();
+        }
+    } else if (_hangingCursorRepaintTimer->isActive()) {
+        _hangingCursorRepaintTimer->stop();
+    }
 }
 
 void QMarkdownTextEdit::updateLineNumberAreaWidth(int) {
@@ -2238,6 +2220,7 @@ void QMarkdownTextEdit::mousePressEvent(QMouseEvent *event) {
         const QVector<BlockLayoutBackup> backups = applyHangingIndentLayout();
         QPlainTextEdit::mousePressEvent(event);
         restoreHangingIndentLayout(backups);
+        updateHangingCursorRepaintState();
     } else {
         QPlainTextEdit::mousePressEvent(event);
     }
@@ -2268,6 +2251,7 @@ void QMarkdownTextEdit::mouseReleaseEvent(QMouseEvent *event) {
         const QVector<BlockLayoutBackup> backups = applyHangingIndentLayout();
         QPlainTextEdit::mouseReleaseEvent(event);
         restoreHangingIndentLayout(backups);
+        updateHangingCursorRepaintState();
     } else {
         QPlainTextEdit::mouseReleaseEvent(event);
     }
@@ -2278,6 +2262,7 @@ void QMarkdownTextEdit::mouseDoubleClickEvent(QMouseEvent *event) {
         const QVector<BlockLayoutBackup> backups = applyHangingIndentLayout();
         QPlainTextEdit::mouseDoubleClickEvent(event);
         restoreHangingIndentLayout(backups);
+        updateHangingCursorRepaintState();
     } else {
         QPlainTextEdit::mouseDoubleClickEvent(event);
     }

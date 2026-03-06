@@ -169,6 +169,7 @@ class QMarkdownTextEdit : public QPlainTextEdit {
         QVector<LineBackup> lines;
     };
     QRect hangingCursorBlockRepaintRect() const;
+    void updateHangingCursorRepaintState();
     QVector<BlockLayoutBackup> applyHangingIndentLayout();
     void restoreHangingIndentLayout(const QVector<BlockLayoutBackup> &backups);
     QTimer *_hangingCursorRepaintTimer = nullptr;
