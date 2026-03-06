@@ -38,6 +38,7 @@
 #include <QRegularExpressionMatch>
 #include <QRegularExpressionMatchIterator>
 #include <QScrollBar>
+#include <QStyleHints>
 #include <QTextBlock>
 #include <QTextLayout>
 #include <QTimer>
@@ -116,13 +117,23 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
 
     _hangingCursorRepaintTimer = new QTimer(this);
     _hangingCursorRepaintTimer->setSingleShot(false);
-    _hangingCursorRepaintTimer->setInterval(500);
+    const int cursorFlashTime =
+        QGuiApplication::styleHints()->cursorFlashTime();
+    const int repaintInterval =
+        cursorFlashTime > 0 ? qMax(100, cursorFlashTime / 2) : 500;
+    _hangingCursorRepaintTimer->setInterval(repaintInterval);
     connect(_hangingCursorRepaintTimer, &QTimer::timeout, this, [this]() {
         const QRect repaintRect = hangingCursorBlockRepaintRect();
         if (!repaintRect.isEmpty()) {
             viewport()->update(repaintRect);
         }
     });
+    connect(QGuiApplication::styleHints(), &QStyleHints::cursorFlashTimeChanged,
+            this, [this](int flashTime) {
+                const int interval =
+                    flashTime > 0 ? qMax(100, flashTime / 2) : 500;
+                _hangingCursorRepaintTimer->setInterval(interval);
+            });
     connect(this, &QPlainTextEdit::cursorPositionChanged, this,
             [this]() { updateHangingCursorRepaintState(); });
 
@@ -1877,9 +1888,12 @@ QRect QMarkdownTextEdit::hangingCursorBlockRepaintRect() const {
         return {};
     }
 
-    const QRect blockRect =
-        blockBoundingGeometry(cursorBlock).translated(contentOffset()).toRect();
-    return QRect(0, blockRect.y(), viewport()->width(), blockRect.height());
+    // Repaint the full viewport while the caret is in a wrapped list item with
+    // hanging indent. The temporary hanging-indent re-layout can create
+    // additional visual lines compared to the document layout used by Qt for
+    // dirty region tracking, so block-local repaints may miss the caret,
+    // especially on the last visual line.
+    return viewport()->rect();
 }
 
 void QMarkdownTextEdit::updateHangingCursorRepaintState() {
