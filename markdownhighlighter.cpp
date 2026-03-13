@@ -400,6 +400,42 @@ void MarkdownHighlighter::setTextFormat(HighlighterState state,
     _formats[state] = std::move(format);
 }
 
+void MarkdownHighlighter::setHideFormattingSyntax(bool hide) {
+    _hideFormattingSyntax = hide;
+}
+
+void MarkdownHighlighter::setCurrentCursorBlockNumber(int blockNumber) {
+    _currentCursorBlockNumber = blockNumber;
+}
+
+/**
+ * Returns the MaskedSyntax format, potentially with zero-width formatting
+ * if hiding formatting syntax on non-cursor blocks is enabled.
+ * This makes the formatting characters occupy no visible space by:
+ * 1. Using a near-zero font size to minimize base glyph metrics
+ * 2. Setting letter spacing to 0% which zeros out all glyph advances
+ * 3. Making the foreground fully transparent as a visual safety net
+ */
+QTextCharFormat MarkdownHighlighter::currentMaskedFormat() const {
+    QTextCharFormat fmt = _formats[MaskedSyntax];
+    if (isHidingForCurrentBlock()) {
+        fmt.setFontPointSize(0.01);
+        fmt.setFontLetterSpacingType(QFont::PercentageSpacing);
+        fmt.setFontLetterSpacing(0);
+        fmt.setForeground(QColor(0, 0, 0, 0));
+    }
+    return fmt;
+}
+
+/**
+ * Returns true if formatting syntax should be hidden for the block
+ * currently being highlighted.
+ */
+bool MarkdownHighlighter::isHidingForCurrentBlock() const {
+    return _hideFormattingSyntax &&
+           currentBlock().blockNumber() != _currentCursorBlockNumber;
+}
+
 /**
  * Does the Markdown highlighting
  *
@@ -566,8 +602,10 @@ void MarkdownHighlighter::highlightHeadline(const QString &text) {
 
             // Set styling of the "#"s to "masked syntax", but with the size of
             // the heading
-            auto maskedFormat = _formats[MaskedSyntax];
-            maskedFormat.setFontPointSize(_formats[state].fontPointSize());
+            auto maskedFormat = currentMaskedFormat();
+            if (!isHidingForCurrentBlock()) {
+                maskedFormat.setFontPointSize(_formats[state].fontPointSize());
+            }
             setFormat(0, headingLevel, maskedFormat);
 
             // Set the styling of the rest of the heading
@@ -651,19 +689,21 @@ void MarkdownHighlighter::highlightHeadline(const QString &text) {
 
 void MarkdownHighlighter::highlightSubHeadline(const QString &text,
                                                HighlighterState state) {
-    const QTextCharFormat &maskedFormat =
-        _formats[HighlighterState::MaskedSyntax];
+    const QTextCharFormat maskedFormat = currentMaskedFormat();
     QTextBlock previousBlock = currentBlock().previous();
 
     // we check for both H1/H2 so that if the user changes his mind, and changes
     // === to ---, changes be reflected immediately
     if (previousBlockState() == H1 || previousBlockState() == H2 ||
         previousBlockState() == NoState) {
-        QTextCharFormat currentMaskedFormat = maskedFormat;
+        QTextCharFormat headingMaskedFormat = maskedFormat;
         // set the font size from the current rule's font format
-        currentMaskedFormat.setFontPointSize(_formats[state].fontPointSize());
+        if (!isHidingForCurrentBlock()) {
+            headingMaskedFormat.setFontPointSize(
+                _formats[state].fontPointSize());
+        }
 
-        setFormat(0, text.length(), currentMaskedFormat);
+        setFormat(0, text.length(), headingMaskedFormat);
         setCurrentBlockState(HeadlineEnd);
 
         // we want to re-highlight the previous block
@@ -739,9 +779,8 @@ void MarkdownHighlighter::highlightCodeBlock(const QString &text,
         if (text.endsWith(QLatin1String("```")) && text.length() > 3) {
             setFormat(3, text.length() - 3,
                       _formats[HighlighterState::InlineCodeBlock]);
-            setFormat(0, 3, _formats[HighlighterState::MaskedSyntax]);
-            setFormat(text.length() - 3, 3,
-                      _formats[HighlighterState::MaskedSyntax]);
+            setFormat(0, 3, currentMaskedFormat());
+            setFormat(text.length() - 3, 3, currentMaskedFormat());
             return;
         }
         if ((previousBlockState() != CodeBlock &&
@@ -770,8 +809,10 @@ void MarkdownHighlighter::highlightCodeBlock(const QString &text,
         }
 
         // set the font size from the current rule's font format
-        QTextCharFormat &maskedFormat = _formats[MaskedSyntax];
-        maskedFormat.setFontPointSize(_formats[CodeBlock].fontPointSize());
+        QTextCharFormat maskedFormat = currentMaskedFormat();
+        if (!isHidingForCurrentBlock()) {
+            maskedFormat.setFontPointSize(_formats[CodeBlock].fontPointSize());
+        }
 
         setFormat(0, text.length(), maskedFormat);
     } else if (isCodeBlock(previousBlockState())) {
@@ -1973,12 +2014,11 @@ void MarkdownHighlighter::highlightFrontmatterBlock(const QString &text) {
         setCurrentBlockState(foundEnd ? HighlighterState::FrontmatterBlockEnd
                                       : HighlighterState::FrontmatterBlock);
 
-        QTextCharFormat &maskedFormat =
-            _formats[HighlighterState::MaskedSyntax];
+        QTextCharFormat maskedFormat = currentMaskedFormat();
         setFormat(0, text.length(), maskedFormat);
     } else if (previousBlockState() == HighlighterState::FrontmatterBlock) {
         setCurrentBlockState(HighlighterState::FrontmatterBlock);
-        setFormat(0, text.length(), _formats[HighlighterState::MaskedSyntax]);
+        setFormat(0, text.length(), currentMaskedFormat());
     }
 }
 
@@ -2061,12 +2101,13 @@ void MarkdownHighlighter::highlightCheckbox(const QString &text, int curPos) {
         const int start = curPos + 2;
         constexpr int length = 3;
 
-        const auto fmt = hasXorSpace
-                             ? (midChar == QLatin1Char(' ') ? CheckBoxUnChecked
-                                                            : CheckBoxChecked)
-                             : MaskedSyntax;
-
-        setFormat(start, length, _formats[fmt]);
+        if (hasXorSpace) {
+            const auto fmt = midChar == QLatin1Char(' ') ? CheckBoxUnChecked
+                                                         : CheckBoxChecked;
+            setFormat(start, length, _formats[fmt]);
+        } else {
+            setFormat(start, length, currentMaskedFormat());
+        }
     }
 }
 
@@ -2164,7 +2205,7 @@ void MarkdownHighlighter::setHeadingStyles(HighlighterState rule,
  */
 void MarkdownHighlighter::highlightAdditionalRules(
     const QVector<HighlightingRule> &rules, const QString &text) {
-    const auto &maskedFormat = _formats[HighlighterState::MaskedSyntax];
+    const auto maskedFormat = currentMaskedFormat();
 
     for (const HighlightingRule &rule : rules) {
         // continue if another current block state was already set if
@@ -2187,11 +2228,10 @@ void MarkdownHighlighter::highlightAdditionalRules(
             // everything as MaskedSyntax and highlight capturingGroup
             // with the real format
             if (capturingGroup > 0) {
-                QTextCharFormat currentMaskedFormat = maskedFormat;
+                QTextCharFormat ruleMaskedFormat = maskedFormat;
                 // set the font size from the current rule's font format
-                if (format.fontPointSize() > 0) {
-                    currentMaskedFormat.setFontPointSize(
-                        format.fontPointSize());
+                if (format.fontPointSize() > 0 && !isHidingForCurrentBlock()) {
+                    ruleMaskedFormat.setFontPointSize(format.fontPointSize());
                 }
 
                 if (isHeading(currentBlockState())) {
@@ -2200,7 +2240,7 @@ void MarkdownHighlighter::highlightAdditionalRules(
                 } else {
                     setFormat(match.capturedStart(maskedGroup),
                               match.capturedLength(maskedGroup),
-                              currentMaskedFormat);
+                              ruleMaskedFormat);
                 }
             }
             if (isHeading(currentBlockState())) {
@@ -2311,9 +2351,11 @@ void MarkdownHighlighter::formatAndMaskRemaining(
     const QTextCharFormat &format) {
     int afterFormat = formatBegin + formatLength;
 
-    auto maskedSyntax = _formats[MaskedSyntax];
-    maskedSyntax.setFontPointSize(
-        QSyntaxHighlighter::format(beginningText).fontPointSize());
+    auto maskedSyntax = currentMaskedFormat();
+    if (!isHidingForCurrentBlock()) {
+        maskedSyntax.setFontPointSize(
+            QSyntaxHighlighter::format(beginningText).fontPointSize());
+    }
 
     // highlight before the link
     setFormat(beginningText, formatBegin - beginningText, maskedSyntax);
@@ -2324,8 +2366,10 @@ void MarkdownHighlighter::formatAndMaskRemaining(
     }
 
     // highlight after the link
-    maskedSyntax.setFontPointSize(
-        QSyntaxHighlighter::format(afterFormat).fontPointSize());
+    if (!isHidingForCurrentBlock()) {
+        maskedSyntax.setFontPointSize(
+            QSyntaxHighlighter::format(afterFormat).fontPointSize());
+    }
     setFormat(afterFormat, endText - afterFormat, maskedSyntax);
 
     _ranges[currentBlock().blockNumber()].append(
@@ -2594,8 +2638,8 @@ int MarkdownHighlighter::highlightInlineSpans(const QString &text,
     setFormat(start + len, next - (start + len), inlineFmt);
 
     // format backticks as masked
-    setFormat(start, len, _formats[MaskedSyntax]);
-    setFormat(next, len, _formats[MaskedSyntax]);
+    setFormat(start, len, currentMaskedFormat());
+    setFormat(next, len, currentMaskedFormat());
 
     i = next + len;
     return i;
@@ -2928,9 +2972,9 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text,
 
     // 4. Apply masked syntax
     for (int i = 0; i < masked.length(); ++i) {
-        QTextCharFormat maskedFmt = _formats[MaskedSyntax];
+        QTextCharFormat maskedFmt = currentMaskedFormat();
         auto state = static_cast<HighlighterState>(currentBlockState());
-        if (_formats[state].fontPointSize() > 0)
+        if (_formats[state].fontPointSize() > 0 && !isHidingForCurrentBlock())
             maskedFmt.setFontPointSize(_formats[state].fontPointSize());
         setFormat(masked.at(i).first, masked.at(i).second, maskedFmt);
     }

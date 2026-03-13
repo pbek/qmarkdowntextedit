@@ -102,13 +102,23 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
     connect(this, &QPlainTextEdit::cursorPositionChanged, this, [this]() {
         _lineNumArea->update();
 
-        auto oldArea = blockBoundingGeometry(_textCursor.block())
+        const QTextBlock oldBlock = _textCursor.block();
+        auto oldArea = blockBoundingGeometry(oldBlock)
                            .translated(contentOffset());
         _textCursor = textCursor();
-        auto newArea = blockBoundingGeometry(_textCursor.block())
+        const QTextBlock newBlock = _textCursor.block();
+        auto newArea = blockBoundingGeometry(newBlock)
                            .translated(contentOffset());
         auto areaToUpdate = oldArea | newArea;
         viewport()->update(areaToUpdate.toRect());
+
+        // Rehighlight old and new blocks when hiding formatting syntax
+        if (_highlighter && _highlighter->hideFormattingSyntax() &&
+            oldBlock.blockNumber() != newBlock.blockNumber()) {
+            _highlighter->setCurrentCursorBlockNumber(newBlock.blockNumber());
+            _highlighter->rehighlightBlock(oldBlock);
+            _highlighter->rehighlightBlock(newBlock);
+        }
     });
     connect(document(), &QTextDocument::blockCountChanged, this,
             &QMarkdownTextEdit::updateLineNumberAreaWidth);

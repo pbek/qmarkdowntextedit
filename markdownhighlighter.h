@@ -227,6 +227,11 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
     void setHighlightingOptions(const HighlightingOptions options);
     void initHighlightingRules();
 
+    void setHideFormattingSyntax(bool hide);
+    void setCurrentCursorBlockNumber(int blockNumber);
+    int currentCursorBlockNumber() const { return _currentCursorBlockNumber; }
+    bool hideFormattingSyntax() const { return _hideFormattingSyntax; }
+
    Q_SIGNALS:
     void highlightingFinished();
 
@@ -353,8 +358,14 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
 
     QHash<int, QVector<InlineRange>> _ranges;
 
+    QTextCharFormat currentMaskedFormat() const;
+    bool isHidingForCurrentBlock() const;
+
     static QVector<HighlightingRule> _highlightingRules;
     static QHash<HighlighterState, QTextCharFormat> _formats;
     static QHash<QString, HighlighterState> _langStringToEnum;
     static constexpr int tildeOffset = 300;
+
+    int _currentCursorBlockNumber = -1;
+    bool _hideFormattingSyntax = false;
 };
