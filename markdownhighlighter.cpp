@@ -2532,9 +2532,38 @@ int MarkdownHighlighter::highlightLinkOrImage(const QString &text,
             return hrefIndex;
         }
 
-        // Apply formatting to highlight the link
-        formatAndMaskRemaining(startIndex + 1, endIndex - startIndex - 1,
-                               startIndex, closingParenIndex, _formats[Link]);
+        // Keep the URL visible in named links while only masking Markdown
+        // delimiters: `[`, `](` and `)`.
+        const int urlStartIndex = endIndex + 2;
+        const int urlLength = closingParenIndex - urlStartIndex - 1;
+        const QTextCharFormat maskedFormat = currentMaskedFormat();
+
+        // Opening `[`.
+        setFormat(startIndex, 1, maskedFormat);
+
+        // Link label text.
+        if (!isHeading(currentBlockState())) {
+            setFormat(startIndex + 1, endIndex - startIndex - 1,
+                      _formats[Link]);
+        }
+
+        // Closing `](`.
+        setFormat(endIndex, 2, maskedFormat);
+
+        // URL inside `(...)` should use masked syntax styling, but remain
+        // visible.
+        if (!isHeading(currentBlockState()) && urlLength > 0) {
+            QTextCharFormat urlFormat = _formats[MaskedSyntax];
+            if (!isHidingForCurrentBlock()) {
+                urlFormat.setFontPointSize(
+                    QSyntaxHighlighter::format(urlStartIndex).fontPointSize());
+            }
+            setFormat(urlStartIndex, urlLength, urlFormat);
+        }
+
+        // Closing `)`.
+        setFormat(closingParenIndex - 1, 1, maskedFormat);
+
         return closingParenIndex;
     }
     // Reference links
