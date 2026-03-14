@@ -40,6 +40,7 @@
 #include <QScrollBar>
 #include <QStyleHints>
 #include <QTextBlock>
+#include <QTextCursor>
 #include <QTextLayout>
 #include <QTimer>
 #include <QWheelEvent>
@@ -100,17 +101,23 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
     connect(verticalScrollBar(), &QScrollBar::valueChanged, this,
             [this](int) { _lineNumArea->update(); });
     connect(this, &QPlainTextEdit::cursorPositionChanged, this, [this]() {
+        if (_isApplyingSourceTransform) {
+            return;
+        }
+
         _lineNumArea->update();
 
         const QTextBlock oldBlock = _textCursor.block();
-        auto oldArea = blockBoundingGeometry(oldBlock)
-                           .translated(contentOffset());
+        auto oldArea =
+            blockBoundingGeometry(oldBlock).translated(contentOffset());
         _textCursor = textCursor();
         const QTextBlock newBlock = _textCursor.block();
-        auto newArea = blockBoundingGeometry(newBlock)
-                           .translated(contentOffset());
+        auto newArea =
+            blockBoundingGeometry(newBlock).translated(contentOffset());
         auto areaToUpdate = oldArea | newArea;
         viewport()->update(areaToUpdate.toRect());
+
+        updateConcealmentForCursorChange(oldBlock, newBlock);
 
         // Rehighlight old and new blocks when hiding formatting syntax
         if (_highlighter && _highlighter->hideFormattingSyntax() &&
@@ -120,8 +127,15 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
             _highlighter->rehighlightBlock(newBlock);
         }
     });
-    connect(document(), &QTextDocument::blockCountChanged, this,
-            &QMarkdownTextEdit::updateLineNumberAreaWidth);
+    connect(
+        document(), &QTextDocument::blockCountChanged, this,
+        [this](int blockCount) {
+            updateLineNumberAreaWidth(blockCount);
+
+            if (_sourceTransformConcealEnabled && !_isApplyingSourceTransform) {
+                applySourceTransformToDocument();
+            }
+        });
     connect(this, &QPlainTextEdit::updateRequest, this,
             &QMarkdownTextEdit::updateLineNumberArea);
 
@@ -163,6 +177,196 @@ void QMarkdownTextEdit::setLineNumbersOtherLineColor(QColor color) {
 
 void QMarkdownTextEdit::setBookmarkLines(const QHash<int, int> &bookmarkLines) {
     _lineNumArea->setBookmarkLines(bookmarkLines);
+}
+
+void QMarkdownTextEdit::setSourceTransformConcealEnabled(bool enabled) {
+    if (_sourceTransformConcealEnabled == enabled) {
+        return;
+    }
+
+    _sourceTransformConcealEnabled = enabled;
+    if (_sourceTransformConcealEnabled) {
+        applySourceTransformToDocument();
+    } else {
+        restoreAllConcealedBlocks();
+    }
+
+    viewport()->update();
+}
+
+QString QMarkdownTextEdit::compactUrlForDisplay(const QString &url) const {
+    QString compacted = url;
+
+    static const QRegularExpression schemeRe(
+        QStringLiteral(R"(^[a-zA-Z][a-zA-Z0-9+.-]*://)"));
+    compacted.remove(schemeRe);
+    compacted.remove(QStringLiteral("www."), Qt::CaseInsensitive);
+
+    const int slash = compacted.indexOf(QLatin1Char('/'));
+    if (slash >= 0) {
+        compacted = compacted.left(slash);
+    }
+
+    if (compacted.isEmpty()) {
+        compacted = url;
+    }
+
+    constexpr int maxLen = 24;
+    if (compacted.length() > maxLen) {
+        compacted = compacted.left(maxLen - 1) + QLatin1Char('~');
+    }
+
+    return compacted;
+}
+
+QString QMarkdownTextEdit::transformBlockTextForDisplay(
+    const QString &text) const {
+    QString out = text;
+
+    static const QRegularExpression markdownLinkRe(
+        QStringLiteral(R"(\[([^\]]+)\]\(([^)]+)\))"));
+    static const QRegularExpression autoLinkRe(QStringLiteral(R"(<([^>]+)>)"));
+    static const QRegularExpression bareUrlRe(
+        QStringLiteral(R"(\b((?:https?://|www\.)[^\s<>()]+))"));
+
+    int searchPos = 0;
+    while (true) {
+        const QRegularExpressionMatch match =
+            markdownLinkRe.match(out, searchPos);
+        if (!match.hasMatch()) {
+            break;
+        }
+
+        const QString linkText = match.captured(1);
+        const QString replacement = QStringLiteral("[%1]()").arg(linkText);
+        out.replace(match.capturedStart(0), match.capturedLength(0),
+                    replacement);
+        searchPos = match.capturedStart(0) + replacement.length();
+    }
+
+    searchPos = 0;
+    while (true) {
+        const QRegularExpressionMatch match = autoLinkRe.match(out, searchPos);
+        if (!match.hasMatch()) {
+            break;
+        }
+
+        const QString replacement = QStringLiteral("[%1]()").arg(
+            compactUrlForDisplay(match.captured(1)));
+        out.replace(match.capturedStart(0), match.capturedLength(0),
+                    replacement);
+        searchPos = match.capturedStart(0) + replacement.length();
+    }
+
+    searchPos = 0;
+    while (true) {
+        const QRegularExpressionMatch match = bareUrlRe.match(out, searchPos);
+        if (!match.hasMatch()) {
+            break;
+        }
+
+        const QString matchedUrl = match.captured(1);
+        const QString compacted = compactUrlForDisplay(matchedUrl);
+        out.replace(match.capturedStart(1), match.capturedLength(1), compacted);
+        searchPos = match.capturedStart(1) + compacted.length();
+    }
+
+    return out;
+}
+
+void QMarkdownTextEdit::replaceBlockText(const QTextBlock &block,
+                                         const QString &newText) {
+    if (!block.isValid()) {
+        return;
+    }
+
+    QTextCursor cursor(block);
+    cursor.movePosition(QTextCursor::StartOfBlock);
+    cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
+    cursor.insertText(newText);
+}
+
+void QMarkdownTextEdit::concealBlockForDisplay(const QTextBlock &block) {
+    if (!_sourceTransformConcealEnabled || !block.isValid()) {
+        return;
+    }
+
+    if (block.userData() != nullptr) {
+        return;
+    }
+
+    const QString originalText = block.text();
+    const QString transformedText = transformBlockTextForDisplay(originalText);
+    if (transformedText == originalText) {
+        return;
+    }
+
+    auto *data = new ConcealedBlockUserData(originalText);
+    _isApplyingSourceTransform = true;
+    QTextBlock mutableBlock =
+        document()->findBlockByNumber(block.blockNumber());
+    mutableBlock.setUserData(data);
+    replaceBlockText(mutableBlock, transformedText);
+    _isApplyingSourceTransform = false;
+}
+
+void QMarkdownTextEdit::restoreConcealedBlock(const QTextBlock &block) {
+    if (!block.isValid()) {
+        return;
+    }
+
+    auto *data = dynamic_cast<ConcealedBlockUserData *>(block.userData());
+    if (data == nullptr) {
+        return;
+    }
+
+    const QString originalText = data->originalText;
+    _isApplyingSourceTransform = true;
+    QTextBlock mutableBlock =
+        document()->findBlockByNumber(block.blockNumber());
+    replaceBlockText(mutableBlock, originalText);
+    mutableBlock = document()->findBlockByNumber(block.blockNumber());
+    mutableBlock.setUserData(nullptr);
+    _isApplyingSourceTransform = false;
+}
+
+void QMarkdownTextEdit::applySourceTransformToDocument() {
+    if (!_sourceTransformConcealEnabled) {
+        return;
+    }
+
+    const int cursorBlock = textCursor().blockNumber();
+    QTextBlock block = document()->firstBlock();
+    while (block.isValid()) {
+        const QTextBlock next = block.next();
+        if (block.blockNumber() != cursorBlock) {
+            concealBlockForDisplay(block);
+        }
+        block = next;
+    }
+}
+
+void QMarkdownTextEdit::restoreAllConcealedBlocks() {
+    QTextBlock block = document()->firstBlock();
+    while (block.isValid()) {
+        const QTextBlock next = block.next();
+        restoreConcealedBlock(block);
+        block = next;
+    }
+}
+
+void QMarkdownTextEdit::updateConcealmentForCursorChange(
+    const QTextBlock &oldBlock, const QTextBlock &newBlock) {
+    if (!_sourceTransformConcealEnabled || _isApplyingSourceTransform) {
+        return;
+    }
+
+    if (oldBlock.isValid() &&
+        oldBlock.blockNumber() != newBlock.blockNumber()) {
+        concealBlockForDisplay(oldBlock);
+    }
+
+    restoreConcealedBlock(newBlock);
 }
 
 void QMarkdownTextEdit::setSearchWidgetDebounceDelay(uint debounceDelay) {

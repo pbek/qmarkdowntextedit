@@ -2387,6 +2387,20 @@ void MarkdownHighlighter::formatAndMaskRemaining(
  */
 int MarkdownHighlighter::highlightLinkOrImage(const QString &text,
                                               int startIndex) {
+    auto compactVisibleLinkText = [this](int visibleStart, int visibleLength) {
+        if (!isHidingForCurrentBlock() || visibleLength <= 0) {
+            return;
+        }
+
+        constexpr int maxVisibleLinkChars = 24;
+        const int visibleChars = qMin(maxVisibleLinkChars, visibleLength);
+        if (visibleLength > visibleChars) {
+            const QTextCharFormat maskedFormat = currentMaskedFormat();
+            setFormat(visibleStart + visibleChars, visibleLength - visibleChars,
+                      maskedFormat);
+        }
+    };
+
     // If the first 4 characters are spaces (for 4-spaces fence code),
     // but not list markers, return
     if (text.left(4).trimmed().isEmpty()) {
@@ -2454,9 +2468,23 @@ int MarkdownHighlighter::highlightLinkOrImage(const QString &text,
             !linkContent.contains(QLatin1Char('.')))
             return startIndex;
 
-        // Apply formatting to highlight the link
+        // Apply formatting to highlight the link. When formatting syntax
+        // concealment is enabled on non-cursor blocks, keep only a short
+        // visible prefix of auto-link text so very long links don't dominate
+        // line width.
         formatAndMaskRemaining(startIndex + 1, closingChar - startIndex - 1,
                                startIndex, closingChar + 1, _formats[Link]);
+
+        if (isHidingForCurrentBlock()) {
+            constexpr int maxVisibleLinkChars = 24;
+            const int linkLength = closingChar - startIndex - 1;
+            const int visibleChars = qMin(maxVisibleLinkChars, linkLength);
+            if (linkLength > visibleChars) {
+                const QTextCharFormat maskedFormat = currentMaskedFormat();
+                setFormat(startIndex + 1 + visibleChars,
+                          linkLength - visibleChars, maskedFormat);
+            }
+        }
 
         return closingChar;
     }
@@ -2483,7 +2511,21 @@ int MarkdownHighlighter::highlightLinkOrImage(const QString &text,
 
         _ranges[currentBlock().blockNumber()].append(
             InlineRange(startIndex, startIndex + linkLength, RangeType::Link));
-        setFormat(startIndex, linkLength + 1, _formats[Link]);
+
+        const int totalLinkLength = linkLength + 1;
+        if (isHidingForCurrentBlock()) {
+            constexpr int maxVisibleLinkChars = 24;
+            const int visibleChars = qMin(maxVisibleLinkChars, totalLinkLength);
+            setFormat(startIndex, visibleChars, _formats[Link]);
+
+            if (totalLinkLength > visibleChars) {
+                const QTextCharFormat maskedFormat = currentMaskedFormat();
+                setFormat(startIndex + visibleChars,
+                          totalLinkLength - visibleChars, maskedFormat);
+            }
+        } else {
+            setFormat(startIndex, totalLinkLength, _formats[Link]);
+        }
         return space;
     }
 
@@ -2528,6 +2570,7 @@ int MarkdownHighlighter::highlightLinkOrImage(const QString &text,
 
             formatAndMaskRemaining(startIndex + 3, endIndex - startIndex - 3,
                                    startIndex, hrefIndex, _formats[Link]);
+            compactVisibleLinkText(startIndex + 3, endIndex - startIndex - 3);
 
             return hrefIndex;
         }
@@ -2535,6 +2578,7 @@ int MarkdownHighlighter::highlightLinkOrImage(const QString &text,
         // Apply formatting to highlight the link
         formatAndMaskRemaining(startIndex + 1, endIndex - startIndex - 1,
                                startIndex, closingParenIndex, _formats[Link]);
+        compactVisibleLinkText(startIndex + 1, endIndex - startIndex - 1);
         return closingParenIndex;
     }
     // Reference links
@@ -2552,6 +2596,7 @@ int MarkdownHighlighter::highlightLinkOrImage(const QString &text,
 
         formatAndMaskRemaining(startIndex + 1, endIndex - startIndex - 1,
                                origIndex, closingChar, _formats[Link]);
+        compactVisibleLinkText(startIndex + 1, endIndex - startIndex - 1);
         return closingChar;
     }
     // If the character after the closing ']' is ':', it's a reference link

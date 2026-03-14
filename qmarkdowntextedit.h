@@ -25,9 +25,11 @@
 #pragma once
 
 #include <QEvent>
+#include <QHash>
 #include <QPlainTextEdit>
 #include <QPointF>
 #include <QTextBlock>
+#include <QTextBlockUserData>
 #include <QVector>
 
 #include "markdownhighlighter.h"
@@ -81,6 +83,7 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     void setLineNumbersOtherLineColor(QColor color);
     void setSearchWidgetDebounceDelay(uint debounceDelay);
     void setBookmarkLines(const QHash<int, int> &bookmarkLines);
+    void setSourceTransformConcealEnabled(bool enabled);
 
     void setHighlightingEnabled(bool enabled);
     [[nodiscard]] bool highlightingEnabled() const;
@@ -160,6 +163,25 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     LineNumArea *_lineNumArea;
 
    private:
+    class ConcealedBlockUserData : public QTextBlockUserData {
+       public:
+        explicit ConcealedBlockUserData(QString originalText)
+            : originalText(std::move(originalText)) {}
+        QString originalText;
+    };
+
+    bool _sourceTransformConcealEnabled = false;
+    bool _isApplyingSourceTransform = false;
+    QString compactUrlForDisplay(const QString &url) const;
+    QString transformBlockTextForDisplay(const QString &text) const;
+    void replaceBlockText(const QTextBlock &block, const QString &newText);
+    void concealBlockForDisplay(const QTextBlock &block);
+    void restoreConcealedBlock(const QTextBlock &block);
+    void applySourceTransformToDocument();
+    void restoreAllConcealedBlocks();
+    void updateConcealmentForCursorChange(const QTextBlock &oldBlock,
+                                          const QTextBlock &newBlock);
+
     struct LineBackup {
         QPointF position;
         qreal width;
