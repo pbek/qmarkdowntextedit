@@ -150,6 +150,9 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
     void mouseDoubleClickEvent(QMouseEvent *event) override;
+    virtual int sidebarAdditionalWidth() const;
+    virtual void paintSidebar(QPainter *painter, const QRect &eventRect);
+    virtual bool sidebarMousePressEvent(QMouseEvent *event);
     void setLineNumberLeftMarginOffset(int offset);
     int _lineNumberLeftMarginOffset = 0;
     LineNumArea *lineNumberArea() { return _lineNumArea; }

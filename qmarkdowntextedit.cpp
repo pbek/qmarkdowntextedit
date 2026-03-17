@@ -103,12 +103,12 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
         _lineNumArea->update();
 
         const QTextBlock oldBlock = _textCursor.block();
-        auto oldArea = blockBoundingGeometry(oldBlock)
-                           .translated(contentOffset());
+        auto oldArea =
+            blockBoundingGeometry(oldBlock).translated(contentOffset());
         _textCursor = textCursor();
         const QTextBlock newBlock = _textCursor.block();
-        auto newArea = blockBoundingGeometry(newBlock)
-                           .translated(contentOffset());
+        auto newArea =
+            blockBoundingGeometry(newBlock).translated(contentOffset());
         auto areaToUpdate = oldArea | newArea;
         viewport()->update(areaToUpdate.toRect());
 
@@ -1925,10 +1925,11 @@ void QMarkdownTextEdit::updateHangingCursorRepaintState() {
 void QMarkdownTextEdit::updateLineNumberAreaWidth(int) {
     QSignalBlocker blocker(this);
     const auto oldMargins = viewportMargins();
-    const int width =
-        _lineNumArea->isLineNumAreaEnabled()
-            ? _lineNumArea->sizeHint().width() + _lineNumberLeftMarginOffset
-            : oldMargins.left();
+    const int sidebarWidth = _lineNumArea->sizeHint().width();
+    _lineNumArea->setHidden(sidebarWidth <= 0);
+    const int width = sidebarWidth > 0
+                          ? sidebarWidth + _lineNumberLeftMarginOffset
+                          : oldMargins.left();
     const auto newMargins = QMargins{width, oldMargins.top(),
                                      oldMargins.right(), oldMargins.bottom()};
 
@@ -2330,6 +2331,19 @@ void QMarkdownTextEdit::updateSettings() {
 
 void QMarkdownTextEdit::setLineNumberLeftMarginOffset(int offset) {
     _lineNumberLeftMarginOffset = offset;
+}
+
+int QMarkdownTextEdit::sidebarAdditionalWidth() const { return 0; }
+
+void QMarkdownTextEdit::paintSidebar(QPainter *painter,
+                                     const QRect &eventRect) {
+    Q_UNUSED(painter)
+    Q_UNUSED(eventRect)
+}
+
+bool QMarkdownTextEdit::sidebarMousePressEvent(QMouseEvent *event) {
+    Q_UNUSED(event)
+    return false;
 }
 
 QMargins QMarkdownTextEdit::viewportMargins() {

@@ -37,42 +37,42 @@ class LineNumArea final : public QWidget {
     }
 
     int lineNumAreaWidth() const {
-        if (!enabled) {
-            return 0;
-        }
+        int space = 0;
 
-        int digits = 2;
-        int max = std::max(1, textEdit->blockCount());
-        while (max >= 10) {
-            max /= 10;
-            ++digits;
-        }
+        if (enabled) {
+            int digits = 2;
+            int max = std::max(1, textEdit->blockCount());
+            while (max >= 10) {
+                max /= 10;
+                ++digits;
+            }
 
 #if QT_VERSION >= 0x050B00
-        int space =
-            13 + textEdit->fontMetrics().horizontalAdvance(u'9') * digits;
+            space =
+                13 + textEdit->fontMetrics().horizontalAdvance(u'9') * digits;
 #else
-        int space =
-            13 + textEdit->fontMetrics().width(QLatin1Char('9')) * digits;
+            space =
+                13 + textEdit->fontMetrics().width(QLatin1Char('9')) * digits;
 #endif
 
-        // Add extra space for bookmark markers (if any bookmarks exist)
-        if (!_bookmarkLines.isEmpty()) {
+            // Add extra space for bookmark markers (if any bookmarks exist)
+            if (!_bookmarkLines.isEmpty()) {
 #if QT_VERSION >= 0x050B00
-            space += 5 + textEdit->fontMetrics().horizontalAdvance(u'9');
+                space += 5 + textEdit->fontMetrics().horizontalAdvance(u'9');
 #else
-            space += 5 + textEdit->fontMetrics().width(QLatin1Char('9'));
+                space += 5 + textEdit->fontMetrics().width(QLatin1Char('9'));
 #endif
+            }
         }
 
-        return space;
+        return space + textEdit->sidebarAdditionalWidth();
     }
 
     bool isLineNumAreaEnabled() const { return enabled; }
 
     void setLineNumAreaEnabled(bool e) {
         enabled = e;
-        setHidden(!e);
+        setHidden(lineNumAreaWidth() <= 0);
     }
 
     QSize sizeHint() const override { return {lineNumAreaWidth(), 0}; }
@@ -98,9 +98,10 @@ class LineNumArea final : public QWidget {
         painter.setFont(font());
 
         // Calculate widths for layout
-        int lineNumberWidth = sizeHint().width();
+        const int additionalWidth = textEdit->sidebarAdditionalWidth();
+        int lineNumberWidth = sizeHint().width() - additionalWidth;
         int bookmarkWidth = 0;
-        if (!_bookmarkLines.isEmpty()) {
+        if (enabled && !_bookmarkLines.isEmpty()) {
 #if QT_VERSION >= 0x050B00
             bookmarkWidth = textEdit->fontMetrics().horizontalAdvance(u'9') + 5;
 #else
@@ -118,28 +119,36 @@ class LineNumArea final : public QWidget {
                     textEdit->textCursor().blockNumber() == blockNumber;
                 painter.setPen(isCurrentLine ? currentLine : otherLines);
 
-                // Draw line number
-                int lineNumRightMargin = bookmarkWidth > 0 ? bookmarkWidth : 0;
-                painter.drawText(-5, top, lineNumberWidth - lineNumRightMargin,
-                                 textEdit->fontMetrics().height(),
-                                 Qt::AlignRight, number);
+                if (enabled) {
+                    // Draw line number
+                    int lineNumRightMargin =
+                        bookmarkWidth > 0 ? bookmarkWidth : 0;
+                    painter.drawText(additionalWidth - 5, top,
+                                     lineNumberWidth - lineNumRightMargin,
+                                     textEdit->fontMetrics().height(),
+                                     Qt::AlignRight, number);
 
-                // Draw bookmark marker if this line has a bookmark
-                if (bookmarkWidth > 0) {
-                    // Check if current line (blockNumber + 1) has a bookmark
-                    int currentLineNumber = blockNumber + 1;
-                    for (auto it = _bookmarkLines.constBegin();
-                         it != _bookmarkLines.constEnd(); ++it) {
-                        if (it.value() == currentLineNumber) {
-                            // Draw the bookmark slot number (1-9)
-                            QString bookmarkSlot = QString::number(it.key());
-                            painter.setPen(QColor(QStringLiteral(
-                                "#ff6b6b")));    // Red color for bookmark
-                            painter.drawText(lineNumberWidth - bookmarkWidth,
-                                             top, bookmarkWidth - 5,
-                                             textEdit->fontMetrics().height(),
-                                             Qt::AlignRight, bookmarkSlot);
-                            break;
+                    // Draw bookmark marker if this line has a bookmark
+                    if (bookmarkWidth > 0) {
+                        // Check if current line (blockNumber + 1) has a
+                        // bookmark
+                        int currentLineNumber = blockNumber + 1;
+                        for (auto it = _bookmarkLines.constBegin();
+                             it != _bookmarkLines.constEnd(); ++it) {
+                            if (it.value() == currentLineNumber) {
+                                // Draw the bookmark slot number (1-9)
+                                QString bookmarkSlot =
+                                    QString::number(it.key());
+                                painter.setPen(QColor(QStringLiteral(
+                                    "#ff6b6b")));    // Red color for bookmark
+                                painter.drawText(
+                                    additionalWidth + lineNumberWidth -
+                                        bookmarkWidth,
+                                    top, bookmarkWidth - 5,
+                                    textEdit->fontMetrics().height(),
+                                    Qt::AlignRight, bookmarkSlot);
+                                break;
+                            }
                         }
                     }
                 }
@@ -148,6 +157,16 @@ class LineNumArea final : public QWidget {
             block = block.next();
             ++blockNumber;
         }
+
+        textEdit->paintSidebar(&painter, event->rect());
+    }
+
+    void mousePressEvent(QMouseEvent *event) override {
+        if (textEdit->sidebarMousePressEvent(event)) {
+            return;
+        }
+
+        QWidget::mousePressEvent(event);
     }
 
    private:
