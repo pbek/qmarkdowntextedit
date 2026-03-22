@@ -144,6 +144,8 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
         CheckBoxUnChecked,
         CheckBoxChecked,
         StUnderline,
+        WikiLink = 32,
+        WikiLinkBroken,
 
         // code highlighting
         CodeKeyWord = 1000,
