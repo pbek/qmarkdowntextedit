@@ -25,6 +25,7 @@
 #include "qmarkdowntextedit.h"
 
 #include <QClipboard>
+#include <QCursor>
 #include <QDebug>
 #include <QDesktopServices>
 #include <QDir>
@@ -243,22 +244,12 @@ void QMarkdownTextEdit::adjustRightMargin() {
 
 bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
     // qDebug() << event->type();
-    if (event->type() == QEvent::HoverMove) {
-        auto *mouseEvent = static_cast<QMouseEvent *>(event);
-
-        QWidget *viewPort = this->viewport();
-        // toggle cursor when control key has been pressed or released
-        viewPort->setCursor(
-            mouseEvent->modifiers().testFlag(Qt::ControlModifier)
-                ? Qt::PointingHandCursor
-                : Qt::IBeamCursor);
-    } else if (event->type() == QEvent::KeyPress) {
+    if (event->type() == QEvent::KeyPress) {
         auto *keyEvent = static_cast<QKeyEvent *>(event);
 
-        // set cursor to pointing hand if control key was pressed
-        if (keyEvent->modifiers().testFlag(Qt::ControlModifier)) {
-            QWidget *viewPort = this->viewport();
-            viewPort->setCursor(Qt::PointingHandCursor);
+        if (keyEvent->key() == Qt::Key_Control) {
+            updateLinkCursor(viewport()->mapFromGlobal(QCursor::pos()),
+                             QGuiApplication::keyboardModifiers());
         }
 
         // disallow keys if text edit hasn't focus
@@ -512,9 +503,9 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
     } else if (event->type() == QEvent::KeyRelease) {
         auto *keyEvent = static_cast<QKeyEvent *>(event);
 
-        // reset cursor if control key was released
         if (keyEvent->key() == Qt::Key_Control) {
-            resetMouseCursor();
+            updateLinkCursor(viewport()->mapFromGlobal(QCursor::pos()),
+                             QGuiApplication::keyboardModifiers());
         }
 
         return QPlainTextEdit::eventFilter(obj, event);
@@ -751,6 +742,30 @@ void QMarkdownTextEdit::setLineNumberEnabled(bool enabled) {
 void QMarkdownTextEdit::resetMouseCursor() const {
     QWidget *viewPort = viewport();
     viewPort->setCursor(Qt::IBeamCursor);
+}
+
+bool QMarkdownTextEdit::hasMarkdownUrlAtViewportPosition(
+    const QPoint &position) {
+    QTextCursor cursor = cursorForPosition(position);
+    const int clickedPosition = cursor.position();
+
+    cursor.movePosition(QTextCursor::StartOfBlock);
+    const int positionFromStart = clickedPosition - cursor.position();
+    cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
+
+    return !getMarkdownUrlAtPosition(cursor.selectedText(), positionFromStart)
+                .isEmpty();
+}
+
+void QMarkdownTextEdit::updateLinkCursor(const QPoint &position,
+                                         Qt::KeyboardModifiers modifiers) {
+    if (modifiers.testFlag(Qt::ControlModifier) &&
+        hasMarkdownUrlAtViewportPosition(position)) {
+        viewport()->setCursor(Qt::PointingHandCursor);
+        return;
+    }
+
+    resetMouseCursor();
 }
 
 /**
@@ -1340,6 +1355,7 @@ bool QMarkdownTextEdit::openLinkAtCursorPosition() {
     // compatibility)
     qDebug() << __func__ << " - No signal handlers, using base class openUrl";
     if ((url.isValid() && isValidUrl(urlString)) || isRelativeFileUrl ||
+        urlString.startsWith(QStringLiteral("wikilink://")) ||
         isLegacyAttachmentUrl) {
         // ignore some schemata
         if (!(_ignoredClickUrlSchemata.contains(url.scheme()) ||
@@ -1487,6 +1503,16 @@ QMap<QString, QString> QMarkdownTextEdit::parseMarkdownUrlsFromText(
             QString url = urlMatch.captured(1);
             urlMap[linkText] = url;
         }
+    }
+
+    static const QRegularExpression wikiLinkRegex(QStringLiteral(
+        R"(\[\[([^\[\]|]+?(?:#[^\[\]|]+?)?)(?:\|[^\[\]]*?)?\]\])"));
+    iterator = wikiLinkRegex.globalMatch(text);
+    while (iterator.hasNext()) {
+        QRegularExpressionMatch match = iterator.next();
+        const QString fullMatch = match.captured(0);
+        const QString noteName = match.captured(1).trimmed();
+        urlMap[fullMatch] = QStringLiteral("wikilink://") + noteName;
     }
 
     return urlMap;
@@ -2269,6 +2295,8 @@ void QMarkdownTextEdit::mouseMoveEvent(QMouseEvent *event) {
     } else {
         QPlainTextEdit::mouseMoveEvent(event);
     }
+
+    updateLinkCursor(event->pos(), QGuiApplication::keyboardModifiers());
 }
 
 void QMarkdownTextEdit::mouseReleaseEvent(QMouseEvent *event) {

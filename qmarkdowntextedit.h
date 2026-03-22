@@ -159,6 +159,9 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     void updateLineNumAreaGeometry();
     void updateLineNumberArea(const QRect rect, int dy);
     Q_SLOT void updateLineNumberAreaWidth(int);
+    bool hasMarkdownUrlAtViewportPosition(const QPoint &position);
+    void updateLinkCursor(const QPoint &position,
+                          Qt::KeyboardModifiers modifiers);
     bool _handleBracketClosingUsed;
     LineNumArea *_lineNumArea;
 
