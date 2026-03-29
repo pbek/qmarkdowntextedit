@@ -2583,8 +2583,13 @@ qreal QMarkdownTextEdit::xForColumnInBlock(const QTextBlock &block,
     // Column is past end of line — extrapolate using space width
     const qreal endX = layout->lineAt(0).cursorToX(textLen);
     const int over = column - textLen;
+    // horizontalAdvance() was added in Qt 5.11; use width() on older versions
+#if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
     const qreal spaceWidth =
         QFontMetricsF(font()).horizontalAdvance(QLatin1Char(' '));
+#else
+    const qreal spaceWidth = QFontMetricsF(font()).width(QLatin1Char(' '));
+#endif
     return geom.left() + endX + over * spaceWidth;
 }
 
