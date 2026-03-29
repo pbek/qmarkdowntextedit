@@ -258,7 +258,11 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             return true;
         }
 
-        if ((keyEvent->key() == Qt::Key_Escape) && _searchWidget->isVisible()) {
+        if ((keyEvent->key() == Qt::Key_Escape) && _blockSelectionActive) {
+            clearBlockSelection();
+            return true;
+        } else if ((keyEvent->key() == Qt::Key_Escape) &&
+                   _searchWidget->isVisible()) {
             _searchWidget->deactivate();
             return true;
         } else if (keyEvent->key() == Qt::Key_Insert &&
@@ -362,6 +366,16 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             return true;
         } else if (keyEvent == QKeySequence::Copy ||
                    keyEvent == QKeySequence::Cut) {
+            // Handle block (rectangular) selection copy/cut
+            if (_blockSelectionActive && _blockSelStartBlock >= 0) {
+                const QString text = blockSelectionText();
+                if (keyEvent == QKeySequence::Cut) {
+                    removeBlockSelectionText();
+                    clearBlockSelection();
+                }
+                qApp->clipboard()->setText(text);
+                return true;
+            }
             QTextCursor cursor = this->textCursor();
             if (!cursor.hasSelection()) {
                 QString text;
@@ -2165,6 +2179,13 @@ void QMarkdownTextEdit::paintEvent(QPaintEvent *e) {
 
     QPlainTextEdit::paintEvent(e);
 
+    // Paint block (rectangular) selection overlay on top of rendered text
+    if (_blockSelectionActive && _blockSelStartBlock >= 0) {
+        QPainter overlayPainter(viewport());
+        paintBlockSelection(overlayPainter);
+        overlayPainter.end();
+    }
+
     if (_hangingIndentEnabled) {
         restoreHangingIndentLayout(hangingIndentBackups);
     }
@@ -2272,6 +2293,31 @@ void QMarkdownTextEdit::restoreHangingIndentLayout(
 }
 
 void QMarkdownTextEdit::mousePressEvent(QMouseEvent *event) {
+    // Alt + Left click starts block (rectangular) selection
+    if (event->button() == Qt::LeftButton &&
+        event->modifiers().testFlag(Qt::AltModifier)) {
+        _blockSelectionActive = true;
+        _blockSelectionDragging = true;
+        _blockSelectionAnchor = event->pos();
+        _blockSelectionEnd = event->pos();
+        _blockSelStartBlock = -1;
+        _blockSelEndBlock = -1;
+        _blockSelLeftCol = 0;
+        _blockSelRightCol = 0;
+
+        // Place cursor at click position without starting normal selection
+        QTextCursor cursor = cursorForPosition(event->pos());
+        cursor.clearSelection();
+        setTextCursor(cursor);
+        viewport()->update();
+        return;
+    }
+
+    // Any non-Alt click clears block selection
+    if (_blockSelectionActive) {
+        clearBlockSelection();
+    }
+
     if (_hangingIndentEnabled) {
         const QVector<BlockLayoutBackup> backups = applyHangingIndentLayout();
         QPlainTextEdit::mousePressEvent(event);
@@ -2283,6 +2329,14 @@ void QMarkdownTextEdit::mousePressEvent(QMouseEvent *event) {
 }
 
 void QMarkdownTextEdit::keyPressEvent(QKeyEvent *event) {
+    // Clear block selection when a non-modifier key is pressed
+    // (copy/cut are handled separately in eventFilter)
+    if (_blockSelectionActive && event->key() != Qt::Key_Alt &&
+        event->key() != Qt::Key_Shift && event->key() != Qt::Key_Control &&
+        event->key() != Qt::Key_Meta && event->key() != Qt::Key_Escape) {
+        clearBlockSelection();
+    }
+
     if (_hangingIndentEnabled) {
         const QVector<BlockLayoutBackup> backups = applyHangingIndentLayout();
         QPlainTextEdit::keyPressEvent(event);
@@ -2293,6 +2347,14 @@ void QMarkdownTextEdit::keyPressEvent(QKeyEvent *event) {
 }
 
 void QMarkdownTextEdit::mouseMoveEvent(QMouseEvent *event) {
+    // Update block selection rectangle during Alt+drag
+    if (_blockSelectionDragging && _blockSelectionActive) {
+        _blockSelectionEnd = event->pos();
+        updateBlockSelection();
+        viewport()->update();
+        return;
+    }
+
     if (_hangingIndentEnabled) {
         const QVector<BlockLayoutBackup> backups = applyHangingIndentLayout();
         QPlainTextEdit::mouseMoveEvent(event);
@@ -2305,6 +2367,17 @@ void QMarkdownTextEdit::mouseMoveEvent(QMouseEvent *event) {
 }
 
 void QMarkdownTextEdit::mouseReleaseEvent(QMouseEvent *event) {
+    // Finish block selection drag
+    if (_blockSelectionDragging) {
+        _blockSelectionDragging = false;
+        if (_blockSelectionActive) {
+            _blockSelectionEnd = event->pos();
+            updateBlockSelection();
+            viewport()->update();
+        }
+        return;
+    }
+
     if (_hangingIndentEnabled) {
         const QVector<BlockLayoutBackup> backups = applyHangingIndentLayout();
         QPlainTextEdit::mouseReleaseEvent(event);
@@ -2377,6 +2450,254 @@ void QMarkdownTextEdit::paintSidebar(QPainter *painter,
 bool QMarkdownTextEdit::sidebarMousePressEvent(QMouseEvent *event) {
     Q_UNUSED(event)
     return false;
+}
+
+/**
+ * Updates the block (rectangular) selection from the stored anchor and end
+ * viewport positions.  Computes the block range and pixel x-coordinates
+ * that define the selection rectangle.
+ */
+void QMarkdownTextEdit::updateBlockSelection() {
+    const QTextCursor anchorCursor = cursorForPosition(_blockSelectionAnchor);
+    const QTextCursor endCursor = cursorForPosition(_blockSelectionEnd);
+
+    const int anchorBlock = anchorCursor.blockNumber();
+    const int endBlock = endCursor.blockNumber();
+
+    _blockSelStartBlock = qMin(anchorBlock, endBlock);
+    _blockSelEndBlock = qMax(anchorBlock, endBlock);
+
+    // Use the anchor block as a reference to snap raw pixel x-coordinates
+    // to character (column) boundaries.  This ensures that the painted
+    // rectangle and the logical text selection always agree.
+    QTextDocument *doc = document();
+    QTextBlock refBlock = doc->findBlockByNumber(anchorBlock);
+    if (!refBlock.isValid()) {
+        refBlock = doc->findBlockByNumber(_blockSelStartBlock);
+    }
+
+    const int rawLeftX =
+        qMin(_blockSelectionAnchor.x(), _blockSelectionEnd.x());
+    const int rawRightX =
+        qMax(_blockSelectionAnchor.x(), _blockSelectionEnd.x());
+
+    _blockSelLeftCol = columnForBlockAtX(refBlock, rawLeftX);
+    _blockSelRightCol = columnForBlockAtX(refBlock, rawRightX);
+}
+
+/**
+ * Paints the block (rectangular) selection overlay.
+ * Computes per-line x-coordinates from the stored column indices using
+ * xForColumnInBlock() (which uses QTextLayout::cursorToX and extrapolates
+ * past end-of-line with spaceWidth, like Kate does).  With a monospace font
+ * this produces identical x-coordinates on every line, yielding a true
+ * rectangle.
+ */
+void QMarkdownTextEdit::paintBlockSelection(QPainter &painter) {
+    if (_blockSelStartBlock < 0 || _blockSelLeftCol == _blockSelRightCol) {
+        return;
+    }
+
+    QTextDocument *doc = document();
+    const QPointF offset = contentOffset();
+    const QRect vp = viewport()->rect();
+    const QPalette pal = palette();
+    QColor selColor = pal.color(QPalette::Highlight);
+    selColor.setAlpha(128);
+
+    painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+
+    for (int i = _blockSelStartBlock; i <= _blockSelEndBlock; ++i) {
+        QTextBlock block = doc->findBlockByNumber(i);
+        if (!block.isValid()) {
+            continue;
+        }
+
+        const QRectF geom = blockBoundingGeometry(block).translated(offset);
+
+        // Skip blocks outside the viewport
+        if (geom.bottom() < 0 || geom.top() > vp.bottom()) {
+            continue;
+        }
+
+        const qreal leftX = xForColumnInBlock(block, _blockSelLeftCol);
+        const qreal rightX = xForColumnInBlock(block, _blockSelRightCol);
+
+        const int topY = qMax(static_cast<int>(geom.top()), 0);
+        const int bottomY = qMin(static_cast<int>(geom.bottom()), vp.bottom());
+
+        const QRect lineRect(static_cast<int>(leftX), topY,
+                             static_cast<int>(rightX - leftX), bottomY - topY);
+        painter.fillRect(lineRect, selColor);
+    }
+}
+
+/**
+ * Returns the column index in the given block that corresponds to the
+ * given viewport x-coordinate.  Uses cursorForPosition to get accurate
+ * character-boundary mapping.
+ */
+int QMarkdownTextEdit::columnForBlockAtX(const QTextBlock &block, int x) const {
+    if (!block.isValid()) {
+        return 0;
+    }
+
+    // Build a point at the vertical centre of the block so
+    // cursorForPosition maps to the correct line
+    const QPointF offset = contentOffset();
+    const QRectF geom = blockBoundingGeometry(block).translated(offset);
+    const int y = static_cast<int>(geom.top() + geom.height() / 2.0);
+
+    QTextCursor cur = cursorForPosition(QPoint(x, y));
+    return cur.positionInBlock();
+}
+
+/**
+ * Returns the viewport x-coordinate for the given column in the given block.
+ * Uses QTextLayout::lineAt(0).cursorToX() for pixel-precise mapping.
+ * If the column is past the end of the line's text, the position is
+ * extrapolated using the average character width (like Kate does with
+ * spaceWidth()), so the rectangle extends uniformly past short lines.
+ */
+qreal QMarkdownTextEdit::xForColumnInBlock(const QTextBlock &block,
+                                           int column) const {
+    if (!block.isValid()) {
+        return 0;
+    }
+
+    QTextLayout *layout = block.layout();
+    if (!layout || layout->lineCount() == 0) {
+        return 0;
+    }
+
+    const int textLen = block.length() - 1;    // Exclude trailing \n
+    const QPointF offset = contentOffset();
+    const QRectF geom = blockBoundingGeometry(block).translated(offset);
+
+    if (column <= textLen) {
+        // Column is within the line's text — use precise layout mapping
+        const qreal localX = layout->lineAt(0).cursorToX(column);
+        return geom.left() + localX;
+    }
+
+    // Column is past end of line — extrapolate using space width
+    const qreal endX = layout->lineAt(0).cursorToX(textLen);
+    const int over = column - textLen;
+    const qreal spaceWidth =
+        QFontMetricsF(font()).horizontalAdvance(QLatin1Char(' '));
+    return geom.left() + endX + over * spaceWidth;
+}
+
+/**
+ * Clears the block (rectangular) selection state and triggers a repaint
+ */
+void QMarkdownTextEdit::clearBlockSelection() {
+    if (!_blockSelectionActive) {
+        return;
+    }
+
+    _blockSelectionActive = false;
+    _blockSelectionDragging = false;
+    _blockSelStartBlock = -1;
+    _blockSelEndBlock = -1;
+    _blockSelLeftCol = 0;
+    _blockSelRightCol = 0;
+
+    viewport()->update();
+}
+
+/**
+ * Returns the text within the block (rectangular) selection, with each
+ * row on a separate line.  Uses the stored column indices directly so
+ * the extracted text always matches the visual rectangle.
+ */
+QString QMarkdownTextEdit::blockSelectionText() const {
+    if (_blockSelStartBlock < 0) {
+        return {};
+    }
+
+    QTextDocument *doc = document();
+    QStringList lines;
+    for (int i = _blockSelStartBlock; i <= _blockSelEndBlock; ++i) {
+        QTextBlock block = doc->findBlockByNumber(i);
+        if (!block.isValid()) {
+            continue;
+        }
+        const QString text = block.text();
+        const int s = qMin(_blockSelLeftCol, text.length());
+        const int e = qMin(_blockSelRightCol, text.length());
+        lines.append(text.mid(s, e - s));
+    }
+    return lines.join(QLatin1Char('\n'));
+}
+
+/**
+ * Removes the text within the block (rectangular) selection.
+ * Uses the stored column indices directly.
+ */
+void QMarkdownTextEdit::removeBlockSelectionText() {
+    if (_blockSelStartBlock < 0) {
+        return;
+    }
+
+    QTextDocument *doc = document();
+    QTextCursor editCursor(doc);
+    editCursor.beginEditBlock();
+
+    // Remove in reverse block order to keep earlier positions valid
+    for (int i = _blockSelEndBlock; i >= _blockSelStartBlock; --i) {
+        QTextBlock block = doc->findBlockByNumber(i);
+        if (!block.isValid()) {
+            continue;
+        }
+        const int blockLen = block.length() - 1;
+        const int s = qMin(_blockSelLeftCol, blockLen);
+        const int e = qMin(_blockSelRightCol, blockLen);
+        if (s >= e) {
+            continue;
+        }
+        editCursor.setPosition(block.position() + s);
+        editCursor.setPosition(block.position() + e, QTextCursor::KeepAnchor);
+        editCursor.removeSelectedText();
+    }
+
+    editCursor.endEditBlock();
+}
+
+/**
+ * Replaces the text within the block (rectangular) selection with the
+ * given text. Each line of the input replaces the corresponding row.
+ * Uses the stored column indices directly.
+ */
+void QMarkdownTextEdit::replaceBlockSelectionText(const QString &text) {
+    if (_blockSelStartBlock < 0) {
+        return;
+    }
+
+    const QStringList lines = text.split(QLatin1Char('\n'));
+    QTextDocument *doc = document();
+    QTextCursor editCursor(doc);
+    editCursor.beginEditBlock();
+
+    // Replace in reverse block order to keep earlier positions valid
+    for (int i = _blockSelEndBlock; i >= _blockSelStartBlock; --i) {
+        QTextBlock block = doc->findBlockByNumber(i);
+        if (!block.isValid()) {
+            continue;
+        }
+        const int blockLen = block.length() - 1;
+        const int s = qMin(_blockSelLeftCol, blockLen);
+        const int e = qMin(_blockSelRightCol, blockLen);
+        editCursor.setPosition(block.position() + s);
+        editCursor.setPosition(block.position() + e, QTextCursor::KeepAnchor);
+        const int lineIdx = i - _blockSelStartBlock;
+        const QString &line =
+            lineIdx < lines.size() ? lines.at(lineIdx) : QString();
+        editCursor.insertText(line);
+    }
+
+    editCursor.endEditBlock();
+    clearBlockSelection();
 }
 
 QMargins QMarkdownTextEdit::viewportMargins() {

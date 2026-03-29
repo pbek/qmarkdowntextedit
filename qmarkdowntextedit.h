@@ -26,6 +26,7 @@
 
 #include <QEvent>
 #include <QPlainTextEdit>
+#include <QPoint>
 #include <QPointF>
 #include <QTextBlock>
 #include <QVector>
@@ -123,6 +124,25 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     bool _hangingIndentEnabled = true;
     QColor _currentLineHighlightColor = QColor();
     uint _debounceDelay = 0;
+
+    // Block (rectangular) selection state
+    bool _blockSelectionActive = false;
+    bool _blockSelectionDragging = false;
+    QPoint
+        _blockSelectionAnchor;    // Viewport position where Alt+click started
+    QPoint _blockSelectionEnd;    // Current viewport position during drag
+    int _blockSelStartBlock = -1;    // First block (line) in selection
+    int _blockSelEndBlock = -1;      // Last block (line) in selection
+    int _blockSelLeftCol = 0;        // Left column of rectangle
+    int _blockSelRightCol = 0;       // Right column of rectangle
+    void updateBlockSelection();
+    void clearBlockSelection();
+    void paintBlockSelection(QPainter &painter);
+    int columnForBlockAtX(const QTextBlock &block, int x) const;
+    qreal xForColumnInBlock(const QTextBlock &block, int column) const;
+    QString blockSelectionText() const;
+    void removeBlockSelectionText();
+    void replaceBlockSelectionText(const QString &text);
 
     bool eventFilter(QObject *obj, QEvent *event) override;
     QMargins viewportMargins();
