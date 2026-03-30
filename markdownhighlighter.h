@@ -146,6 +146,7 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
         StUnderline,
         WikiLink = 32,
         WikiLinkBroken,
+        LinkInternal,
 
         // code highlighting
         CodeKeyWord = 1000,

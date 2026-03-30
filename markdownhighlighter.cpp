@@ -232,7 +232,10 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize) {
     format = QTextCharFormat();
     format.setForeground(QColor(0, 128, 255));
     format.setFontUnderline(true);
-    _formats[Link] = std::move(format);
+    _formats[Link] = format;
+
+    // set character format for internal note links (defaults to same as Link)
+    _formats[LinkInternal] = std::move(format);
 
     // set character format for images
     format = QTextCharFormat();
