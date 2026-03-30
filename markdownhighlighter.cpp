@@ -2501,10 +2501,28 @@ int MarkdownHighlighter::highlightLinkOrImage(const QString &text,
         if (closingIndex == -1) return startIndex;
         ++closingIndex;
 
+        // Check for optional image dimension attributes like { width=300
+        // height=200 }
+        int endOfImage = closingIndex;
+        int attrPos = closingIndex;
+
+        // Skip optional whitespace between ')' and '{'
+        while (attrPos < text.length() && text.at(attrPos).isSpace()) {
+            ++attrPos;
+        }
+
+        // If we find '{', look for matching '}'
+        if (attrPos < text.length() && text.at(attrPos) == QLatin1Char('{')) {
+            int closingBrace = text.indexOf(QLatin1Char('}'), attrPos);
+            if (closingBrace != -1) {
+                endOfImage = closingBrace + 1;
+            }
+        }
+
         // Apply formatting to highlight the image.
         formatAndMaskRemaining(startIndex + 1, endIndex - startIndex - 1,
-                               startIndex - 1, closingIndex, _formats[Image]);
-        return closingIndex;
+                               startIndex - 1, endOfImage, _formats[Image]);
+        return endOfImage;
     }
     // If the character after the closing ']' is '(', it's a regular link
     else if (text.at(endIndex + 1) == QLatin1Char('(')) {
