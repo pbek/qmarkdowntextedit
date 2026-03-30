@@ -2467,9 +2467,10 @@ void QMarkdownTextEdit::updateBlockSelection() {
     _blockSelStartBlock = qMin(anchorBlock, endBlock);
     _blockSelEndBlock = qMax(anchorBlock, endBlock);
 
-    // Use the anchor block as a reference to snap raw pixel x-coordinates
-    // to character (column) boundaries.  This ensures that the painted
-    // rectangle and the logical text selection always agree.
+    // Use the anchor block as a reference to convert raw pixel x-coordinates
+    // to character column indices.  columnForBlockAtX() extrapolates past the
+    // end of short lines using font metrics, so the selection can be wider than
+    // the anchor line's text content.
     QTextDocument *doc = document();
     QTextBlock refBlock = doc->findBlockByNumber(anchorBlock);
     if (!refBlock.isValid()) {
@@ -2534,22 +2535,49 @@ void QMarkdownTextEdit::paintBlockSelection(QPainter &painter) {
 
 /**
  * Returns the column index in the given block that corresponds to the
- * given viewport x-coordinate.  Uses cursorForPosition to get accurate
- * character-boundary mapping.
+ * given viewport x-coordinate.  Uses the block's QTextLayout for accurate
+ * character-boundary mapping within the line, and extrapolates past the end
+ * of the line using space width so that a rectangular selection can extend
+ * beyond the width of a short line.
  */
 int QMarkdownTextEdit::columnForBlockAtX(const QTextBlock &block, int x) const {
     if (!block.isValid()) {
         return 0;
     }
 
-    // Build a point at the vertical centre of the block so
-    // cursorForPosition maps to the correct line
+    QTextLayout *layout = block.layout();
+    if (!layout || layout->lineCount() == 0) {
+        return 0;
+    }
+
     const QPointF offset = contentOffset();
     const QRectF geom = blockBoundingGeometry(block).translated(offset);
-    const int y = static_cast<int>(geom.top() + geom.height() / 2.0);
+    const int textLen = block.length() - 1;    // Exclude trailing \n
 
-    QTextCursor cur = cursorForPosition(QPoint(x, y));
-    return cur.positionInBlock();
+    // Convert viewport x to a local x relative to the block's left edge
+    const qreal localX = x - geom.left();
+
+    // Find the x-coordinate at the end of the line text
+    const qreal endX = layout->lineAt(0).cursorToX(textLen);
+
+    if (localX <= endX) {
+        // Position is within the line text — use precise layout mapping
+        return layout->lineAt(0).xToCursor(localX);
+    }
+
+    // Position is past the end of the line — extrapolate using space width
+    const qreal overX = localX - endX;
+#if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
+    const qreal spaceWidth =
+        QFontMetricsF(font()).horizontalAdvance(QLatin1Char(' '));
+#else
+    const qreal spaceWidth = QFontMetricsF(font()).width(QLatin1Char(' '));
+#endif
+    if (spaceWidth <= 0) {
+        return textLen;
+    }
+    const int extra = static_cast<int>(overX / spaceWidth + 0.5);
+    return textLen + extra;
 }
 
 /**
