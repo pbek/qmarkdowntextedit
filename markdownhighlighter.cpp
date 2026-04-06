@@ -2305,6 +2305,65 @@ void MarkdownHighlighter::highlightInlineRules(const QString &text) {
     highlightEmAndStrong(text, 0);
 }
 
+/**
+ * @brief Strips trailing unbalanced bracket characters from a URL string.
+ *
+ * Per RFC 1738, characters like { } [ ] < > are unsafe in URLs and should be
+ * percent-encoded. Parentheses ( ) are technically valid but users commonly
+ * wrap URLs in them. This function strips trailing closing brackets that are
+ * not balanced by corresponding opening brackets within the URL, so that
+ * URLs like http://example.com/wiki/Page_(test) keep their balanced parens
+ * while http://example.com/) strips the trailing ')'.
+ */
+static QString stripTrailingBrackets(const QString &url) {
+    // Bracket pairs: opener -> closer
+    static const QChar pairs[][2] = {
+        {'(', ')'},
+        {'{', '}'},
+        {'[', ']'},
+        {'<', '>'},
+    };
+
+    QString result = url;
+
+    // Repeatedly strip trailing bracket characters that are unbalanced
+    bool changed = true;
+    while (changed && !result.isEmpty()) {
+        changed = false;
+        QChar last = result.at(result.length() - 1);
+
+        for (const auto &pair : pairs) {
+            if (last == pair[1]) {
+                // Count openers and closers in the URL
+                int openers = 0;
+                int closers = 0;
+                for (const QChar &ch : result) {
+                    if (ch == pair[0])
+                        ++openers;
+                    else if (ch == pair[1])
+                        ++closers;
+                }
+
+                // If closers exceed openers, the trailing one is unbalanced
+                if (closers > openers) {
+                    result.chop(1);
+                    changed = true;
+                }
+                break;
+            }
+
+            // Also strip trailing openers (e.g. http://example.com/( )
+            if (last == pair[0]) {
+                result.chop(1);
+                changed = true;
+                break;
+            }
+        }
+    }
+
+    return result;
+}
+
 // Helper function for MarkdownHighlighter::highlightLinkOrImage
 bool isLink(const QString &text) {
     static const QLatin1String supportedSchemes[] = {
@@ -2479,15 +2538,20 @@ int MarkdownHighlighter::highlightLinkOrImage(const QString &text,
             return hrefEnd;
         }
 
-        QString link = text.mid(startIndex, space - startIndex - 1);
+        // Extract the raw URL text up to the space (or end of line)
+        QString link = text.mid(startIndex, space - startIndex);
+
+        // Strip trailing unbalanced brackets from the URL
+        link = stripTrailingBrackets(link);
+
         if (!isLink(link)) return startIndex;
 
         auto linkLength = link.length();
 
         _ranges[currentBlock().blockNumber()].append(
             InlineRange(startIndex, startIndex + linkLength, RangeType::Link));
-        setFormat(startIndex, linkLength + 1, _formats[Link]);
-        return space;
+        setFormat(startIndex, linkLength, _formats[Link]);
+        return startIndex + linkLength;
     }
 
     // Find the index of the closing ']' character to identify the end of link
