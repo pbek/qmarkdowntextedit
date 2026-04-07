@@ -27,6 +27,7 @@
 #include <QDebug>
 #include <QEvent>
 #include <QKeyEvent>
+#include <QScrollBar>
 
 #include "ui_qplaintexteditsearchwidget.h"
 
@@ -450,6 +451,10 @@ void QPlainTextEditSearchWidget::activate(bool focus) {
                    SearchMode::PlainTextMode);
     show();
 
+    const int verticalScrollBarValue = _textEdit->verticalScrollBar()->value();
+    const int horizontalScrollBarValue =
+        _textEdit->horizontalScrollBar()->value();
+
     // Save the original cursor so we can restore the position after the search
     // widget initialization (for #3541)
     const QTextCursor originalCursor = _textEdit->textCursor();
@@ -485,6 +490,9 @@ void QPlainTextEditSearchWidget::activate(bool focus) {
     }
 
     doSearchDown();
+
+    _textEdit->verticalScrollBar()->setValue(verticalScrollBarValue);
+    _textEdit->horizontalScrollBar()->setValue(horizontalScrollBarValue);
 }
 
 void QPlainTextEditSearchWidget::reset() {
