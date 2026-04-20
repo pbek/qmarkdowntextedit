@@ -53,6 +53,55 @@
 static const QByteArray _openingCharacters = QByteArrayLiteral("([{<*\"'_~");
 static const QByteArray _closingCharacters = QByteArrayLiteral(")]}>*\"'_~");
 
+namespace {
+
+bool handleBoundaryArrowNavigation(QPlainTextEdit *textEdit, QKeyEvent *event) {
+    if (event->modifiers() != Qt::NoModifier) {
+        return false;
+    }
+
+    QTextCursor cursor = textEdit->textCursor();
+
+    if (event->key() == Qt::Key_Down) {
+        if (cursor.position() < textEdit->document()->lastBlock().position()) {
+            return false;
+        }
+
+        cursor.movePosition(QTextCursor::EndOfLine);
+
+        if (!cursor.atBlockEnd()) {
+            return false;
+        }
+
+        textEdit->setTextCursor(cursor);
+        event->accept();
+        return true;
+    }
+
+    if (event->key() != Qt::Key_Up) {
+        return false;
+    }
+
+    const QTextBlock block = textEdit->document()->firstBlock();
+    const int endOfFirstLinePos = block.position() + block.length();
+
+    if (cursor.position() > endOfFirstLinePos) {
+        return false;
+    }
+
+    cursor.movePosition(QTextCursor::StartOfLine);
+
+    if (!cursor.atBlockStart()) {
+        return false;
+    }
+
+    textEdit->setTextCursor(cursor);
+    event->accept();
+    return true;
+}
+
+}    // namespace
+
 QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
     : QPlainTextEdit(parent) {
     installEventFilter(this);
@@ -429,39 +478,6 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             scrollBar->setSliderPosition(scrollBar->sliderPosition() - 1);
             return true;
 #endif
-        } else if ((keyEvent->key() == Qt::Key_Down) &&
-                   keyEvent->modifiers().testFlag(Qt::NoModifier)) {
-            // if you are in the last line and press cursor down the cursor will
-            // jump to the end of the line
-            QTextCursor cursor = textCursor();
-            if (cursor.position() >= document()->lastBlock().position()) {
-                cursor.movePosition(QTextCursor::EndOfLine);
-
-                // check if we are really in the last line, not only in
-                // the last block
-                if (cursor.atBlockEnd()) {
-                    setTextCursor(cursor);
-                }
-            }
-            return QPlainTextEdit::eventFilter(obj, event);
-        } else if ((keyEvent->key() == Qt::Key_Up) &&
-                   keyEvent->modifiers().testFlag(Qt::NoModifier)) {
-            // if you are in the first line and press cursor up the cursor will
-            // jump to the start of the line
-            QTextCursor cursor = textCursor();
-            QTextBlock block = document()->firstBlock();
-            int endOfFirstLinePos = block.position() + block.length();
-
-            if (cursor.position() <= endOfFirstLinePos) {
-                cursor.movePosition(QTextCursor::StartOfLine);
-
-                // check if we are really in the first line, not only in
-                // the first block
-                if (cursor.atBlockStart()) {
-                    setTextCursor(cursor);
-                }
-            }
-            return QPlainTextEdit::eventFilter(obj, event);
         } else if (keyEvent->key() == Qt::Key_Return ||
                    keyEvent->key() == Qt::Key_Enter) {
             return handleReturnEntered();
@@ -2394,6 +2410,12 @@ void QMarkdownTextEdit::keyPressEvent(QKeyEvent *event) {
         event->key() != Qt::Key_Shift && event->key() != Qt::Key_Control &&
         event->key() != Qt::Key_Meta && event->key() != Qt::Key_Escape) {
         clearBlockSelection();
+    }
+
+    // Handle boundary arrow navigation here because Qt6 no longer reliably
+    // runs the event-filter path for these cursor moves on macOS.
+    if (handleBoundaryArrowNavigation(this, event)) {
+        return;
     }
 
     if (_hangingIndentEnabled) {
