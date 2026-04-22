@@ -12,7 +12,7 @@ alias fmt := format
 # Format all files
 [group('linter')]
 format:
-    nix-shell -p treefmt libclang nodePackages.prettier shfmt nixfmt-rfc-style taplo --run treefmt
+    nix-shell -p treefmt libclang prettier shfmt nixfmt-rfc-style taplo --run treefmt
 
 # Add git commit hashes to the .git-blame-ignore-revs file
 [group('linter')]
