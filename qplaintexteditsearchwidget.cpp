@@ -28,8 +28,72 @@
 #include <QEvent>
 #include <QKeyEvent>
 #include <QScrollBar>
+#include <QTextBoundaryFinder>
 
 #include "ui_qplaintexteditsearchwidget.h"
+
+namespace {
+bool isEmojiCodePoint(unsigned int codePoint) {
+    return codePoint == 0x20E3 || codePoint == 0x00A9 || codePoint == 0x00AE ||
+           codePoint == 0x203C || codePoint == 0x2049 || codePoint == 0x2122 ||
+           codePoint == 0x2139 ||
+           (codePoint >= 0x2194 && codePoint <= 0x21AA) ||
+           (codePoint >= 0x231A && codePoint <= 0x2328) ||
+           codePoint == 0x23CF ||
+           (codePoint >= 0x23E9 && codePoint <= 0x23FA) ||
+           codePoint == 0x24C2 ||
+           (codePoint >= 0x25AA && codePoint <= 0x25AB) ||
+           codePoint == 0x25B6 || codePoint == 0x25C0 ||
+           (codePoint >= 0x25FB && codePoint <= 0x25FE) ||
+           (codePoint >= 0x2600 && codePoint <= 0x27BF) ||
+           (codePoint >= 0x2934 && codePoint <= 0x2935) ||
+           (codePoint >= 0x2B05 && codePoint <= 0x2B55) ||
+           codePoint == 0x3030 || codePoint == 0x303D || codePoint == 0x3297 ||
+           codePoint == 0x3299 ||
+           (codePoint >= 0x1F000 && codePoint <= 0x1FAFF);
+}
+
+int graphemeCount(const QString &text, int maxCount) {
+    if (text.isEmpty()) {
+        return 0;
+    }
+
+    QTextBoundaryFinder finder(QTextBoundaryFinder::Grapheme, text);
+    finder.toStart();
+
+    int count = 0;
+    while (finder.toNextBoundary() != -1) {
+        ++count;
+
+        if (count >= maxCount) {
+            break;
+        }
+    }
+
+    return count;
+}
+
+bool shouldStartSearch(const QString &text) {
+    const int minimumSearchLength = 2;
+    const int count = graphemeCount(text, minimumSearchLength);
+    if (count >= minimumSearchLength) {
+        return true;
+    }
+
+    if (count != 1) {
+        return false;
+    }
+
+    const auto codePoints = text.toUcs4();
+    for (unsigned int codePoint : codePoints) {
+        if (isEmojiCodePoint(codePoint)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+}    // namespace
 
 QPlainTextEditSearchWidget::QPlainTextEditSearchWidget(QPlainTextEdit *parent)
     : QWidget(parent),
@@ -158,7 +222,7 @@ void QPlainTextEditSearchWidget::searchLineEditTextChanged(
     const QString &arg1) {
     _searchTerm = arg1;
 
-    if (_debounceTimer.interval() != 0 && !_searchTerm.isEmpty()) {
+    if (_debounceTimer.interval() != 0 && shouldStartSearch(_searchTerm)) {
         _debounceTimer.start();
         ui->searchDownButton->setEnabled(false);
         ui->searchUpButton->setEnabled(false);
@@ -168,6 +232,15 @@ void QPlainTextEditSearchWidget::searchLineEditTextChanged(
 }
 
 void QPlainTextEditSearchWidget::performSearch() {
+    if (!shouldStartSearch(ui->searchLineEdit->text())) {
+        clearSearchExtraSelections();
+        _searchResultCount = 0;
+        _currentSearchResult = 0;
+        updateSearchCountLabelText();
+        doSearchDown();
+        return;
+    }
+
     doSearchCount();
     updateSearchExtraSelections();
     doSearchDown();
@@ -180,6 +253,12 @@ void QPlainTextEditSearchWidget::clearSearchExtraSelections() {
 
 void QPlainTextEditSearchWidget::updateSearchExtraSelections() {
     _searchExtraSelections.clear();
+
+    if (!shouldStartSearch(ui->searchLineEdit->text())) {
+        setSearchExtraSelections();
+        return;
+    }
+
     const auto textCursor = _textEdit->textCursor();
     _textEdit->moveCursor(QTextCursor::Start);
     const QColor color = selectionColor;
@@ -282,7 +361,7 @@ bool QPlainTextEditSearchWidget::doSearch(bool searchDown,
 
     const QString text = ui->searchLineEdit->text();
 
-    if (text.isEmpty()) {
+    if (!shouldStartSearch(text)) {
         if (updateUI) {
             ui->searchLineEdit->setStyleSheet(QLatin1String(""));
         }
@@ -402,6 +481,13 @@ bool QPlainTextEditSearchWidget::doSearch(bool searchDown,
  * @brief Counts the search results
  */
 void QPlainTextEditSearchWidget::doSearchCount() {
+    if (!shouldStartSearch(ui->searchLineEdit->text())) {
+        _searchResultCount = 0;
+        _currentSearchResult = 0;
+        updateSearchCountLabelText();
+        return;
+    }
+
     // Note that we are moving the anchor, so the search will start from the top
     // again! Alternative: Restore cursor position afterward, but then we will
     // not know

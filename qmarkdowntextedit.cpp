@@ -53,6 +53,55 @@
 static const QByteArray _openingCharacters = QByteArrayLiteral("([{<*\"'_~");
 static const QByteArray _closingCharacters = QByteArrayLiteral(")]}>*\"'_~");
 
+namespace {
+
+bool handleBoundaryArrowNavigation(QPlainTextEdit *textEdit, QKeyEvent *event) {
+    if (event->modifiers() != Qt::NoModifier) {
+        return false;
+    }
+
+    QTextCursor cursor = textEdit->textCursor();
+
+    if (event->key() == Qt::Key_Down) {
+        if (cursor.position() < textEdit->document()->lastBlock().position()) {
+            return false;
+        }
+
+        cursor.movePosition(QTextCursor::EndOfLine);
+
+        if (!cursor.atBlockEnd()) {
+            return false;
+        }
+
+        textEdit->setTextCursor(cursor);
+        event->accept();
+        return true;
+    }
+
+    if (event->key() != Qt::Key_Up) {
+        return false;
+    }
+
+    const QTextBlock block = textEdit->document()->firstBlock();
+    const int endOfFirstLinePos = block.position() + block.length();
+
+    if (cursor.position() > endOfFirstLinePos) {
+        return false;
+    }
+
+    cursor.movePosition(QTextCursor::StartOfLine);
+
+    if (!cursor.atBlockStart()) {
+        return false;
+    }
+
+    textEdit->setTextCursor(cursor);
+    event->accept();
+    return true;
+}
+
+}    // namespace
+
 QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
     : QPlainTextEdit(parent) {
     installEventFilter(this);
@@ -2394,6 +2443,12 @@ void QMarkdownTextEdit::keyPressEvent(QKeyEvent *event) {
         event->key() != Qt::Key_Shift && event->key() != Qt::Key_Control &&
         event->key() != Qt::Key_Meta && event->key() != Qt::Key_Escape) {
         clearBlockSelection();
+    }
+
+    // Handle boundary arrow navigation here because Qt6 no longer reliably
+    // runs the event-filter path for these cursor moves on macOS.
+    if (handleBoundaryArrowNavigation(this, event)) {
+        return;
     }
 
     if (_hangingIndentEnabled) {
