@@ -430,7 +430,7 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             return true;
 #endif
         } else if ((keyEvent->key() == Qt::Key_Down) &&
-                   keyEvent->modifiers().testFlag(Qt::NoModifier)) {
+                   (keyEvent->modifiers().testFlag(Qt::NoModifier) || keyEvent->modifiers().testFlag(Qt::KeypadModifier))) {
             // if you are in the last line and press cursor down the cursor will
             // jump to the end of the line
             QTextCursor cursor = textCursor();
@@ -445,7 +445,7 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             }
             return QPlainTextEdit::eventFilter(obj, event);
         } else if ((keyEvent->key() == Qt::Key_Up) &&
-                   keyEvent->modifiers().testFlag(Qt::NoModifier)) {
+                   (keyEvent->modifiers().testFlag(Qt::NoModifier) || keyEvent->modifiers().testFlag(Qt::KeypadModifier))) {
             // if you are in the first line and press cursor up the cursor will
             // jump to the start of the line
             QTextCursor cursor = textCursor();
