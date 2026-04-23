@@ -24,5 +24,5 @@ if [ -z "$FMT" ]; then
   exit 1
 fi
 
-$FMT -i *.cpp
-$FMT -i *.h
+"$FMT" -i -- ./*.cpp
+"$FMT" -i -- ./*.h
