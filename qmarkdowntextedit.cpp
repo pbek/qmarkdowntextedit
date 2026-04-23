@@ -85,7 +85,7 @@ bool handleBoundaryArrowNavigation(QPlainTextEdit *textEdit, QKeyEvent *event) {
     const QTextBlock block = textEdit->document()->firstBlock();
     const int endOfFirstLinePos = block.position() + block.length();
 
-    if (cursor.position() > endOfFirstLinePos) {
+    if (cursor.position() >= endOfFirstLinePos) {
         return false;
     }
 
