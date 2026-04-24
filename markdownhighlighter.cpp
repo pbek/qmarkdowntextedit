@@ -2306,14 +2306,15 @@ void MarkdownHighlighter::highlightInlineRules(const QString &text) {
 }
 
 /**
- * @brief Strips trailing unbalanced bracket characters from a URL string.
+ * @brief Strips trailing Markdown wrapper characters from a URL string.
  *
  * Per RFC 1738, characters like { } [ ] < > are unsafe in URLs and should be
  * percent-encoded. Parentheses ( ) are technically valid but users commonly
- * wrap URLs in them. This function strips trailing closing brackets that are
- * not balanced by corresponding opening brackets within the URL, so that
+ * wrap URLs in them. In Markdown, URLs may also be wrapped by emphasis markers
+ * like `*` or `_`. This function removes trailing emphasis markers and any
+ * trailing closing brackets that are no longer balanced afterwards, so that
  * URLs like http://example.com/wiki/Page_(test) keep their balanced parens
- * while http://example.com/) strips the trailing ')'.
+ * while http://example.com/)_ strips the trailing `)_`.
  */
 static QString stripTrailingBrackets(const QString &url) {
     // Bracket pairs: opener -> closer
@@ -2330,7 +2331,13 @@ static QString stripTrailingBrackets(const QString &url) {
     bool changed = true;
     while (changed && !result.isEmpty()) {
         changed = false;
-        QChar last = result.at(result.length() - 1);
+        const QChar last = result.at(result.length() - 1);
+
+        if (last == QLatin1Char('*') || last == QLatin1Char('_')) {
+            result.chop(1);
+            changed = true;
+            continue;
+        }
 
         for (const auto &pair : pairs) {
             if (last == pair[1]) {
