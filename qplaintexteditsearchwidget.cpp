@@ -545,13 +545,15 @@ void QPlainTextEditSearchWidget::activate(bool focus) {
     // widget initialization (for #3541)
     const QTextCursor originalCursor = _textEdit->textCursor();
 
-    // Preset the selected text as search text if there is any, replacing any
-    // existing search text. Move the cursor to the start of the selection so
-    // that the first search result is the originally selected text and the view
-    // does not scroll away from the user's current position (for #3541).
+    // Preset the selected text as search text only when the user manually
+    // activates the search widget (focus=true). When activated programmatically
+    // (focus=false, e.g. from the note search panel), we must not overwrite the
+    // search text that was already set by the caller — otherwise a multi-term
+    // regex like "(Heading|1)" gets replaced by the currently selected match
+    // word (e.g. "Heading"), causing only one term to be searched (for #3541).
     const QString selectedText = originalCursor.selectedText();
     bool hasPresetSelection = false;
-    if (!selectedText.isEmpty()) {
+    if (focus && !selectedText.isEmpty()) {
         ui->searchLineEdit->setText(selectedText);
         hasPresetSelection = true;
     }

@@ -2503,8 +2503,10 @@ void QMarkdownTextEdit::setReadOnly(bool ro) {
 
 void QMarkdownTextEdit::doSearch(
     QString &searchText, QPlainTextEditSearchWidget::SearchMode searchMode) {
-    _searchWidget->setSearchText(searchText);
+    // Set the search mode before the search text so that when the text change
+    // signal fires performSearch(), it already uses the correct mode
     _searchWidget->setSearchMode(searchMode);
+    _searchWidget->setSearchText(searchText);
     _searchWidget->doSearchCount();
     _searchWidget->activate(false);
 }
