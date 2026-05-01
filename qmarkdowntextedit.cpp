@@ -1575,7 +1575,7 @@ QMap<QString, QString> QMarkdownTextEdit::parseMarkdownUrlsFromText(
     while (iterator.hasNext()) {
         QRegularExpressionMatch match = iterator.next();
         QString url = stripTrailingBrackets(match.captured(0));
-        urlMap[url] = QStringLiteral("http://") + url;
+        urlMap[url] = QStringLiteral("https://") + url;
     }
 
     // match reference urls like this: [this url][1] with this later:
