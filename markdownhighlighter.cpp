@@ -471,9 +471,11 @@ void MarkdownHighlighter::highlightMarkdown(const QString &text) {
 
         highlightIndentedCodeBlock(text);
 
-        highlightLists(text);
+        if (currentBlockState() != HighlighterState::CodeBlockIndented) {
+            highlightLists(text);
 
-        highlightInlineRules(text);
+            highlightInlineRules(text);
+        }
     }
 
     highlightCommentBlock(text);
