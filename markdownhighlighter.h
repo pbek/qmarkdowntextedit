@@ -219,7 +219,8 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
         CodeSystemVerilogComment = 251,
         CodeGDScript = 252,
         CodeTOML = 254,
-        CodeTOMLString = 255
+        CodeTOMLString = 255,
+        CodeConsole = 256
     };
     Q_ENUM(HighlighterState)
 
@@ -326,6 +327,8 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
                             const QString &opener = QStringLiteral("```"));
 
     void highlightSyntax(const QString &text);
+
+    void consoleHighlighter(const QString &text, QChar &comment, int &startIndex);
 
     Q_REQUIRED_RESULT int highlightNumericLiterals(const QString &text, int i);
 

@@ -343,6 +343,7 @@ void MarkdownHighlighter::initCodeLangs() {
         QHash<QString, MarkdownHighlighter::HighlighterState>{
             {QLatin1String("bash"), MarkdownHighlighter::CodeBash},
             {QLatin1String("c"), MarkdownHighlighter::CodeC},
+            {QLatin1String("console"), MarkdownHighlighter::CodeConsole},
             {QLatin1String("cpp"), MarkdownHighlighter::CodeCpp},
             {QLatin1String("cxx"), MarkdownHighlighter::CodeCpp},
             {QLatin1String("c++"), MarkdownHighlighter::CodeCpp},
@@ -365,6 +366,7 @@ void MarkdownHighlighter::initCodeLangs() {
             {QLatin1String("qml"), MarkdownHighlighter::CodeQML},
             {QLatin1String("rust"), MarkdownHighlighter::CodeRust},
             {QLatin1String("sh"), MarkdownHighlighter::CodeBash},
+            {QLatin1String("shell-session"), MarkdownHighlighter::CodeConsole},
             {QLatin1String("sql"), MarkdownHighlighter::CodeSQL},
             {QLatin1String("taggerscript"),
              MarkdownHighlighter::CodeTaggerScript},
@@ -843,6 +845,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
     bool isGDScript = false;
     bool isSQL = false;
     bool isTOML = false;
+    int startIndex = 0;
 
     QMultiHash<char, QLatin1String> keywords{};
     QMultiHash<char, QLatin1String> others{};
@@ -876,6 +879,11 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
         case HighlighterState::CodeBash + tildeOffset:
             loadShellData(types, keywords, builtin, literals, others);
             comment = QLatin1Char('#');
+            break;
+        case HighlighterState::CodeConsole:
+        case HighlighterState::CodeConsole + tildeOffset:
+            loadShellData(types, keywords, builtin, literals, others);
+            consoleHighlighter(text, comment, startIndex);
             break;
         case HighlighterState::CodePHP:
         case HighlighterState::CodePHP + tildeOffset:
@@ -1052,7 +1060,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
     const QTextCharFormat &formatBuiltIn = _formats[CodeBuiltIn];
     const QTextCharFormat &formatOther = _formats[CodeOther];
 
-    for (int i = 0; i < textLen; ++i) {
+    for (int i = startIndex; i < textLen; ++i) {
         if (currentBlockState() != -1 && currentBlockState() % 2 != 0)
             goto Comment;
 
@@ -1276,6 +1284,29 @@ int MarkdownHighlighter::highlightStringLiterals(QChar strType,
         ++i;
     }
     return i - 1;
+}
+
+void MarkdownHighlighter::consoleHighlighter(const QString &text, QChar &comment, int &startIndex) {
+    comment = QLatin1Char('#');
+
+    static const QRegularExpression promptRe(QStringLiteral(
+        R"(^((?:[A-Za-z]:[^\n>]*>|(?:\[[^\]\n]+\]\s*)?(?:[\w.-]+@[\w.-]+(?::[^\n$#>]*)?\s*)?[$#>])\s*))"));
+    const QRegularExpressionMatch match = promptRe.match(text);
+    if (!match.hasMatch()) {
+        return;
+    }
+
+    QTextCharFormat promptFormat = _formats[CodeOther];
+    promptFormat.setFontWeight(QFont::Bold);
+    setFormat(match.capturedStart(1), match.capturedLength(1), promptFormat);
+    startIndex = match.capturedEnd(1);
+
+    static const QRegularExpression commandRe(QStringLiteral(R"(^\s*(\S+))"));
+    const QRegularExpressionMatch commandMatch = commandRe.match(text.mid(startIndex));
+    if (commandMatch.hasMatch()) {
+        setFormat(startIndex + commandMatch.capturedStart(1), commandMatch.capturedLength(1),
+                  _formats[CodeBuiltIn]);
+    }
 }
 
 /**
