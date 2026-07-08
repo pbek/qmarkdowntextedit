@@ -94,6 +94,7 @@ class QMarkdownTextEdit : public QPlainTextEdit {
 
     void setCurrentLineHighlightColor(const QColor &c);
     QColor currentLineHighlightColor();
+    QString toPlainText() const;
 
    public Q_SLOTS:
     void duplicateText();

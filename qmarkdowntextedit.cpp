@@ -1701,6 +1701,15 @@ void QMarkdownTextEdit::duplicateText() {
 
 void QMarkdownTextEdit::setText(const QString &text) { setPlainText(text); }
 
+// QTextDocument::toPlainText() normalizes no-break spaces to regular spaces,
+// so use the raw document text to preserve notes containing U+00A0 or U+202F.
+QString QMarkdownTextEdit::toPlainText() const {
+    QString text = document()->toRawText();
+    text.replace(QChar(0x2028), QLatin1Char('\n'));
+    text.replace(QChar(0x2029), QLatin1Char('\n'));
+    return text;
+}
+
 void QMarkdownTextEdit::setPlainText(const QString &text) {
     // clear the dirty blocks vector to increase performance and prevent
     // a possible crash in QSyntaxHighlighter::rehighlightBlock
