@@ -3,6 +3,15 @@ TEMPLATE = lib
 QT += core gui widgets
 CONFIG += c++11 create_prl no_install_prl create_pc
 
+macx {
+    # Newer macOS SDKs no longer ship AGL.framework, but some qmake mkspecs
+    # still add it through the default OpenGL linker flags. This widget does
+    # not use OpenGL directly, so avoid linking the obsolete framework.
+    QMAKE_LIBS_OPENGL =
+    QMAKE_LIBS_OPENGL_QT =
+    QMAKE_LIBS_OPENGL_ES2 =
+}
+
 include(qmarkdowntextedit.pri)
 
 TRANSLATIONS += trans/qmarkdowntextedit_de.ts \
