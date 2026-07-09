@@ -5,11 +5,22 @@ CONFIG += c++11 create_prl no_install_prl create_pc
 
 macx {
     # Newer macOS SDKs no longer ship AGL.framework, but some qmake mkspecs
-    # still add it through the default OpenGL linker flags. This widget does
-    # not use OpenGL directly, so avoid linking the obsolete framework.
-    QMAKE_LIBS_OPENGL =
-    QMAKE_LIBS_OPENGL_QT =
+    # still add it through the default OpenGL linker flags. Keep this non-empty
+    # for older Qt 6 qmake mkspecs that restore the default when it is empty.
+    QMAKE_LIBS_OPENGL = -framework OpenGL
+    QMAKE_LIBS_OPENGL_QT = -framework OpenGL
     QMAKE_LIBS_OPENGL_ES2 =
+
+    greaterThan(QT_MAJOR_VERSION, 5) {
+        # Older Qt 6 macOS .prl files still pull in the removed AGL framework.
+        CONFIG -= link_prl
+
+        # Qt 6 headers call the ARM yield intrinsic without including arm_acle.h
+        # on macOS 26 ARM runners.
+        contains(QMAKE_HOST.arch, arm64) {
+            QMAKE_CXXFLAGS += -include arm_acle.h
+        }
+    }
 }
 
 include(qmarkdowntextedit.pri)
