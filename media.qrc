@@ -4,6 +4,7 @@
         <file>media/go-top.svg</file>
         <file>media/go-bottom.svg</file>
         <file>media/edit-find-replace.svg</file>
+        <file>media/edit-select-all.svg</file>
         <file>media/format-text-superscript.svg</file>
     </qresource>
 </RCC>

@@ -59,8 +59,19 @@ class QPlainTextEditSearchWidget : public QWidget {
     QColor selectionColor;
     QTimer _debounceTimer;
     QString _searchTerm;
+    int _selectionSearchStart;
+    int _selectionSearchEnd;
     void setSearchExtraSelections() const;
     void stopDebounce();
+    bool isSelectionOnlySearchEnabled() const;
+    bool hasSelectionSearchScope() const;
+    void updateSelectionSearchScope(const QTextCursor &cursor);
+    void clearSelectionSearchScope();
+    void updateSelectionOnlySearchScope(const QTextCursor &cursor);
+    bool isCurrentSelectionSearchMatch() const;
+    void moveToSearchScopeStart();
+    void moveToSearchScopeEnd();
+    bool isCursorInSearchScope(const QTextCursor &cursor) const;
 
    protected:
     QPlainTextEdit *_textEdit;
@@ -87,4 +98,5 @@ class QPlainTextEditSearchWidget : public QWidget {
    private Q_SLOTS:
     void on_modeComboBox_currentIndexChanged(int index);
     void on_matchCaseSensitiveButton_toggled(bool checked);
+    void on_selectionOnlyButton_toggled(bool checked);
 };

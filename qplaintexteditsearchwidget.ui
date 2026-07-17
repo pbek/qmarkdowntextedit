@@ -158,6 +158,26 @@
      </property>
     </widget>
    </item>
+   <item row="1" column="6">
+    <widget class="QPushButton" name="selectionOnlyButton">
+     <property name="toolTip">
+      <string>Search in the selection only</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset theme="edit-select-all" resource="media.qrc">
+       <normaloff>:/media/edit-select-all.svg</normaloff>:/media/edit-select-all.svg</iconset>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
    <item row="2" column="0" colspan="2">
     <widget class="QLabel" name="modeLabel">
      <property name="text">
@@ -257,6 +277,8 @@
   <tabstop>searchDownButton</tabstop>
   <tabstop>searchUpButton</tabstop>
   <tabstop>replaceToggleButton</tabstop>
+  <tabstop>matchCaseSensitiveButton</tabstop>
+  <tabstop>selectionOnlyButton</tabstop>
   <tabstop>closeButton</tabstop>
  </tabstops>
  <resources>
