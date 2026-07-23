@@ -220,7 +220,8 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
         CodeGDScript = 252,
         CodeTOML = 254,
         CodeTOMLString = 255,
-        CodeConsole = 256
+        CodeConsole = 256,
+        CodeR = 258
     };
     Q_ENUM(HighlighterState)
 
@@ -328,7 +329,8 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
 
     void highlightSyntax(const QString &text);
 
-    void consoleHighlighter(const QString &text, QChar &comment, int &startIndex);
+    void consoleHighlighter(const QString &text, QChar &comment,
+                            int &startIndex);
 
     Q_REQUIRED_RESULT int highlightNumericLiterals(const QString &text, int i);
 

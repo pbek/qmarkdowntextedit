@@ -364,6 +364,7 @@ void MarkdownHighlighter::initCodeLangs() {
             {QLatin1String("py"), MarkdownHighlighter::CodePython},
             {QLatin1String("python"), MarkdownHighlighter::CodePython},
             {QLatin1String("qml"), MarkdownHighlighter::CodeQML},
+            {QLatin1String("r"), MarkdownHighlighter::CodeR},
             {QLatin1String("rust"), MarkdownHighlighter::CodeRust},
             {QLatin1String("sh"), MarkdownHighlighter::CodeBash},
             {QLatin1String("shell-session"), MarkdownHighlighter::CodeConsole},
@@ -902,6 +903,11 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
             loadPythonData(types, keywords, builtin, literals, others);
             comment = QLatin1Char('#');
             break;
+        case HighlighterState::CodeR:
+        case HighlighterState::CodeR + tildeOffset:
+            loadRData(types, keywords, builtin, literals, others);
+            comment = QLatin1Char('#');
+            break;
         case HighlighterState::CodeRust:
         case HighlighterState::CodeRust + tildeOffset:
         case HighlighterState::CodeRustComment:
@@ -1286,7 +1292,8 @@ int MarkdownHighlighter::highlightStringLiterals(QChar strType,
     return i - 1;
 }
 
-void MarkdownHighlighter::consoleHighlighter(const QString &text, QChar &comment, int &startIndex) {
+void MarkdownHighlighter::consoleHighlighter(const QString &text,
+                                             QChar &comment, int &startIndex) {
     comment = QLatin1Char('#');
 
     static const QRegularExpression promptRe(QStringLiteral(
@@ -1302,10 +1309,11 @@ void MarkdownHighlighter::consoleHighlighter(const QString &text, QChar &comment
     startIndex = match.capturedEnd(1);
 
     static const QRegularExpression commandRe(QStringLiteral(R"(^\s*(\S+))"));
-    const QRegularExpressionMatch commandMatch = commandRe.match(text.mid(startIndex));
+    const QRegularExpressionMatch commandMatch =
+        commandRe.match(text.mid(startIndex));
     if (commandMatch.hasMatch()) {
-        setFormat(startIndex + commandMatch.capturedStart(1), commandMatch.capturedLength(1),
-                  _formats[CodeBuiltIn]);
+        setFormat(startIndex + commandMatch.capturedStart(1),
+                  commandMatch.capturedLength(1), _formats[CodeBuiltIn]);
     }
 }
 

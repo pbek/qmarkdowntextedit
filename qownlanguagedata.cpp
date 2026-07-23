@@ -1126,6 +1126,148 @@ void loadPythonData(QMultiHash<char, QLatin1String> &types,
 }
 
 /********************************************************/
+/***   R DATA         ************************************/
+/********************************************************/
+static bool rDataInitialized = false;
+static QMultiHash<char, QLatin1String> r_keywords;
+static QMultiHash<char, QLatin1String> r_types;
+static QMultiHash<char, QLatin1String> r_literals;
+static QMultiHash<char, QLatin1String> r_builtin;
+static QMultiHash<char, QLatin1String> r_other;
+void initRData() {
+    r_keywords = {
+        {('b'), QLatin1String("break")}, {('e'), QLatin1String("else")},
+        {('f'), QLatin1String("for")},   {('f'), QLatin1String("function")},
+        {('i'), QLatin1String("if")},    {('i'), QLatin1String("in")},
+        {('n'), QLatin1String("next")},  {('r'), QLatin1String("repeat")},
+        {('w'), QLatin1String("while")},
+    };
+
+    r_types = {
+        {('c'), QLatin1String("character")}, {('c'), QLatin1String("complex")},
+        {('d'), QLatin1String("double")},    {('i'), QLatin1String("integer")},
+        {('l'), QLatin1String("logical")},   {('n'), QLatin1String("numeric")},
+        {('r'), QLatin1String("raw")},
+    };
+
+    r_literals = {
+        {('F'), QLatin1String("FALSE")},
+        {('I'), QLatin1String("Inf")},
+        {('N'), QLatin1String("NA")},
+        {('N'), QLatin1String("NA_character_")},
+        {('N'), QLatin1String("NA_complex_")},
+        {('N'), QLatin1String("NA_integer_")},
+        {('N'), QLatin1String("NA_real_")},
+        {('N'), QLatin1String("NULL")},
+        {('N'), QLatin1String("NaN")},
+        {('T'), QLatin1String("TRUE")},
+    };
+
+    r_builtin = {
+        {('a'), QLatin1String("abs")},
+        {('a'), QLatin1String("all")},
+        {('a'), QLatin1String("any")},
+        {('a'), QLatin1String("anyNA")},
+        {('a'), QLatin1String("as.character")},
+        {('a'), QLatin1String("as.data.frame")},
+        {('a'), QLatin1String("as.double")},
+        {('a'), QLatin1String("as.integer")},
+        {('a'), QLatin1String("as.list")},
+        {('a'), QLatin1String("as.logical")},
+        {('a'), QLatin1String("as.matrix")},
+        {('a'), QLatin1String("as.numeric")},
+        {('a'), QLatin1String("attributes")},
+        {('b'), QLatin1String("browser")},
+        {('c'), QLatin1String("c")},
+        {('c'), QLatin1String("call")},
+        {('c'), QLatin1String("cat")},
+        {('c'), QLatin1String("class")},
+        {('c'), QLatin1String("colnames")},
+        {('d'), QLatin1String("data.frame")},
+        {('d'), QLatin1String("dim")},
+        {('d'), QLatin1String("do.call")},
+        {('e'), QLatin1String("environment")},
+        {('e'), QLatin1String("eval")},
+        {('e'), QLatin1String("exists")},
+        {('f'), QLatin1String("factor")},
+        {('f'), QLatin1String("file")},
+        {('g'), QLatin1String("get")},
+        {('i'), QLatin1String("identical")},
+        {('i'), QLatin1String("is.character")},
+        {('i'), QLatin1String("is.data.frame")},
+        {('i'), QLatin1String("is.double")},
+        {('i'), QLatin1String("is.function")},
+        {('i'), QLatin1String("is.integer")},
+        {('i'), QLatin1String("is.list")},
+        {('i'), QLatin1String("is.logical")},
+        {('i'), QLatin1String("is.matrix")},
+        {('i'), QLatin1String("is.na")},
+        {('i'), QLatin1String("is.null")},
+        {('i'), QLatin1String("is.numeric")},
+        {('l'), QLatin1String("length")},
+        {('l'), QLatin1String("list")},
+        {('m'), QLatin1String("match")},
+        {('m'), QLatin1String("matrix")},
+        {('m'), QLatin1String("max")},
+        {('m'), QLatin1String("mean")},
+        {('m'), QLatin1String("min")},
+        {('m'), QLatin1String("missing")},
+        {('n'), QLatin1String("names")},
+        {('n'), QLatin1String("nchar")},
+        {('n'), QLatin1String("ncol")},
+        {('n'), QLatin1String("nrow")},
+        {('o'), QLatin1String("order")},
+        {('p'), QLatin1String("paste")},
+        {('p'), QLatin1String("paste0")},
+        {('p'), QLatin1String("print")},
+        {('q'), QLatin1String("quote")},
+        {('r'), QLatin1String("range")},
+        {('r'), QLatin1String("readLines")},
+        {('r'), QLatin1String("rep")},
+        {('r'), QLatin1String("return")},
+        {('r'), QLatin1String("rev")},
+        {('r'), QLatin1String("round")},
+        {('r'), QLatin1String("rownames")},
+        {('s'), QLatin1String("sample")},
+        {('s'), QLatin1String("seq")},
+        {('s'), QLatin1String("sort")},
+        {('s'), QLatin1String("source")},
+        {('s'), QLatin1String("sqrt")},
+        {('s'), QLatin1String("stop")},
+        {('s'), QLatin1String("sum")},
+        {('s'), QLatin1String("summary")},
+        {('s'), QLatin1String("switch")},
+        {('t'), QLatin1String("table")},
+        {('u'), QLatin1String("unique")},
+        {('u'), QLatin1String("unlist")},
+        {('v'), QLatin1String("vector")},
+        {('w'), QLatin1String("warning")},
+    };
+
+    r_other = {
+        {('l'), QLatin1String("library")},
+        {('p'), QLatin1String("packageVersion")},
+        {('r'), QLatin1String("require")},
+        {('r'), QLatin1String("requireNamespace")},
+    };
+}
+void loadRData(QMultiHash<char, QLatin1String> &types,
+               QMultiHash<char, QLatin1String> &keywords,
+               QMultiHash<char, QLatin1String> &builtin,
+               QMultiHash<char, QLatin1String> &literals,
+               QMultiHash<char, QLatin1String> &other) {
+    if (!rDataInitialized) {
+        initRData();
+        rDataInitialized = true;
+    }
+    types = r_types;
+    keywords = r_keywords;
+    builtin = r_builtin;
+    literals = r_literals;
+    other = r_other;
+}
+
+/********************************************************/
 /***   Rust DATA      ***********************************/
 /********************************************************/
 static bool rustDataInitialized = false;
