@@ -1704,7 +1704,13 @@ void QMarkdownTextEdit::setText(const QString &text) { setPlainText(text); }
 // QTextDocument::toPlainText() normalizes no-break spaces to regular spaces,
 // so use the raw document text to preserve notes containing U+00A0 or U+202F.
 QString QMarkdownTextEdit::toPlainText() const {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 9, 0)
     QString text = document()->toRawText();
+#else
+    QTextCursor cursor(document());
+    cursor.select(QTextCursor::Document);
+    QString text = cursor.selectedText();
+#endif
     text.replace(QChar(0x2028), QLatin1Char('\n'));
     text.replace(QChar(0x2029), QLatin1Char('\n'));
     return text;
