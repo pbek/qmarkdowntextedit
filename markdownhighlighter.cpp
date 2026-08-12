@@ -703,7 +703,7 @@ void MarkdownHighlighter::highlightSubHeadline(const QString &text,
     // we check for both H1/H2 so that if the user changes his mind, and changes
     // === to ---, changes be reflected immediately
     if (previousBlockState() == H1 || previousBlockState() == H2 ||
-        previousBlockState() == NoState) {
+        baseBlockState(previousBlockState()) == NoState) {
         QTextCharFormat headingMaskedFormat = maskedFormat;
         // set the font size from the current rule's font format
         if (!isHidingForCurrentBlock()) {
@@ -2344,6 +2344,7 @@ void MarkdownHighlighter::highlightInlineRules(const QString &text) {
     }
 
     highlightEmAndStrong(text, 0);
+    highlightMultilineInlineSpans(text);
 }
 
 /**
@@ -2742,7 +2743,7 @@ int MarkdownHighlighter::highlightLinkOrImage(const QString &text,
 -><code>foo`bar</code>
 ` foo `` bar `
 <code>foo `` bar</code>
-*/
+ */
 int MarkdownHighlighter::highlightInlineSpans(const QString &text,
                                               int currentPos, const QChar c) {
     // clear code span ranges for this block
@@ -2901,6 +2902,133 @@ QPair<int, QPair<bool, bool>> scanDelims(const QString &text, const int start,
                               : rightFlanking && (!leftFlanking || isNextPunct);
 
     return QPair<int, QPair<bool, bool>>{length, {canOpen, canClose}};
+}
+
+void MarkdownHighlighter::applyMultilineInlineFormat(const int start,
+                                                     const int length,
+                                                     const int state) {
+    const bool underline =
+        _highlightingOptions.testFlag(Underline) &&
+        (state & (MultilineEmphasisUnderscore | MultilineStrongUnderscore));
+    const bool bold = (state & MultilineStrongAsterisk) ||
+                      (!underline && (state & MultilineStrongUnderscore));
+    const bool italic = (state & MultilineEmphasisAsterisk) ||
+                        (!underline && (state & MultilineEmphasisUnderscore));
+
+    for (int i = start; i < start + length; ++i) {
+        QTextCharFormat format = QSyntaxHighlighter::format(i);
+
+        if (state & MultilineStrikeout) format.setFontStrikeOut(true);
+        if (bold) {
+#if QT_VERSION < QT_VERSION_CHECK(5, 13, 0)
+            format.setFontFamily(_formats[Bold].fontFamily());
+#else
+            const QStringList fontFamilies =
+                _formats[Bold].fontFamilies().toStringList();
+            if (!fontFamilies.isEmpty()) format.setFontFamilies(fontFamilies);
+#endif
+            if (format.foreground() == QTextCharFormat().foreground())
+                format.setForeground(_formats[Bold].foreground());
+            if (_formats[Bold].font().bold()) format.setFontWeight(QFont::Bold);
+        }
+        if (italic) {
+#if QT_VERSION < QT_VERSION_CHECK(5, 13, 0)
+            format.setFontFamily(_formats[Italic].fontFamily());
+#else
+            const QStringList fontFamilies =
+                _formats[Italic].fontFamilies().toStringList();
+            if (!fontFamilies.isEmpty()) format.setFontFamilies(fontFamilies);
+#endif
+            if (format.foreground() == QTextCharFormat().foreground())
+                format.setForeground(_formats[Italic].foreground());
+            format.setFontItalic(_formats[Italic].fontItalic());
+        }
+        if (underline) {
+            format.setForeground(_formats[StUnderline].foreground());
+            format.setFontUnderline(_formats[StUnderline].fontUnderline());
+        }
+
+        setFormat(i, 1, format);
+    }
+}
+
+void MarkdownHighlighter::highlightMultilineInlineSpans(const QString &text) {
+    if (currentBlockState() != NoState) return;
+
+    int state = multilineInlineState(previousBlockState());
+    int segmentStart = 0;
+
+    for (int i = 0; i < text.length();) {
+        const QChar marker = text.at(i);
+        if (marker != QLatin1Char('*') && marker != QLatin1Char('_') &&
+            marker != QLatin1Char('~')) {
+            ++i;
+            continue;
+        }
+
+        int precedingBackslashes = 0;
+        for (int j = i - 1; j >= 0 && text.at(j) == QLatin1Char('\\'); --j)
+            ++precedingBackslashes;
+        if ((precedingBackslashes % 2) != 0 ||
+            isPosInACodeSpan(currentBlock().blockNumber(), i)) {
+            ++i;
+            continue;
+        }
+
+        int runLength = 1;
+        while (i + runLength < text.length() &&
+               text.at(i + runLength) == marker)
+            ++runLength;
+
+        int delimiterLength = 0;
+        int delimiterState = 0;
+        bool canOpen = false;
+        bool canClose = false;
+
+        if (marker == QLatin1Char('~')) {
+            if (runLength == 2) {
+                delimiterLength = 2;
+                delimiterState = MultilineStrikeout;
+                canOpen = i + delimiterLength < text.length() &&
+                          !text.at(i + delimiterLength).isSpace();
+                canClose = i > 0 && !text.at(i - 1).isSpace();
+            }
+        } else if (runLength <= 2) {
+            const auto delimiter =
+                scanDelims(text, i, marker == QLatin1Char('*'));
+            delimiterLength = runLength;
+            canOpen = delimiter.second.first;
+            canClose = delimiter.second.second;
+            if (marker == QLatin1Char('*')) {
+                delimiterState = runLength == 2 ? MultilineStrongAsterisk
+                                                : MultilineEmphasisAsterisk;
+            } else {
+                delimiterState = runLength == 2 ? MultilineStrongUnderscore
+                                                : MultilineEmphasisUnderscore;
+            }
+        }
+
+        const bool closes = (state & delimiterState) && canClose;
+        const bool opens = !(state & delimiterState) && canOpen;
+        if (delimiterState == 0 || (!closes && !opens)) {
+            i += runLength;
+            continue;
+        }
+
+        applyMultilineInlineFormat(segmentStart, i - segmentStart, state);
+        if (closes)
+            state &= ~delimiterState;
+        else
+            state |= delimiterState;
+
+        setFormat(i, delimiterLength, currentMaskedFormat());
+        i += delimiterLength;
+        segmentStart = i;
+    }
+
+    applyMultilineInlineFormat(segmentStart, text.length() - segmentStart,
+                               state);
+    setCurrentBlockState(encodeMultilineInlineState(state));
 }
 
 int collectEmDelims(const QString &text, int curPos,

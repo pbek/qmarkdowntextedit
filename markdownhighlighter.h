@@ -264,6 +264,33 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
             : begin{begin_}, end{end_}, type{type_} {}
     };
 
+    enum MultilineInlineState {
+        MultilineEmphasisAsterisk = 0x01,
+        MultilineStrongAsterisk = 0x02,
+        MultilineEmphasisUnderscore = 0x04,
+        MultilineStrongUnderscore = 0x08,
+        MultilineStrikeout = 0x10
+    };
+
+    // Keep continuation states below internal code-block states so existing
+    // block-state consumers continue to treat them as prose.
+    static constexpr int multilineInlineStateOffset = 40;
+
+    static constexpr int multilineInlineState(const int state) {
+        return state > multilineInlineStateOffset &&
+                       state <= multilineInlineStateOffset + 0x1f
+                   ? state - multilineInlineStateOffset
+                   : 0;
+    }
+
+    static constexpr int encodeMultilineInlineState(const int state) {
+        return state == 0 ? NoState : multilineInlineStateOffset + state;
+    }
+
+    static constexpr int baseBlockState(const int state) {
+        return multilineInlineState(state) == 0 ? state : NoState;
+    }
+
     void highlightBlock(const QString &text) override;
 
     static void initTextFormats(int defaultFontSize = 12);
@@ -305,6 +332,10 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
 
     int highlightInlineSpans(const QString &text, int currentPos,
                              const QChar c);
+
+    void highlightMultilineInlineSpans(const QString &text);
+
+    void applyMultilineInlineFormat(int start, int length, int state);
 
     void highlightEmAndStrong(const QString &text, const int pos);
 
