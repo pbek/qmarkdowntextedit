@@ -56,7 +56,8 @@ static const QByteArray _closingCharacters = QByteArrayLiteral(")]}>*\"'_~");
 namespace {
 
 bool handleBoundaryArrowNavigation(QPlainTextEdit *textEdit, QKeyEvent *event) {
-    if (event->modifiers() != Qt::NoModifier) {
+    // macOS reports arrow keys with Qt::KeypadModifier set, so ignore that bit
+    if ((event->modifiers() & ~Qt::KeypadModifier) != Qt::NoModifier) {
         return false;
     }
 
