@@ -2934,15 +2934,20 @@ bool MarkdownHighlighter::hasMultilineInlineCloser(const QChar marker,
                 runLength == delimiterLength &&
                 !(block == currentBlock() &&
                   isPosInACodeSpan(block.blockNumber(), i))) {
+                bool canOpen = false;
                 bool canClose = false;
                 if (marker == QLatin1Char('~')) {
+                    canOpen = i + runLength < blockText.length() &&
+                              !blockText.at(i + runLength).isSpace();
                     canClose = i > 0 && !blockText.at(i - 1).isSpace();
                 } else {
-                    canClose =
-                        scanDelims(blockText, i, marker == QLatin1Char('*'))
-                            .second.second;
+                    const auto delimiter =
+                        scanDelims(blockText, i, marker == QLatin1Char('*'));
+                    canOpen = delimiter.second.first;
+                    canClose = delimiter.second.second;
                 }
                 if (canClose) return true;
+                if (!canOpen) return false;
             }
 
             i += runLength;
@@ -3109,6 +3114,10 @@ void balancePairs(QVector<Delimiter> &delims) {
 
         while (j >= 0) {
             const auto &curDelim = delims.at(j);
+            if (!curDelim.open && !curDelim.close &&
+                curDelim.marker == lastDelim.marker &&
+                curDelim.len == lastDelim.len)
+                break;
             if (curDelim.open && curDelim.marker == lastDelim.marker &&
                 curDelim.end < 0) {
                 const bool oddMatch = (curDelim.close || lastDelim.open) &&
