@@ -335,6 +335,9 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
 
     void highlightMultilineInlineSpans(const QString &text);
 
+    bool hasMultilineInlineCloser(QChar marker, int delimiterLength,
+                                  int start) const;
+
     void applyMultilineInlineFormat(int start, int length, int state);
 
     void highlightEmAndStrong(const QString &text, const int pos);

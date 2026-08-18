@@ -2904,6 +2904,57 @@ QPair<int, QPair<bool, bool>> scanDelims(const QString &text, const int start,
     return QPair<int, QPair<bool, bool>>{length, {canOpen, canClose}};
 }
 
+bool MarkdownHighlighter::hasMultilineInlineCloser(const QChar marker,
+                                                   const int delimiterLength,
+                                                   const int start) const {
+    QTextBlock block = currentBlock();
+    int searchStart = start;
+
+    while (block.isValid()) {
+        const QString blockText = block.text();
+        if (block != currentBlock() && blockText.trimmed().isEmpty()) break;
+
+        for (int i = searchStart; i < blockText.length();) {
+            if (blockText.at(i) != marker) {
+                ++i;
+                continue;
+            }
+
+            int precedingBackslashes = 0;
+            for (int j = i - 1; j >= 0 && blockText.at(j) == QLatin1Char('\\');
+                 --j)
+                ++precedingBackslashes;
+
+            int runLength = 1;
+            while (i + runLength < blockText.length() &&
+                   blockText.at(i + runLength) == marker)
+                ++runLength;
+
+            if ((precedingBackslashes % 2) == 0 &&
+                runLength == delimiterLength &&
+                !(block == currentBlock() &&
+                  isPosInACodeSpan(block.blockNumber(), i))) {
+                bool canClose = false;
+                if (marker == QLatin1Char('~')) {
+                    canClose = i > 0 && !blockText.at(i - 1).isSpace();
+                } else {
+                    canClose =
+                        scanDelims(blockText, i, marker == QLatin1Char('*'))
+                            .second.second;
+                }
+                if (canClose) return true;
+            }
+
+            i += runLength;
+        }
+
+        block = block.next();
+        searchStart = 0;
+    }
+
+    return false;
+}
+
 void MarkdownHighlighter::applyMultilineInlineFormat(const int start,
                                                      const int length,
                                                      const int state) {
@@ -3009,7 +3060,9 @@ void MarkdownHighlighter::highlightMultilineInlineSpans(const QString &text) {
         }
 
         const bool closes = (state & delimiterState) && canClose;
-        const bool opens = !(state & delimiterState) && canOpen;
+        const bool opens = !(state & delimiterState) && canOpen &&
+                           hasMultilineInlineCloser(marker, delimiterLength,
+                                                    i + delimiterLength);
         if (delimiterState == 0 || (!closes && !opens)) {
             i += runLength;
             continue;
