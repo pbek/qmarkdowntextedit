@@ -342,36 +342,55 @@ void MarkdownHighlighter::initCodeLangs() {
     MarkdownHighlighter::_langStringToEnum =
         QHash<QString, MarkdownHighlighter::HighlighterState>{
             {QLatin1String("bash"), MarkdownHighlighter::CodeBash},
+            {QLatin1String("zsh"), MarkdownHighlighter::CodeBash},
             {QLatin1String("c"), MarkdownHighlighter::CodeC},
+            {QLatin1String("h"), MarkdownHighlighter::CodeC},
             {QLatin1String("console"), MarkdownHighlighter::CodeConsole},
+            {QLatin1String("terminal"), MarkdownHighlighter::CodeConsole},
+            {QLatin1String("shell"), MarkdownHighlighter::CodeBash},
             {QLatin1String("cpp"), MarkdownHighlighter::CodeCpp},
+            {QLatin1String("cc"), MarkdownHighlighter::CodeCpp},
             {QLatin1String("cxx"), MarkdownHighlighter::CodeCpp},
             {QLatin1String("c++"), MarkdownHighlighter::CodeCpp},
+            {QLatin1String("hpp"), MarkdownHighlighter::CodeCpp},
+            {QLatin1String("hxx"), MarkdownHighlighter::CodeCpp},
             {QLatin1String("c#"), MarkdownHighlighter::CodeCSharp},
+            {QLatin1String("cs"), MarkdownHighlighter::CodeCSharp},
             {QLatin1String("cmake"), MarkdownHighlighter::CodeCMake},
             {QLatin1String("csharp"), MarkdownHighlighter::CodeCSharp},
             {QLatin1String("css"), MarkdownHighlighter::CodeCSS},
             {QLatin1String("go"), MarkdownHighlighter::CodeGo},
+            {QLatin1String("golang"), MarkdownHighlighter::CodeGo},
             {QLatin1String("html"), MarkdownHighlighter::CodeXML},
+            {QLatin1String("xhtml"), MarkdownHighlighter::CodeXML},
+            {QLatin1String("svg"), MarkdownHighlighter::CodeXML},
             {QLatin1String("ini"), MarkdownHighlighter::CodeINI},
+            {QLatin1String("cfg"), MarkdownHighlighter::CodeINI},
             {QLatin1String("java"), MarkdownHighlighter::CodeJava},
-            {QLatin1String("javascript"), MarkdownHighlighter::CodeJava},
+            {QLatin1String("javascript"), MarkdownHighlighter::CodeJs},
             {QLatin1String("js"), MarkdownHighlighter::CodeJs},
+            {QLatin1String("jsx"), MarkdownHighlighter::CodeJs},
+            {QLatin1String("node"), MarkdownHighlighter::CodeJs},
             {QLatin1String("json"), MarkdownHighlighter::CodeJSON},
+            {QLatin1String("jsonc"), MarkdownHighlighter::CodeJSON},
             {QLatin1String("make"), MarkdownHighlighter::CodeMake},
+            {QLatin1String("makefile"), MarkdownHighlighter::CodeMake},
             {QLatin1String("nix"), MarkdownHighlighter::CodeNix},
             {QLatin1String("php"), MarkdownHighlighter::CodePHP},
             {QLatin1String("py"), MarkdownHighlighter::CodePython},
             {QLatin1String("python"), MarkdownHighlighter::CodePython},
+            {QLatin1String("python3"), MarkdownHighlighter::CodePython},
             {QLatin1String("qml"), MarkdownHighlighter::CodeQML},
             {QLatin1String("r"), MarkdownHighlighter::CodeR},
             {QLatin1String("rust"), MarkdownHighlighter::CodeRust},
+            {QLatin1String("rs"), MarkdownHighlighter::CodeRust},
             {QLatin1String("sh"), MarkdownHighlighter::CodeBash},
             {QLatin1String("shell-session"), MarkdownHighlighter::CodeConsole},
             {QLatin1String("sql"), MarkdownHighlighter::CodeSQL},
             {QLatin1String("taggerscript"),
              MarkdownHighlighter::CodeTaggerScript},
             {QLatin1String("ts"), MarkdownHighlighter::CodeTypeScript},
+            {QLatin1String("tsx"), MarkdownHighlighter::CodeTypeScript},
             {QLatin1String("typescript"), MarkdownHighlighter::CodeTypeScript},
             {QLatin1String("v"), MarkdownHighlighter::CodeV},
             {QLatin1String("vex"), MarkdownHighlighter::CodeVex},
@@ -381,6 +400,7 @@ void MarkdownHighlighter::initCodeLangs() {
             {QLatin1String("forth"), MarkdownHighlighter::CodeForth},
             {QLatin1String("systemverilog"),
              MarkdownHighlighter::CodeSystemVerilog},
+            {QLatin1String("sv"), MarkdownHighlighter::CodeSystemVerilog},
             {QLatin1String("gdscript"), MarkdownHighlighter::CodeGDScript},
             {QLatin1String("toml"), MarkdownHighlighter::CodeTOML},
         };
@@ -796,7 +816,19 @@ void MarkdownHighlighter::highlightCodeBlock(const QString &text,
             (previousBlockState() != CodeBlockComment &&
              previousBlockState() != CodeBlockTildeComment) &&
             previousBlockState() < CodeCpp) {
-            const QString &lang = text.mid(3, text.length()).toLower();
+            QString lang = text.mid(opener.length()).trimmed().toLower();
+            const bool hasAttributeSyntax =
+                lang.startsWith(QLatin1String("{."));
+            if (hasAttributeSyntax) {
+                lang.remove(0, 2);
+            }
+            for (int i = 0; i < lang.length(); ++i) {
+                if (lang.at(i).isSpace() ||
+                    (hasAttributeSyntax && lang.at(i) == QLatin1Char('}'))) {
+                    lang.truncate(i);
+                    break;
+                }
+            }
             HighlighterState progLang = _langStringToEnum.value(lang);
 
             if (progLang >= CodeCpp) {
@@ -944,8 +976,6 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
         case HighlighterState::CodeSQLComment + tildeOffset:
             loadSQLData(types, keywords, builtin, literals, others);
             isSQL = true;
-            comment =
-                QLatin1Char('-');    // prevent the default comment highlighting
             break;
         case HighlighterState::CodeJSON:
         case HighlighterState::CodeJSON + tildeOffset:
@@ -1012,7 +1042,9 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
             loadForthData(types, keywords, builtin, literals, others);
             break;
         case HighlighterState::CodeSystemVerilog:
+        case HighlighterState::CodeSystemVerilog + tildeOffset:
         case HighlighterState::CodeSystemVerilogComment:
+        case HighlighterState::CodeSystemVerilogComment + tildeOffset:
             loadSystemVerilogData(types, keywords, builtin, literals, others);
             break;
         case HighlighterState::CodeGDScript:
@@ -1081,7 +1113,7 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
             // inline comment
             if (comment.isNull() && text[i] == QLatin1Char('/')) {
                 if ((i + 1) < textLen) {
-                    if (text[i + 1] == QLatin1Char('/')) {
+                    if (!isSQL && text[i + 1] == QLatin1Char('/')) {
                         setFormat(i, textLen, formatComment);
                         return;
                     } else if (text[i + 1] == QLatin1Char('*')) {
@@ -1111,7 +1143,11 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
                         }
                     }
                 }
-            } else if (text[i] == comment) {
+            } else if (isSQL && text[i] == QLatin1Char('-') &&
+                       i + 1 < textLen && text[i + 1] == QLatin1Char('-')) {
+                setFormat(i, textLen - i, formatComment);
+                return;
+            } else if (!comment.isNull() && text[i] == comment) {
                 setFormat(i, textLen, formatComment);
                 i = textLen;
                 break;
@@ -1163,7 +1199,9 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
                     (i + word.size() == text.length() ||
                      !text.at(i + word.size()).isLetter())) {
                     currentBlockState() == CodeCpp ||
-                            currentBlockState() == CodeC
+                            currentBlockState() == CodeCpp + tildeOffset ||
+                            currentBlockState() == CodeC ||
+                            currentBlockState() == CodeC + tildeOffset
                         ? setFormat(i - 1, word.size() + 1, formatOther)
                         : setFormat(i, word.size(), formatOther);
                     i += word.size();
@@ -1191,7 +1229,6 @@ void MarkdownHighlighter::highlightSyntax(const QString &text) {
     if (isMake) makeHighlighter(text);
     if (isForth) forthHighlighter(text);
     if (isGDScript) gdscriptHighlighter(text);
-    if (isSQL) sqlHighlighter(text);
     if (isTOML) tomlHighlighter(text);
 }
 
@@ -1335,7 +1372,8 @@ int MarkdownHighlighter::highlightNumericLiterals(const QString &text, int i) {
         switch (text.at(i - 1).toLatin1()) {
             // CSS number
             case ':':
-                if (currentBlockState() == CodeCSS) {
+                if (currentBlockState() == CodeCSS ||
+                    currentBlockState() == CodeCSS + tildeOffset) {
                     isPrefixAllowed = true;
                 }
                 break;
@@ -1409,7 +1447,8 @@ int MarkdownHighlighter::highlightNumericLiterals(const QString &text, int i) {
                 break;
             // for 100u, 1.0F
             case 'p':
-                if (currentBlockState() == CodeCSS) {
+                if (currentBlockState() == CodeCSS ||
+                    currentBlockState() == CodeCSS + tildeOffset) {
                     if (i + 1 < text.length() && text.at(i + 1) == QChar('x')) {
                         if (i + 2 == text.length() ||
                             !text.at(i + 2).isLetterOrNumber()) {
@@ -1419,7 +1458,8 @@ int MarkdownHighlighter::highlightNumericLiterals(const QString &text, int i) {
                 }
                 break;
             case 'e':
-                if (currentBlockState() == CodeCSS) {
+                if (currentBlockState() == CodeCSS ||
+                    currentBlockState() == CodeCSS + tildeOffset) {
                     if (i + 1 < text.length() && text.at(i + 1) == QChar('m')) {
                         if (i + 2 == text.length() ||
                             !text.at(i + 2).isLetterOrNumber()) {
@@ -1810,24 +1850,21 @@ void MarkdownHighlighter::forthHighlighter(const QString &text) {
 
     for (int i = 0; i < textLen; ++i) {
         // 1, It highlights the "\ " comments
-        if (i + 1 <= textLen && text[i] == QLatin1Char('\\') &&
+        if (i + 1 < textLen && text[i] == QLatin1Char('\\') &&
             text[i + 1] == QLatin1Char(' ')) {
             // The full line is commented
-            setFormat(i + 1, textLen - 1, _formats[CodeComment]);
+            setFormat(i, textLen - i, _formats[CodeComment]);
             break;
         }
         // 2. It highlights the "( " comments
-        else if (i + 1 <= textLen && text[i] == QLatin1Char('(') &&
+        else if (i + 1 < textLen && text[i] == QLatin1Char('(') &&
                  text[i + 1] == QLatin1Char(' ')) {
             // Find the End bracket
-            int lastBracket = text.lastIndexOf(QLatin1Char(')'), i);
+            const int lastBracket = text.indexOf(QLatin1Char(')'), i + 2);
             // Can't Handle wrong Format
-            if (lastBracket <= 0) return;
-            // ' )' at the end of the comment
-            if (lastBracket <= textLen &&
-                text[lastBracket] == QLatin1Char(' ')) {
-                setFormat(i, lastBracket, _formats[CodeComment]);
-            }
+            if (lastBracket < 0) return;
+            setFormat(i, lastBracket - i + 1, _formats[CodeComment]);
+            i = lastBracket;
         }
     }
 }
@@ -1873,12 +1910,12 @@ void MarkdownHighlighter::sqlHighlighter(const QString &text) {
     const auto textLen = text.length();
 
     for (int i = 0; i < textLen; ++i) {
-        if (i + 1 > textLen) {
+        if (i + 1 >= textLen) {
             break;
         }
         // Check for comments: single-line, or multi-line start or end
         if (text[i] == QLatin1Char('-') && text[i + 1] == QLatin1Char('-')) {
-            setFormat(i, textLen, _formats[CodeComment]);
+            setFormat(i, textLen - i, _formats[CodeComment]);
         } else if (text[i] == QLatin1Char('/') &&
                    text[i + 1] == QLatin1Char('*')) {
             // we're in a multi-line comment now
@@ -1930,16 +1967,12 @@ void MarkdownHighlighter::tomlHighlighter(const QString &text) {
     QLatin1Char doubleQ = QLatin1Char('"');
 
     for (int i = 0; i < textLen; ++i) {
-        if (i + 1 > textLen) {
-            break;
-        }
-
         // track the state of strings
         // multiline highlighting doesn't quite behave due to clashing handling
         // of " and ' chars, but this accomodates normal " and ' strings, as
         // well as ones wrapped by either """ or '''
         if (text[i] == doubleQ) {
-            if (i + 2 <= textLen && text[i + 1] == doubleQ &&
+            if (i + 2 < textLen && text[i + 1] == doubleQ &&
                 text[i + 2] == doubleQ) {
                 if (multiDoubleQStringStart > -1) {
                     multiDoubleQStringStart = -1;
@@ -1964,7 +1997,7 @@ void MarkdownHighlighter::tomlHighlighter(const QString &text) {
                 }
             }
         } else if (text[i] == singleQ) {
-            if (i + 2 <= textLen && text[i + 1] == singleQ &&
+            if (i + 2 < textLen && text[i + 1] == singleQ &&
                 text[i + 2] == singleQ) {
                 if (multiSingleQStringStart > -1) {
                     multiSingleQStringStart = -1;
@@ -2030,7 +2063,7 @@ void MarkdownHighlighter::tomlHighlighter(const QString &text) {
             }
             setFormat(highlightStart, endOfNumber - highlightStart,
                       _formats[CodeNumLiteral]);
-            i = endOfNumber;
+            i = endOfNumber - 1;
         }
 
         if (!text[i].isSpace()) {
