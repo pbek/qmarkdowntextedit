@@ -2640,8 +2640,21 @@ int MarkdownHighlighter::highlightLinkOrImage(const QString &text,
     // or image text.
     int endIndex = text.indexOf(QLatin1Char(']'), startIndex);
 
-    // If endIndex is not found or at the end of the text, the link is invalid
-    if (endIndex == -1 || endIndex == text.size() - 1) return startIndex;
+    // If endIndex is not found, the link is invalid
+    if (endIndex == -1) return startIndex;
+
+    if (startIndex + 2 < endIndex &&
+        text.at(startIndex + 1) == QLatin1Char('^')) {
+        const int rangeEnd = endIndex + 1 < text.size() &&
+                                     text.at(endIndex + 1) == QLatin1Char(':')
+                                 ? endIndex + 2
+                                 : endIndex + 1;
+        formatAndMaskRemaining(startIndex, rangeEnd - startIndex, startIndex,
+                               rangeEnd, _formats[Link]);
+        return rangeEnd;
+    }
+
+    if (endIndex == text.size() - 1) return startIndex;
 
     // If there is an '!' preceding the starting character, it's an image
     if (startIndex != 0 && text.at(startIndex - 1) == QLatin1Char('!')) {

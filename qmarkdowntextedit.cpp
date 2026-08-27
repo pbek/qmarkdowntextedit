@@ -1342,6 +1342,51 @@ bool QMarkdownTextEdit::openLinkAtCursorPosition() {
 
     const QString selectedText = cursor.selectedText();
 
+    static const QRegularExpression footnoteReferenceRE(
+        QStringLiteral(R"(\[\^([^\]\r\n]+)\](?!:))"));
+    static const QRegularExpression footnoteDefinitionRE(
+        QStringLiteral(R"(^\s{0,3}\[\^([^\]\r\n]+)\]:)"));
+    QRegularExpressionMatch footnoteMatch;
+    auto footnoteIterator = footnoteReferenceRE.globalMatch(selectedText);
+    while (footnoteIterator.hasNext()) {
+        const QRegularExpressionMatch match = footnoteIterator.next();
+        if (positionFromStart >= match.capturedStart() &&
+            positionFromStart <= match.capturedEnd()) {
+            footnoteMatch = match;
+            break;
+        }
+    }
+    if (!footnoteMatch.hasMatch()) {
+        const QRegularExpressionMatch match =
+            footnoteDefinitionRE.match(selectedText);
+        if (match.hasMatch() && positionFromStart >= match.capturedStart() &&
+            positionFromStart <= match.capturedEnd(1) + 2) {
+            footnoteMatch = match;
+        }
+    }
+
+    if (footnoteMatch.hasMatch()) {
+        const QString id =
+            QRegularExpression::escape(footnoteMatch.captured(1));
+        const bool clickedDefinition =
+            footnoteDefinitionRE.match(selectedText).hasMatch();
+        const QRegularExpression targetRE(
+            clickedDefinition ? QStringLiteral(R"(\[\^%1\](?!:))").arg(id)
+                              : QStringLiteral(R"(^\s{0,3}\[\^%1\]:)").arg(id));
+        for (QTextBlock block = document()->begin(); block.isValid();
+             block = block.next()) {
+            const QRegularExpressionMatch target = targetRE.match(block.text());
+            if (target.hasMatch()) {
+                QTextCursor targetCursor(document());
+                targetCursor.setPosition(block.position() +
+                                         target.capturedStart());
+                setTextCursor(targetCursor);
+                ensureCursorVisible();
+                return true;
+            }
+        }
+    }
+
     // find out which url in the selected text was clicked
     const QString urlString =
         getMarkdownUrlAtPosition(selectedText, positionFromStart);
@@ -1538,6 +1583,15 @@ QMap<QString, QString> QMarkdownTextEdit::parseMarkdownUrlsFromText(
     const QString &text) {
     QMap<QString, QString> urlMap;
     QRegularExpressionMatchIterator iterator;
+
+    static const QRegularExpression footnoteRegex(
+        QStringLiteral(R"(\[\^([^\]\r\n]+)\](?::)?)"));
+    iterator = footnoteRegex.globalMatch(text);
+    while (iterator.hasNext()) {
+        const QRegularExpressionMatch match = iterator.next();
+        const QString footnote = match.captured(0);
+        urlMap[footnote] = QStringLiteral("#qon-footnote-") + match.captured(1);
+    }
 
     // match urls like this: <http://mylink>
     //    re = QRegularExpression("(<(.+?:\\/\\/.+?)>)");
