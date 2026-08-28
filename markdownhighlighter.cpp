@@ -475,8 +475,53 @@ void MarkdownHighlighter::highlightBlock(const QString &text) {
     setCurrentBlockState(HighlighterState::NoState);
     currentBlock().setUserState(HighlighterState::NoState);
 
-    highlightMarkdown(text);
+    if (_markdownHighlightingEnabled) {
+        highlightMarkdown(text);
+    }
+    highlightWhitespaceMarkers(text);
     _highlightingFinished = true;
+}
+
+void MarkdownHighlighter::setMarkdownHighlightingEnabled(bool enabled) {
+    if (_markdownHighlightingEnabled == enabled) {
+        return;
+    }
+
+    _markdownHighlightingEnabled = enabled;
+    if (!enabled) {
+        clearDirtyBlocks();
+    }
+    rehighlight();
+}
+
+void MarkdownHighlighter::setWhitespaceMarkerHighlighting(bool enabled,
+                                                          const QColor &color) {
+    if (_whitespaceMarkerHighlightingEnabled == enabled &&
+        _whitespaceMarkerColor == color) {
+        return;
+    }
+
+    _whitespaceMarkerHighlightingEnabled = enabled;
+    _whitespaceMarkerColor = color;
+    rehighlight();
+}
+
+void MarkdownHighlighter::highlightWhitespaceMarkers(const QString &text) {
+    if (!_whitespaceMarkerHighlightingEnabled ||
+        !_whitespaceMarkerColor.isValid()) {
+        return;
+    }
+
+    for (int i = 0; i < text.length(); ++i) {
+        const QChar character = text.at(i);
+        if (character != QLatin1Char(' ') && character != QLatin1Char('\t')) {
+            continue;
+        }
+
+        QTextCharFormat mergedFormat = format(i);
+        mergedFormat.setForeground(_whitespaceMarkerColor);
+        setFormat(i, 1, mergedFormat);
+    }
 }
 
 void MarkdownHighlighter::highlightMarkdown(const QString &text) {

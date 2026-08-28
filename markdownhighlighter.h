@@ -26,6 +26,7 @@
 
 #pragma once
 
+#include <QColor>
 #include <QRegularExpression>
 #include <QSyntaxHighlighter>
 #include <QTextCharFormat>
@@ -147,6 +148,7 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
         WikiLink = 32,
         WikiLinkBroken,
         LinkInternal,
+        Whitespace = 35,
 
         // code highlighting
         CodeKeyWord = 1000,
@@ -233,6 +235,8 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
     void initHighlightingRules();
 
     void setHideFormattingSyntax(bool hide);
+    void setMarkdownHighlightingEnabled(bool enabled);
+    void setWhitespaceMarkerHighlighting(bool enabled, const QColor &color);
     void setCurrentCursorBlockNumber(int blockNumber);
     int currentCursorBlockNumber() const { return _currentCursorBlockNumber; }
     bool hideFormattingSyntax() const { return _hideFormattingSyntax; }
@@ -298,6 +302,7 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
     static void initCodeLangs();
 
     void highlightMarkdown(const QString &text);
+    void highlightWhitespaceMarkers(const QString &text);
 
     void formatAndMaskRemaining(int formatBegin, int formatLength,
                                 int beginningText, int endText,
@@ -410,4 +415,7 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
 
     int _currentCursorBlockNumber = -1;
     bool _hideFormattingSyntax = false;
+    bool _markdownHighlightingEnabled = true;
+    bool _whitespaceMarkerHighlightingEnabled = false;
+    QColor _whitespaceMarkerColor;
 };
