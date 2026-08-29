@@ -494,6 +494,15 @@ void MarkdownHighlighter::setMarkdownHighlightingEnabled(bool enabled) {
     rehighlight();
 }
 
+void MarkdownHighlighter::setMultilineInlineHighlightingEnabled(bool enabled) {
+    if (_multilineInlineHighlightingEnabled == enabled) {
+        return;
+    }
+
+    _multilineInlineHighlightingEnabled = enabled;
+    rehighlight();
+}
+
 void MarkdownHighlighter::setWhitespaceMarkerHighlighting(bool enabled,
                                                           const QColor &color) {
     if (_whitespaceMarkerHighlightingEnabled == enabled &&
@@ -2422,7 +2431,10 @@ void MarkdownHighlighter::highlightInlineRules(const QString &text) {
     }
 
     highlightEmAndStrong(text, 0);
-    highlightMultilineInlineSpans(text);
+
+    if (_multilineInlineHighlightingEnabled) {
+        highlightMultilineInlineSpans(text);
+    }
 }
 
 /**

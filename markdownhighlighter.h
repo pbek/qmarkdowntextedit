@@ -236,6 +236,7 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
 
     void setHideFormattingSyntax(bool hide);
     void setMarkdownHighlightingEnabled(bool enabled);
+    void setMultilineInlineHighlightingEnabled(bool enabled);
     void setWhitespaceMarkerHighlighting(bool enabled, const QColor &color);
     void setCurrentCursorBlockNumber(int blockNumber);
     int currentCursorBlockNumber() const { return _currentCursorBlockNumber; }
@@ -416,6 +417,7 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
     int _currentCursorBlockNumber = -1;
     bool _hideFormattingSyntax = false;
     bool _markdownHighlightingEnabled = true;
+    bool _multilineInlineHighlightingEnabled = true;
     bool _whitespaceMarkerHighlightingEnabled = false;
     QColor _whitespaceMarkerColor;
 };
