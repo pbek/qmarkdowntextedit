@@ -193,6 +193,7 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     };
     struct BlockLayoutBackup {
         QTextBlock block;
+        int revision;
         QVector<LineBackup> lines;
     };
     QRect hangingCursorBlockRepaintRect() const;

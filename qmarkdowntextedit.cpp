@@ -2367,6 +2367,7 @@ QMarkdownTextEdit::applyHangingIndentLayout() {
             if (lineCount > 1) {
                 BlockLayoutBackup backup;
                 backup.block = listBlock;
+                backup.revision = listBlock.revision();
                 for (int i = 0; i < lineCount; ++i) {
                     QTextLine line = layout->lineAt(i);
                     LineBackup lb;
@@ -2426,7 +2427,18 @@ void QMarkdownTextEdit::restoreHangingIndentLayout(
     // Restore original line positions and widths so the document layout
     // engine is not confused.
     for (const auto &backup : backups) {
+        // The event may have edited or removed the block. In that case Qt has
+        // already invalidated its layout and the saved geometry is stale.
+        if (!backup.block.isValid() ||
+            backup.block.revision() != backup.revision) {
+            continue;
+        }
+
         QTextLayout *layout = backup.block.layout();
+        if (layout == nullptr) {
+            continue;
+        }
+
         layout->clearLayout();
         layout->beginLayout();
         for (int i = 0; i < backup.lines.size(); ++i) {
