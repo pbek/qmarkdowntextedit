@@ -819,12 +819,14 @@ void MarkdownHighlighter::highlightIndentedCodeBlock(const QString &text) {
         return;
 
     const QString trimmed = text.trimmed();
+    static const QRegularExpression orderedListPrefix(
+        QStringLiteral("^\\d{1,9}[.)] "));
 
     // should not be in a list
     if (trimmed.startsWith(QLatin1String("- ")) ||
         trimmed.startsWith(QLatin1String("+ ")) ||
         trimmed.startsWith(QLatin1String("* ")) ||
-        (trimmed.length() >= 1 && trimmed.at(0).isNumber()))
+        orderedListPrefix.match(trimmed).hasMatch())
         return;
 
     setCurrentBlockState(CodeBlockIndented);
