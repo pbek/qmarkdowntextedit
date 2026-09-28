@@ -818,6 +818,31 @@ void MarkdownHighlighter::highlightIndentedCodeBlock(const QString &text) {
         !isHeading(previousBlockState()) && previousBlockState() != HeadlineEnd)
         return;
 
+    // Check if we are continuing an already started indented code block,
+    // blank lines between indented chunks don't end the code block
+    // https://spec.commonmark.org/0.31.2/#indented-code-blocks
+    bool continuesCodeBlock = false;
+    for (QTextBlock block = currentBlock().previous(); block.isValid();
+         block = block.previous()) {
+        if (block.text().trimmed().isEmpty()) {
+            if (block.userState() == CodeBlockIndented) {
+                continuesCodeBlock = true;
+                break;
+            }
+            continue;
+        }
+
+        continuesCodeBlock = block.userState() == CodeBlockIndented;
+        break;
+    }
+
+    // Inside an indented code block list markers are just code
+    if (continuesCodeBlock) {
+        setCurrentBlockState(CodeBlockIndented);
+        setFormat(0, text.length(), _formats[CodeBlock]);
+        return;
+    }
+
     const QString trimmed = text.trimmed();
     static const QRegularExpression orderedListPrefix(
         QStringLiteral("^\\d{1,9}[.)] "));
