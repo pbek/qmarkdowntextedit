@@ -282,6 +282,9 @@ void QPlainTextEditSearchWidget::updateSearchExtraSelections() {
     }
 
     const auto textCursor = _textEdit->textCursor();
+    const int verticalScrollBarValue = _textEdit->verticalScrollBar()->value();
+    const int horizontalScrollBarValue =
+        _textEdit->horizontalScrollBar()->value();
     moveToSearchScopeStart();
     const QColor color = selectionColor;
     QTextCharFormat extraFmt;
@@ -307,6 +310,8 @@ void QPlainTextEditSearchWidget::updateSearchExtraSelections() {
 
     _textEdit->setTextCursor(textCursor);
     this->setSearchExtraSelections();
+    _textEdit->verticalScrollBar()->setValue(verticalScrollBarValue);
+    _textEdit->horizontalScrollBar()->setValue(horizontalScrollBarValue);
 }
 
 void QPlainTextEditSearchWidget::setSearchExtraSelections() const {
@@ -425,6 +430,11 @@ bool QPlainTextEditSearchWidget::doSearch(bool searchDown,
         options |= QTextDocument::FindCaseSensitively;
     }
 
+    const QTextCursor originalCursor = _textEdit->textCursor();
+    const int verticalScrollBarValue = _textEdit->verticalScrollBar()->value();
+    const int horizontalScrollBarValue =
+        _textEdit->horizontalScrollBar()->value();
+
     if (selectionOnly) {
         const QTextCursor cursor = _textEdit->textCursor();
         if (!isCursorInSearchScope(cursor)) {
@@ -504,16 +514,19 @@ bool QPlainTextEditSearchWidget::doSearch(bool searchDown,
     }
 
     if (updateUI) {
-        const QRect rect = _textEdit->cursorRect();
-        QMargins margins = _textEdit->layout()->contentsMargins();
-        const int searchWidgetHotArea = _textEdit->height() - this->height();
-        const int marginBottom =
-            (rect.y() > searchWidgetHotArea) ? (this->height() + 10) : 0;
+        if (found) {
+            const QRect rect = _textEdit->cursorRect();
+            QMargins margins = _textEdit->layout()->contentsMargins();
+            const int searchWidgetHotArea =
+                _textEdit->height() - this->height();
+            const int marginBottom =
+                (rect.y() > searchWidgetHotArea) ? (this->height() + 10) : 0;
 
-        // move the search box a bit up if we would block the search result
-        if (margins.bottom() != marginBottom) {
-            margins.setBottom(marginBottom);
-            _textEdit->layout()->setContentsMargins(margins);
+            // Move the search box a bit up if we would block the search result.
+            if (margins.bottom() != marginBottom) {
+                margins.setBottom(marginBottom);
+                _textEdit->layout()->setContentsMargins(margins);
+            }
         }
 
         // add a background color according if we found the text or not
@@ -533,6 +546,13 @@ bool QPlainTextEditSearchWidget::doSearch(bool searchDown,
         this->setSearchExtraSelections();
     }
 
+    if (!found) {
+        // A failed wraparound search must not move the cursor or the viewport.
+        _textEdit->setTextCursor(originalCursor);
+        _textEdit->verticalScrollBar()->setValue(verticalScrollBarValue);
+        _textEdit->horizontalScrollBar()->setValue(horizontalScrollBarValue);
+    }
+
     return found;
 }
 
@@ -546,6 +566,11 @@ void QPlainTextEditSearchWidget::doSearchCount() {
         updateSearchCountLabelText();
         return;
     }
+
+    const QTextCursor originalCursor = _textEdit->textCursor();
+    const int verticalScrollBarValue = _textEdit->verticalScrollBar()->value();
+    const int horizontalScrollBarValue =
+        _textEdit->horizontalScrollBar()->value();
 
     // Note that we are moving the anchor, so the search will start from the top
     // again! Alternative: Restore cursor position afterward, but then we will
@@ -571,6 +596,14 @@ void QPlainTextEditSearchWidget::doSearchCount() {
             break;
         }
     } while (found);
+
+    if (_searchResultCount == 0) {
+        // Counting an unsuccessful query must also preserve the user's
+        // position.
+        _textEdit->setTextCursor(originalCursor);
+        _textEdit->verticalScrollBar()->setValue(verticalScrollBarValue);
+        _textEdit->horizontalScrollBar()->setValue(horizontalScrollBarValue);
+    }
 
     updateSearchCountLabelText();
 }
