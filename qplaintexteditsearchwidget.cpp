@@ -104,7 +104,14 @@ QPlainTextEditSearchWidget::QPlainTextEditSearchWidget(QPlainTextEdit *parent)
     _textEdit = parent;
     _darkMode = false;
     hide();
-    ui->searchCountLabel->setStyleSheet(QStringLiteral("* {color: grey}"));
+    // Use the muted text color of the palette, so the count is readable with
+    // every color scheme
+    QPalette countPalette = ui->searchCountLabel->palette();
+    countPalette.setColor(
+        QPalette::WindowText,
+        countPalette.color(QPalette::Disabled, QPalette::WindowText));
+    ui->searchCountLabel->setPalette(countPalette);
+    ui->searchCountLabel->setToolTip(tr("Current match / number of matches"));
     // hiding will leave a open space in the horizontal layout
     ui->searchCountLabel->setEnabled(false);
     _currentSearchResult = 0;
@@ -691,6 +698,12 @@ void QPlainTextEditSearchWidget::updateSearchCountLabelText() {
                                   : QString::number(_currentSearchResult),
         _searchResultCount == 0 ? QChar('-')
                                 : QString::number(_searchResultCount)));
+
+    // Make it clear that nothing was found, instead of just showing "-/-"
+    if (_searchResultCount == 0 &&
+        shouldStartSearch(ui->searchLineEdit->text())) {
+        ui->searchCountLabel->setText(tr("No matches"));
+    }
 }
 
 void QPlainTextEditSearchWidget::setSearchSelectionColor(const QColor &color) {
