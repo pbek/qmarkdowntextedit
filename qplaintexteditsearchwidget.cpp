@@ -29,6 +29,7 @@
 #include <QKeyEvent>
 #include <QRegularExpression>
 #include <QScrollBar>
+#include <QTextBlock>
 #include <QTextBoundaryFinder>
 
 #include "ui_qplaintexteditsearchwidget.h"
@@ -363,9 +364,53 @@ bool QPlainTextEditSearchWidget::doReplace(bool forAll) {
     const int replacedEnd = cursor.selectionEnd();
     const QString replacementText = ui->replaceLineEdit->text();
     if (searchMode == RegularExpressionMode) {
-        QString text = cursor.selectedText();
-        text.replace(QRegularExpression(ui->searchLineEdit->text()),
-                     replacementText);
+        const QRegularExpression expression(
+            ui->searchLineEdit->text(),
+            ui->matchCaseSensitiveButton->isChecked()
+                ? QRegularExpression::NoPatternOption
+                : QRegularExpression::CaseInsensitiveOption);
+        // Match in the same block as QTextDocument::find(), preserving
+        // lookaround context and block anchors. Qt treats non-breaking spaces
+        // as ordinary spaces when searching.
+        const QTextBlock block = cursor.document()->findBlock(replacedStart);
+        QString blockText = block.text();
+        blockText.replace(QChar::Nbsp, QLatin1Char(' '));
+        const int offset = replacedStart - block.position();
+        const QRegularExpressionMatch match =
+            expression.match(blockText, offset);
+        if (!match.hasMatch() || match.capturedStart() != offset ||
+            match.capturedLength() != replacedEnd - replacedStart) {
+            return false;
+        }
+
+        // Expand QString::replace()'s one- or two-digit capture references
+        // without re-matching the selection or interpreting backslashes in
+        // captured text.
+        QString text;
+        for (int i = 0; i < replacementText.size(); ++i) {
+            if (replacementText.at(i) == QLatin1Char('\\') &&
+                i + 1 < replacementText.size()) {
+                int group = replacementText.at(i + 1).digitValue();
+                if (group > 0 && group <= expression.captureCount()) {
+                    ++i;
+                    if (i + 1 < replacementText.size()) {
+                        const int digit =
+                            replacementText.at(i + 1).digitValue();
+                        if (digit >= 0 &&
+                            group * 10 + digit <= expression.captureCount()) {
+                            group = group * 10 + digit;
+                            ++i;
+                        }
+                    }
+                    // Copy the original characters, including any non-breaking
+                    // spaces.
+                    text += block.text().mid(match.capturedStart(group),
+                                             match.capturedLength(group));
+                    continue;
+                }
+            }
+            text += replacementText.at(i);
+        }
         cursor.insertText(text);
     } else {
         cursor.insertText(replacementText);
@@ -767,9 +812,14 @@ bool QPlainTextEditSearchWidget::isCurrentSelectionSearchMatch() const {
             searchText, caseSensitive
                             ? QRegularExpression::NoPatternOption
                             : QRegularExpression::CaseInsensitiveOption);
-        const QRegularExpressionMatch match = re.match(selectedText);
+        const QTextBlock block =
+            cursor.document()->findBlock(cursor.selectionStart());
+        QString blockText = block.text();
+        blockText.replace(QChar::Nbsp, QLatin1Char(' '));
+        const int offset = cursor.selectionStart() - block.position();
+        const QRegularExpressionMatch match = re.match(blockText, offset);
 
-        return match.hasMatch() && match.capturedStart() == 0 &&
+        return match.hasMatch() && match.capturedStart() == offset &&
                match.capturedLength() == selectedText.length();
     }
 
