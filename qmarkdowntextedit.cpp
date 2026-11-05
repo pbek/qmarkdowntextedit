@@ -2415,7 +2415,11 @@ void QMarkdownTextEdit::paintLineEndingMarkers(QPainter &painter) {
             qreal x = blockRect.left() + layout->position().x() +
                       line.cursorToX(line.textStart() + line.textLength());
             if (block.textDirection() == Qt::RightToLeft) {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
                 x -= QFontMetricsF(font).horizontalAdvance(marker);
+#else
+                x -= QFontMetricsF(font).width(marker);
+#endif
             }
             const qreal y = blockRect.top() + layout->position().y() +
                             line.y() + line.ascent();
