@@ -882,10 +882,27 @@ void MarkdownHighlighter::highlightCodeFence(const QString &text) {
  */
 void MarkdownHighlighter::highlightCodeBlock(const QString &text,
                                              const QString &opener) {
+    const bool inCodeBlock = isCodeBlock(previousBlockState());
     if (text.startsWith(opener)) {
+        if (inCodeBlock) {
+            int fenceEnd = opener.length();
+            while (fenceEnd < text.length() &&
+                   text.at(fenceEnd) == opener.at(0))
+                ++fenceEnd;
+            // Only spaces and tabs may follow a closing fence.
+            for (int i = fenceEnd; i < text.length(); ++i) {
+                if (text.at(i) != QLatin1Char(' ') &&
+                    text.at(i) != QLatin1Char('\t')) {
+                    setCurrentBlockState(previousBlockState());
+                    highlightSyntax(text);
+                    return;
+                }
+            }
+        }
         // if someone decides to put these on the same line
         // interpret it as inline code, not code block
-        if (text.endsWith(QLatin1String("```")) && text.length() > 3) {
+        if (!inCodeBlock && text.endsWith(QLatin1String("```")) &&
+            text.length() > 3) {
             setFormat(3, text.length() - 3,
                       _formats[HighlighterState::InlineCodeBlock]);
             setFormat(0, 3, currentMaskedFormat());

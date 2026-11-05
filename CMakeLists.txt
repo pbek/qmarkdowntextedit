@@ -93,3 +93,15 @@ install(FILES ${CMAKE_BINARY_DIR}/qmarkdowntextedit.pc
 if(QMARKDOWNTEXTEDIT_EXE)
   install(TARGETS qmarkdowntextedit-exe DESTINATION bin)
 endif()
+
+option(QMARKDOWNTEXTEDIT_TESTS "Build automated highlighter tests" OFF)
+if(QMARKDOWNTEXTEDIT_TESTS)
+  enable_testing()
+  find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Test)
+  add_executable(tst_markdownhighlighter tests/tst_markdownhighlighter.cpp)
+  target_include_directories(tst_markdownhighlighter
+                             PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+  target_link_libraries(tst_markdownhighlighter
+                        PRIVATE qmarkdowntextedit Qt${QT_VERSION_MAJOR}::Test)
+  add_test(NAME markdownhighlighter COMMAND tst_markdownhighlighter)
+endif()
