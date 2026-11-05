@@ -241,6 +241,35 @@ void QMarkdownTextEdit::setHangingIndentEnabled(bool enabled) {
     updateHangingCursorRepaintState();
 }
 
+/**
+ * Shows or hides paragraph end markers (¶) in the given color
+ *
+ * Qt would draw these markers itself in the text color, so we only let Qt
+ * reserve the space for them and paint them in paintLineEndingMarkers()
+ */
+void QMarkdownTextEdit::setLineEndingMarkers(bool enabled,
+                                             const QColor &color) {
+    _lineEndingMarkersEnabled = enabled;
+    _lineEndingMarkerColor = color;
+
+    QTextOption textOption = document()->defaultTextOption();
+    QTextOption::Flags flags = textOption.flags();
+    flags &= ~QTextOption::ShowLineAndParagraphSeparators;
+
+    if (enabled) {
+        flags |= QTextOption::AddSpaceForLineAndParagraphSeparators;
+    } else {
+        flags &= ~QTextOption::AddSpaceForLineAndParagraphSeparators;
+    }
+
+    if (flags != textOption.flags()) {
+        textOption.setFlags(flags);
+        document()->setDefaultTextOption(textOption);
+    }
+
+    viewport()->update();
+}
+
 bool QMarkdownTextEdit::highlightCurrentLine() { return _highlightCurrentLine; }
 
 bool QMarkdownTextEdit::hangingIndentEnabled() const {
@@ -2334,8 +2363,67 @@ void QMarkdownTextEdit::paintEvent(QPaintEvent *e) {
         overlayPainter.end();
     }
 
+    // Paint before restoring the hanging indent layout, so the markers
+    // follow the indented continuation lines
+    if (_lineEndingMarkersEnabled) {
+        QPainter markerPainter(viewport());
+        paintLineEndingMarkers(markerPainter);
+        markerPainter.end();
+    }
+
     if (_hangingIndentEnabled) {
         restoreHangingIndentLayout(hangingIndentBackups);
+    }
+}
+
+/**
+ * Paints a ¶ marker after the last line of every visible paragraph that is
+ * followed by another paragraph
+ */
+void QMarkdownTextEdit::paintLineEndingMarkers(QPainter &painter) {
+    const QColor color = _lineEndingMarkerColor.isValid()
+                             ? _lineEndingMarkerColor
+                             : palette().color(QPalette::Text);
+    const QString marker = QString(QChar(0x00B6));
+    const QRect viewportRect = viewport()->rect();
+    const QPointF offset = contentOffset();
+    painter.setPen(color);
+
+    QTextBlock block = firstVisibleBlock();
+    while (block.isValid()) {
+        const QRectF blockRect =
+            blockBoundingGeometry(block).translated(offset);
+        if (blockRect.top() > viewportRect.bottom()) {
+            break;
+        }
+
+        // The last paragraph has no line ending
+        const QTextBlock nextBlock = block.next();
+        if (!nextBlock.isValid()) {
+            break;
+        }
+
+        QTextLayout *layout = block.layout();
+        if (block.isVisible() && layout != nullptr && layout->lineCount() > 0) {
+            const QTextLine line = layout->lineAt(layout->lineCount() - 1);
+
+            // Use the same font Qt uses to reserve the space for the marker
+            const QFont font =
+                block.charFormat().font().resolve(document()->defaultFont());
+            painter.setFont(font);
+
+            qreal x = blockRect.left() + layout->position().x() +
+                      line.cursorToX(line.textStart() + line.textLength());
+            if (block.textDirection() == Qt::RightToLeft) {
+                x -= QFontMetricsF(font).horizontalAdvance(marker);
+            }
+            const qreal y = blockRect.top() + layout->position().y() +
+                            line.y() + line.ascent();
+
+            painter.drawText(QPointF(x, y), marker);
+        }
+
+        block = nextBlock;
     }
 }
 

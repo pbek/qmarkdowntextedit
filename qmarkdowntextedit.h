@@ -92,6 +92,8 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     void setHangingIndentEnabled(bool enabled);
     [[nodiscard]] bool hangingIndentEnabled() const;
 
+    void setLineEndingMarkers(bool enabled, const QColor &color = QColor());
+
     void setCurrentLineHighlightColor(const QColor &c);
     QColor currentLineHighlightColor();
     QString toPlainText() const;
@@ -123,6 +125,8 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     bool _highlightCurrentLine = false;
     bool _openLinkInNewTab = false;
     bool _hangingIndentEnabled = true;
+    bool _lineEndingMarkersEnabled = false;
+    QColor _lineEndingMarkerColor = QColor();
     QColor _currentLineHighlightColor = QColor();
     uint _debounceDelay = 0;
 
@@ -139,6 +143,7 @@ class QMarkdownTextEdit : public QPlainTextEdit {
     void updateBlockSelection();
     void clearBlockSelection();
     void paintBlockSelection(QPainter &painter);
+    void paintLineEndingMarkers(QPainter &painter);
     int columnForBlockAtX(const QTextBlock &block, int x) const;
     qreal xForColumnInBlock(const QTextBlock &block, int column) const;
     QString blockSelectionText() const;
